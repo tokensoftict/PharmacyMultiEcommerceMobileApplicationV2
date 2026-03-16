@@ -1,4 +1,4 @@
-package com.psgdc
+package com.tokensoftict.psgdc
 
 import android.app.Application
 import com.facebook.react.PackageList

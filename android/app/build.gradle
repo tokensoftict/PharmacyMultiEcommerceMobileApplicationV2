@@ -77,9 +77,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.psgdc"
+    namespace "com.tokensoftict.psgdc"
     defaultConfig {
-        applicationId "com.psgdc"
+        applicationId "com.tokensoftict.psgdc"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

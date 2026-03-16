@@ -1,4 +1,4 @@
-package com.psgdc
+package com.tokensoftict.psgdc
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
