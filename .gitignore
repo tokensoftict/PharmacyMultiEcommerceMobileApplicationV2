@@ -76,6 +76,7 @@ yarn-error.log
 /ios/PSGeneralDrugCentre/GoogleService-Info.plist
 /ios/GoogleService-Info.plist
 /ios/PSGDC/GoogleService-Info.plist
+/ios/build/*
 android/app/google-services.json
 .env
 android/app/FEMTECHIT_SIGN_KEY.jks
