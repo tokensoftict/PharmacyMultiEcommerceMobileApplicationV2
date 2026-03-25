@@ -33,13 +33,13 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
-.kotlin/
 
 # node.js
 #
 node_modules/
 npm-debug.log
 yarn-error.log
+
 
 # fastlane
 #
@@ -73,3 +73,10 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+ios/PSGeneralDrugCentre/GoogleService-Info.plist
+ios/PSGDC/GoogleService-Info.plist
+android/app/google-services.json
+.env
+android/app/FEMTECHIT_SIGN_KEY.jks
+android/app/debug.keystore
+android/app/src/main/AndroidManifest.xml
