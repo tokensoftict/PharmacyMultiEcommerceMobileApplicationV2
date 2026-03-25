@@ -1,0 +1,190 @@
+import { StyleSheet, Dimensions, Platform } from "react-native";
+import { normalize } from "@/shared/helpers";
+import { palette } from "@/shared/constants/colors.ts";
+
+const { width } = Dimensions.get('window');
+
+export const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        paddingHorizontal: normalize(20),
+    },
+    circle: {
+        position: 'absolute',
+        borderRadius: 1000,
+        opacity: 0.5,
+    },
+    circle1: {
+        width: width * 1.5,
+        height: width * 1.5,
+        top: -width * 0.8,
+        right: -width * 0.5,
+        backgroundColor: '#BFDBFE',
+    },
+    circle2: {
+        width: width * 0.8,
+        height: width * 0.8,
+        bottom: -width * 0.2,
+        left: -width * 0.3,
+        backgroundColor: '#DDD6FE',
+    },
+    calendarWrapper: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: normalize(24),
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.08,
+        shadowRadius: 20,
+        elevation: 8,
+        marginBottom: normalize(24),
+        height: normalize(120),
+    },
+    calendar: {
+        paddingBottom: normalize(10),
+    },
+    section: {
+        flex: 1,
+    },
+    sectionHeader: {
+        marginBottom: normalize(20),
+    },
+    sectionTitle: {
+        fontSize: normalize(22),
+        fontWeight: Platform.OS === 'ios' ? '900' : undefined,
+        color: '#1E293B',
+        marginBottom: normalize(4),
+    },
+    sectionSubtitle: {
+        fontSize: normalize(14),
+        color: '#64748B',
+        fontWeight: Platform.OS === 'ios' ? '600' : undefined,
+        letterSpacing: 0.5,
+    },
+    emptyState: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: normalize(24),
+        padding: normalize(40),
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+        elevation: 4,
+    },
+    emptyIconWrapper: {
+        width: normalize(80),
+        height: normalize(80),
+        backgroundColor: '#F8FAFC',
+        borderRadius: normalize(40),
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: normalize(20),
+    },
+    emptyStateText: {
+        fontSize: normalize(16),
+        fontWeight: Platform.OS === 'ios' ? '700' : undefined,
+        color: '#64748B',
+        textAlign: 'center',
+        marginBottom: normalize(24),
+    },
+    addMedicationButton: {
+        width: '100%',
+        height: normalize(50),
+        borderRadius: normalize(25),
+        overflow: 'hidden',
+    },
+    gradientButton: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    addMedicationButtonText: {
+        color: '#FFFFFF',
+        fontSize: normalize(13),
+        fontWeight: Platform.OS === 'ios' ? '800' : undefined,
+        letterSpacing: 1,
+    },
+    doseCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: normalize(24),
+        padding: normalize(18),
+        marginBottom: normalize(16),
+        flexDirection: 'row',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
+        elevation: 4,
+    },
+    doseBadge: {
+        width: normalize(50),
+        height: normalize(50),
+        borderRadius: normalize(16),
+        backgroundColor: `${palette.main.p500}10`,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: normalize(16),
+    },
+    doseInfo: {
+        flex: 1,
+    },
+    medicineName: {
+        fontSize: normalize(17),
+        fontWeight: Platform.OS === 'ios' ? '800' : undefined,
+        color: '#1E293B',
+        marginBottom: normalize(6),
+    },
+    doseMeta: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    doseTime: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    timeText: {
+        fontSize: normalize(12),
+        color: '#94A3B8',
+        fontWeight: Platform.OS === 'ios' ? '600' : undefined,
+        marginLeft: normalize(4),
+    },
+    dot: {
+        width: 3,
+        height: 3,
+        borderRadius: 2,
+        backgroundColor: '#CBD5E1',
+        marginHorizontal: normalize(10),
+    },
+    dosageInfo: {
+        fontSize: normalize(12),
+        color: '#64748B',
+        fontWeight: Platform.OS === 'ios' ? '700' : undefined,
+    },
+    takeDoseButton: {
+        backgroundColor: palette.main.p500,
+        paddingHorizontal: normalize(16),
+        paddingVertical: normalize(8),
+        borderRadius: normalize(12),
+    },
+    takeDoseText: {
+        color: '#FFFFFF',
+        fontSize: normalize(13),
+        fontWeight: Platform.OS === 'ios' ? '800' : undefined,
+    },
+    takenBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#ECFDF5',
+        paddingHorizontal: normalize(12),
+        paddingVertical: normalize(8),
+        borderRadius: normalize(12),
+    },
+    takenText: {
+        color: '#10B981',
+        fontSize: normalize(13),
+        fontWeight: Platform.OS === 'ios' ? '800' : undefined,
+        marginLeft: normalize(6),
+    },
+});

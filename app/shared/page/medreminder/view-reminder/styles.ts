@@ -1,0 +1,220 @@
+import { Dimensions, Platform, StyleSheet } from "react-native";
+import { normalize } from "@/shared/helpers";
+import { palette } from "@/shared/constants/colors.ts";
+
+const { width, height } = Dimensions.get("window");
+
+export const styles = StyleSheet.create({
+    wrapper: {
+        flex: 1,
+    },
+    circle: {
+        position: 'absolute',
+        borderRadius: 1000,
+        opacity: 0.6,
+    },
+    circle1: {
+        width: width * 1.2,
+        height: width * 1.2,
+        top: -width * 0.4,
+        right: -width * 0.3,
+    },
+    circle2: {
+        width: width * 0.8,
+        height: width * 0.8,
+        bottom: -width * 0.2,
+        left: -width * 0.2,
+    },
+    container: {
+        flex: 1,
+        paddingHorizontal: normalize(20),
+        paddingTop: normalize(10), // Reduced as HeaderWithIcon is used
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: normalize(15),
+        marginBottom: normalize(20),
+    },
+    backButton: {
+        width: normalize(44),
+        height: normalize(44),
+        borderRadius: normalize(22),
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    headerTitle: {
+        fontSize: normalize(18),
+        fontWeight: Platform.OS === 'ios' ? '800' : undefined,
+        color: '#FFFFFF',
+        marginLeft: normalize(15),
+    },
+    mainContent: {
+        // Removed flex: 1 to allow content to dictate height inside ScrollView
+    },
+    medCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: normalize(32),
+        padding: normalize(30),
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 20 },
+        shadowOpacity: 0.15,
+        shadowRadius: 30,
+        elevation: 15,
+        marginBottom: normalize(24),
+    },
+    iconWrapper: {
+        width: normalize(100),
+        height: normalize(100),
+        borderRadius: normalize(35),
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: normalize(20),
+    },
+    statusBadge: {
+        paddingHorizontal: normalize(16),
+        paddingVertical: normalize(6),
+        borderRadius: normalize(20),
+        marginBottom: normalize(15),
+    },
+    statusText: {
+        fontSize: normalize(12),
+        fontWeight: Platform.OS === 'ios' ? '900' : undefined,
+        letterSpacing: 1,
+    },
+    drugName: {
+        fontSize: normalize(28),
+        fontWeight: Platform.OS === 'ios' ? '900' : undefined,
+        color: '#1E293B',
+        textAlign: 'center',
+        marginBottom: normalize(8),
+    },
+    titleMed: {
+        fontSize: normalize(16),
+        fontWeight: Platform.OS === 'ios' ? '600' : undefined,
+        color: '#64748B',
+        textAlign: 'center',
+    },
+    detailsGrid: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: normalize(24),
+    },
+    detailItem: {
+        backgroundColor: '#FFFFFF',
+        flex: 0.48,
+        borderRadius: normalize(24),
+        padding: normalize(20),
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.05,
+        shadowRadius: 20,
+        elevation: 5,
+    },
+    detailLabel: {
+        fontSize: normalize(12),
+        fontWeight: Platform.OS === 'ios' ? '700' : undefined,
+        color: '#94A3B8',
+        marginBottom: normalize(8),
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    detailValue: {
+        fontSize: normalize(16),
+        fontWeight: Platform.OS === 'ios' ? '800' : undefined,
+        color: '#1E293B',
+    },
+    notesCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: normalize(24),
+        padding: normalize(20),
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.05,
+        shadowRadius: 20,
+        elevation: 5,
+        marginBottom: normalize(40),
+    },
+    notesTitle: {
+        fontSize: normalize(14),
+        fontWeight: Platform.OS === 'ios' ? '800' : undefined,
+        color: '#1E293B',
+        marginBottom: normalize(10),
+    },
+    notesText: {
+        fontSize: normalize(15),
+        color: '#64748B',
+        lineHeight: normalize(22),
+    },
+    actionContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: normalize(20),
+        paddingHorizontal: normalize(20),
+        backgroundColor: '#FFFFFF',
+        borderTopWidth: 1,
+        borderTopColor: '#F1F5F9',
+        paddingBottom: Platform.OS === 'ios' ? normalize(90) : normalize(70),
+    },
+    snoozeButton: {
+        flex: 0.45,
+        height: normalize(60),
+        borderRadius: normalize(30),
+        overflow: 'hidden',
+        borderWidth: 2,
+        borderColor: '#E2E8F0',
+    },
+    snoozeGradient: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+    },
+    takeButton: {
+        flex: 0.5,
+        height: normalize(60),
+        borderRadius: normalize(30),
+        overflow: 'hidden',
+        shadowColor: '#10B981',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        elevation: 8,
+    },
+    takeGradient: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    buttonText: {
+        fontSize: normalize(16),
+        fontWeight: Platform.OS === 'ios' ? '900' : undefined,
+        letterSpacing: 0.5,
+    },
+    // Bottom Sheet Styles
+    sheetContainer: {
+        padding: normalize(24),
+    },
+    sheetTitle: {
+        fontSize: normalize(20),
+        fontWeight: Platform.OS === 'ios' ? '900' : undefined,
+        color: '#1E293B',
+        textAlign: 'center',
+        marginBottom: normalize(25),
+    },
+    intervalItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: normalize(18),
+        borderBottomWidth: 1,
+        borderBottomColor: '#F1F5F9',
+    },
+    intervalText: {
+        fontSize: normalize(16),
+        fontWeight: Platform.OS === 'ios' ? '700' : undefined,
+        color: '#334155',
+        flex: 1,
+    },
+});
