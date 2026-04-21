@@ -150,7 +150,6 @@ export default StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: normalize(24),
         paddingTop: normalize(20),
-        paddingBottom: Platform.OS === 'ios' ? normalize(90) : normalize(70),
         backgroundColor: '#FFFFFF',
         borderTopWidth: 1,
         borderTopColor: '#F1F5F9',

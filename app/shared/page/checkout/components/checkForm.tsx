@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Animated, Dimensions, Easing } from 'react-native';
+import { View, Text, TouchableOpacity, Animated, Dimensions, Easing, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { _styles } from "./styles";
 import useDarkMode from "@/shared/hooks/useDarkMode.tsx";
 import SelectCheckoutAddress from "@/shared/page/checkout/components/selectCheckoutAddress";
@@ -25,6 +27,8 @@ import styles from "@/shared/page/medreminder/create-medreminder/styles.ts";
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const CheckoutStepper = () => {
+    const insets = useSafeAreaInsets();
+
     const [step, setStep] = useState(1);
     const slideAnim = useRef(new Animated.Value(0)).current; // Slide animation
     const validationRefs = useRef({}); // Store validation functions
@@ -227,7 +231,15 @@ const CheckoutStepper = () => {
             <View style={styles.content}>{renderStepContent()}</View>
 
             {/* Navigation Buttons */}
-            <View style={styles.navigation}>
+            <View style={[
+                styles.navigation,
+                {
+                    paddingBottom: Platform.OS === 'ios'
+                        ? normalize(40) + (insets.bottom > 0 ? normalize(5) : 0)
+                        : normalize(24) + insets.bottom,
+                }
+            ]}>
+
                 {
                     step === 4
                         ?

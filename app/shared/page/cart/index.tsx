@@ -1,21 +1,23 @@
-import React, {useCallback, useState} from "react";
-import {Alert, Image, ScrollView, View, TouchableOpacity} from "react-native";
+import React, { useCallback, useState } from "react";
+import { Alert, Image, ScrollView, View, TouchableOpacity, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import HeaderWithIcon from "@/shared/component/headerBack";
-import {emptyCart, shoppingBag} from "@/assets/icons";
+import { emptyCart, shoppingBag } from "@/assets/icons";
 import List from "@/shared/component/list";
 import { Button, ButtonOutline } from "@/shared/component/buttons";
 import { normalize } from "@/shared/helpers";
 import Typography from "@/shared/component/typography";
-import {useFocusEffect, useNavigation} from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NavigationProps } from "@/shared/routes/stack";
 import useDarkMode from "@/shared/hooks/useDarkMode";
 import CartService from "@/service/cart/CartService.tsx";
-import {CartInterface} from "@/service/cart/interface/CartInterface";
+import { CartInterface } from "@/service/cart/interface/CartInterface";
 import Toasts from "@/shared/utils/Toast.tsx";
 import CartItemHorizontalList from "@/shared/component/cartItemHorizontalList";
 import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
-import {currencyType} from "@/shared/constants/global";
-import {semantic} from "@/shared/constants/colors";
+import { currencyType } from "@/shared/constants/global";
+import { semantic } from "@/shared/constants/colors";
 import Environment from "@/shared/utils/Environment.tsx";
 import UpdateCartDialog from "@/shared/component/updateCartDialog";
 
@@ -24,6 +26,8 @@ import UpdateCartDialog from "@/shared/component/updateCartDialog";
 import { _styles } from './styles'
 
 function Cart() {
+    const insets = useSafeAreaInsets();
+
     const { navigate } = useNavigation<NavigationProps>()
     const { isDarkMode } = useDarkMode();
     const styles = _styles(isDarkMode);
@@ -74,7 +78,7 @@ function Cart() {
                 style: 'cancel',
             },
             {
-                text: 'Yes', 
+                text: 'Yes',
                 onPress: () => {
                     setIsLoading(true);
                     (new CartService()).clear().then(() => {
@@ -90,22 +94,30 @@ function Cart() {
         <View style={styles.container}>
             <WrapperNoScroll loading={isLoading}>
                 <HeaderWithIcon icon={shoppingBag} onPress={loadCartItems} title="MY CART" />
-                
+
                 {!isLoading && (
                     <>
                         {(cartItemList?.data.items ?? []).length > 0 ? (
                             <View style={{ flex: 1 }}>
-                                <ScrollView 
-                                    showsVerticalScrollIndicator={false} 
+                                <ScrollView
+                                    showsVerticalScrollIndicator={false}
                                     contentContainerStyle={styles.listContainer}
                                 >
                                     <View style={{ height: normalize(16) }} />
                                     {cartItemList?.data.items.map((item, index) => renderItem(item, index))}
                                 </ScrollView>
 
-                                <View style={styles.summaryCard}>
+                                <View style={[
+                                    styles.summaryCard,
+                                    {
+                                        paddingBottom: Platform.OS === 'ios'
+                                            ? Math.max(insets.bottom, normalize(20)) + normalize(cartItemList?.data.meta?.doorStepDelivery ? -10 : 65)
+                                            : insets.bottom + normalize(cartItemList?.data.meta?.doorStepDelivery ? -25 : 65),
+                                    }
+                                ]}>
+
                                     <View style={styles.summaryIndicator} />
-                                    
+
                                     <View style={styles.summaryRow}>
                                         <Typography style={styles.summaryLabel}>Subtotal</Typography>
                                         <Typography style={styles.summaryValue}>
@@ -171,11 +183,11 @@ function Cart() {
                     </>
                 )}
             </WrapperNoScroll>
-            <UpdateCartDialog 
-                onCartUpdated={loadCartItems} 
-                product={cartItemSelected} 
-                visible={openCartModal} 
-                onClose={cartDialogOpen} 
+            <UpdateCartDialog
+                onCartUpdated={loadCartItems}
+                product={cartItemSelected}
+                visible={openCartModal}
+                onClose={cartDialogOpen}
             />
         </View>
     )

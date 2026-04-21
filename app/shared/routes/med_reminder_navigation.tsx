@@ -17,18 +17,18 @@ export default function MedReminderNavigationStack() {
     return (
         <NavigationIndependentTree>
             <NavigationContainer>
-            <InternalStack.Navigator screenOptions={{ headerShown: false }}>
-                <InternalStack.Screen name="splashScreen"  component={SplashScreen} />
-                <InternalStack.Screen name="mainMenu" component={MainMenu} />
-                <InternalStack.Screen name="medReminderForm" component={MedReminderWizard} />
-                <InternalStack.Screen name="listMedReminder" component={ListMedReminder} />
-                <InternalStack.Screen name="historyLogs" component={HistoryLogs} />
-                <InternalStack.Screen name="refillTracker" component={RefillTracker} />
-                <InternalStack.Screen name="viewLogs" component={ViewLogs} />
-                <InternalStack.Screen name="viewReminder" component={ViewReminder} />
-                <InternalStack.Screen name="detailProduct" component={DetailProduct} />
-            </InternalStack.Navigator>
-        </NavigationContainer>
+                <InternalStack.Navigator screenOptions={{ headerShown: false }}>
+                    <InternalStack.Screen name="splashScreen" component={SplashScreen} />
+                    <InternalStack.Screen name="mainMenu" component={MainMenu} />
+                    <InternalStack.Screen name="medReminderForm" component={MedReminderWizard} />
+                    <InternalStack.Screen name="listMedReminder" component={ListMedReminder} />
+                    <InternalStack.Screen name="historyLogs" component={HistoryLogs} />
+                    <InternalStack.Screen name="refillTracker" component={RefillTracker} />
+                    <InternalStack.Screen name="viewLogs" component={ViewLogs} />
+                    <InternalStack.Screen name="viewReminder" component={ViewReminder} />
+                    <InternalStack.Screen name="detailProduct" component={DetailProduct} />
+                </InternalStack.Navigator>
+            </NavigationContainer>
         </NavigationIndependentTree>
     )
 }

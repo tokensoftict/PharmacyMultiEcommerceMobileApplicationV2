@@ -22,7 +22,6 @@ export const _styles = (isDarkMode: boolean) => StyleSheet.create({
     borderTopRightRadius: normalize(32),
     padding: normalize(20),
     paddingTop: normalize(16),
-    paddingBottom: Platform.OS === 'ios' ? normalize(90) : normalize(80), // Account for tab bar + safe area
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -10 },
     shadowOpacity: 0.1,

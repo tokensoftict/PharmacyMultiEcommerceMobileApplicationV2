@@ -71,7 +71,6 @@ export const _styles = (isDarkMode: boolean, width: number) => StyleSheet.create
   },
   navigation: {
     flexDirection: 'row',
-    paddingBottom: Platform.OS === 'ios' ? normalize(40) : normalize(24),
     paddingHorizontal: normalize(20),
     backgroundColor: isDarkMode ? semantic.fill.f02 : '#FFFFFF',
     borderTopWidth: 1,

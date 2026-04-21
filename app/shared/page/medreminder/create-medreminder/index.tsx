@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, FlatList, ScrollView, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Animated, FlatList, ScrollView, TouchableOpacity, View, StyleSheet, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import styles, { width } from './styles';
 import HeaderWithIcon from "@/shared/component/headerBack";
 import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
@@ -39,6 +41,8 @@ interface Step {
 
 
 export default function MedReminderWizard() {
+    const insets = useSafeAreaInsets();
+
     const [currentStep, setCurrentStep] = useState<number>(0);
     const [formData, setFormData] = useState<Record<string, string | Array<any>>>({});
     const translateX = useRef(new Animated.Value(0)).current;
@@ -358,7 +362,7 @@ export default function MedReminderWizard() {
                     <Input
                         label={label}
                         // @ts-ignore
-                        placeholder={placeholder === '' ? `e.g 30 ${dosageForms[formData['dosage_form']] || ''}` : placeholder}
+                        placeholder={placeholder === '' ? `e.g 1 ${dosageForms[formData['dosage_form']] || ''}` : placeholder}
                         // @ts-ignore
                         value={formData[type] || ''}
                         keyboardType="numeric"
@@ -522,7 +526,15 @@ export default function MedReminderWizard() {
                 </View>
             </View>
 
-            <View style={styles.nav}>
+            <View style={[
+                styles.nav,
+                {
+                    paddingBottom: Platform.OS === 'ios'
+                        ? Math.max(insets.bottom, normalize(20)) + normalize(70)
+                        : insets.bottom + normalize(65),
+                }
+            ]}>
+
                 <TouchableOpacity
                     onPress={handlePrev}
                     disabled={currentStep === 0}
