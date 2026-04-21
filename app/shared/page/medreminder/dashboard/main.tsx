@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useCallback, useState} from "react";
+import React, { useEffect, useRef, useCallback, useState } from "react";
 import LinearGradient from "react-native-linear-gradient";
 import {
     View,
@@ -24,17 +24,18 @@ import {
     history,
     medica
 } from "@/assets/icons";
-import {palette, semantic} from "@/shared/constants/colors.ts";
+import { palette, semantic } from "@/shared/constants/colors.ts";
 import Typography from "@/shared/component/typography";
 import styles from "./main_styles";
-import {useFocusEffect, useNavigation} from "@react-navigation/native";
-import {NavigationProps} from "@/shared/routes/stack.tsx";
-import {MedReminderSchedules} from "@/service/medReminder/interface/MedReminderInterface.tsx";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { NavigationProps } from "@/shared/routes/stack.tsx";
+import { MedReminderSchedules } from "@/service/medReminder/interface/MedReminderInterface.tsx";
 import MedReminderService from "@/service/medReminder/MedReminderService.tsx";
 import WrapperNoScrollNoDialogNoSafeArea from "@/shared/component/wrapperNoScrollNoDialogNoSafeArea";
 import Toastss from "@/shared/utils/Toast";
-import {useLoading} from "@/shared/utils/LoadingProvider.tsx";
+import { useLoading } from "@/shared/utils/LoadingProvider.tsx";
 import { normalize } from "@/shared/helpers";
+import Environment from "@/shared/utils/Environment.tsx";
 
 const { width } = Dimensions.get("window");
 
@@ -130,7 +131,7 @@ function MainMenu() {
     const [progress, setProgress] = useState(0);
     const [totalDoses, setTotalDoses] = useState(0);
     const [completedDoses, setCompletedDoses] = useState(0);
-    const {showLoading, hideLoading} = useLoading();
+    const { showLoading, hideLoading } = useLoading();
 
     const loadTodayHistory = useCallback(() => {
         setLoading(true);
@@ -141,7 +142,7 @@ function MainMenu() {
                 setMedicationHistory(response.data.data);
                 if (response.data.data.length > 0) {
                     const _totalDoses = response.data.data.length;
-                    const _completedDoses = response.data.data.filter((data: MedReminderSchedules) => 
+                    const _completedDoses = response.data.data.filter((data: MedReminderSchedules) =>
                         data.status !== "Pending" && data.status !== "Cancelled"
                     ).length;
                     const _progress = _completedDoses / _totalDoses;
@@ -164,16 +165,18 @@ function MainMenu() {
     const makeScheduleHasTaken = (schedule_id: number | string) => {
         Alert.alert('MedReminder', 'Mark this medication as taken?', [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Confirm', onPress: () => {
-                showLoading("Updating...");
-                (new MedReminderService()).updateHistoryStatus(schedule_id, { status: 'Completed' }).then((response) => {
-                    hideLoading();
-                    if (response.data.status === true) {
-                        Toastss("Updated successfully.");
-                        loadTodayHistory();
-                    }
-                });
-            }}
+            {
+                text: 'Confirm', onPress: () => {
+                    showLoading("Updating...");
+                    (new MedReminderService()).updateHistoryStatus(schedule_id, { status: 'Completed' }).then((response) => {
+                        hideLoading();
+                        if (response.data.status === true) {
+                            Toastss("Updated successfully.");
+                            loadTodayHistory();
+                        }
+                    });
+                }
+            }
         ]);
     };
 
@@ -182,23 +185,33 @@ function MainMenu() {
         navigation.navigate(path, params);
     };
 
-    const todayDate = new Date().toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        month: 'short', 
-        day: 'numeric' 
+    const todayDate = new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric'
     });
 
     return (
         <WrapperNoScrollNoDialogNoSafeArea loading={loading}>
             <StatusBar backgroundColor="#F44336" barStyle="light-content" translucent={false} />
-            
+
             <View style={styles.headerContainer}>
                 <View style={styles.headerTop}>
                     <View>
                         <Typography style={styles.headerSubtitle}>{todayDate}</Typography>
                         <Typography style={styles.headerGreeting}>Medication Tracker</Typography>
                     </View>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.notificationButton}>
+                    <TouchableOpacity
+                        onPress={() => {
+                            if (navigation.canGoBack()) {
+                                navigation.goBack();
+                            } else {
+                                // @ts-ignore
+                                navigation.navigate(Environment.getEnvironment());
+                            }
+                        }}
+                        style={styles.notificationButton}
+                    >
                         <Icon icon={arrowBack} width={24} height={24} tintColor="white" />
                     </TouchableOpacity>
                 </View>
@@ -216,8 +229,8 @@ function MainMenu() {
                 </View>
             </View>
 
-            <ScrollView 
-                style={styles.content} 
+            <ScrollView
+                style={styles.content}
                 showsVerticalScrollIndicator={false}
                 refreshControl={<RefreshControl refreshing={refreshLoading} onRefresh={() => { setRefreshLoading(true); loadTodayHistory(); }} />}
             >
@@ -225,14 +238,14 @@ function MainMenu() {
                     <Typography style={styles.sectionTitle}>Quick Actions</Typography>
                     <View style={styles.quickActionsGrid}>
                         {QUICK_ACTIONS.map((action) => (
-                            <TouchableOpacity 
-                                key={action.route} 
-                                onPress={() => navigate(action.route)} 
+                            <TouchableOpacity
+                                key={action.route}
+                                onPress={() => navigate(action.route)}
                                 style={styles.actionButton}
                                 activeOpacity={0.7}
                             >
-                                <LinearGradient 
-                                    colors={action.gradient} 
+                                <LinearGradient
+                                    colors={action.gradient}
                                     style={styles.actionIconWrapper}
                                 >
                                     <Icon icon={action.icon} width={24} height={24} tintColor="white" />
@@ -263,8 +276,8 @@ function MainMenu() {
                         medicationHistory.map((medication) => {
                             const taken = medication.status !== "Pending" && medication.status !== "Cancelled";
                             return (
-                                <TouchableOpacity 
-                                    key={medication.id} 
+                                <TouchableOpacity
+                                    key={medication.id}
                                     onPress={() => navigate('viewReminder', { schedule: medication })}
                                     activeOpacity={0.7}
                                     style={styles.doseCard}
@@ -276,7 +289,7 @@ function MainMenu() {
                                         <Typography style={styles.medicineName} numberOfLines={1}>
                                             {medication.drugName}
                                         </Typography>
-                                        <Typography style={styles.dosageInfo}>{medication.dosage}mg</Typography>
+                                        <Typography style={styles.dosageInfo}>{medication.dosage} {medication.dosage_form}</Typography>
                                         <View style={styles.doseTimeContainer}>
                                             <Icon icon={history} width={14} height={14} tintColor="#94A3B8" />
                                             <Typography style={styles.timeText}>{medication.scheduled_at}</Typography>
@@ -289,7 +302,7 @@ function MainMenu() {
                                         </View>
                                     ) : (
                                         medication.allowTaken && (
-                                            <TouchableOpacity 
+                                            <TouchableOpacity
                                                 style={styles.takeDoseButton}
                                                 onPress={() => makeScheduleHasTaken(medication.id)}
                                             >

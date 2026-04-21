@@ -5,8 +5,9 @@ import {
     TouchableOpacity,
     StyleSheet,
     TextInput,
-    ActivityIndicator, Alert
+    ActivityIndicator, Alert, Linking
 } from "react-native";
+import { SUPERMARKET_URL, WHOLESALES_URL } from "@env";
 import { normalize } from "@/shared/helpers";
 import { close, shoppingBag } from "@/assets/icons";
 import React, { useCallback, useState } from "react";
@@ -466,6 +467,18 @@ export default function ConfirmCheckout({ onValidate }: { onValidate: (validateF
                             )}
                         </View>
                     )}
+                    <TouchableOpacity
+                        style={{ marginTop: normalize(20), alignSelf: 'center' }}
+                        onPress={() => {
+                            const webUrl = "https://psgdc.store/coupon-terms";
+
+                            Linking.openURL(webUrl);
+                        }}
+                    >
+                        <Typography style={{ color: semantic.alert.danger.d500, fontFamily: FONT.BOLD, textDecorationLine: 'underline' }}>
+                            Terms & Conditions
+                        </Typography>
+                    </TouchableOpacity>
                 </View>
             </ButtonSheet>
             <ButtonSheet dispatch={cartReviewDialog} height={normalize(500)}>

@@ -5,11 +5,12 @@ import ProductDialog from "@/shared/component/cartDialog";
 import {KeyboardAvoidingView} from "react-native";
 
 interface ProductList {
-    product: ProductListInterface|Data|undefined,
+    product: ProductListInterface|Data|undefined;
+    onClose: (visible: boolean) => void;
 }
-export default function AddToCartDialog({product = undefined}: ProductList) {
+export default function AddToCartDialog({product = undefined, onClose}: ProductList) {
 
     return (
-        <ProductDialog visible={product !== undefined} product={product} />
+        <ProductDialog visible={product !== undefined} product={product} onClose={onClose} />
     );
 }

@@ -27,6 +27,7 @@ const systemDataInitialState = {
   trashedUserData : false,
   supermarketHome : [],
   wholeSalesHomeData : [],
+  cartUpdateToken : 0,
 };
 
 
@@ -52,6 +53,8 @@ function systemReducer(state = systemDataInitialState, action:any){
       return {...state, supermarketHome: action.payload };
     case actionTypes.WHOLESALES_HOMEPAGE_DATA:
       return {...state, wholeSalesHomeData: action.payload };
+    case actionTypes.CART_UPDATED:
+      return {...state, cartUpdateToken: action.payload };
     default:
       return state;
   }

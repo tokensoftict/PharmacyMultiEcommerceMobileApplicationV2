@@ -1,24 +1,24 @@
-import {attachInterceptors, axiosInstance} from '../internet';
+import { attachInterceptors, axiosInstance } from '../internet';
 import AuthSessionService from "@/service/auth/AuthSessionService.tsx";
-import {UserProfile} from "@/service/auth/interfaces/UserProfile.tsx";
-import {AUTH_URL} from '@env';
-import {Platform} from "react-native";
+import { UserProfile } from "@/service/auth/interfaces/UserProfile.tsx";
+import { AUTH_URL } from '@env';
+import { Platform } from "react-native";
 import DeviceInfo from 'react-native-device-info';
 
-axiosInstance.interceptors.request.use( async function (request) {
+axiosInstance.interceptors.request.use(async function (request) {
 
     request.baseURL = AUTH_URL;
     request.headers['Content-Type'] = 'multipart/form-data';
 
-
+    console.log(request.baseURL);
     const authSession = new AuthSessionService();
 
     const userSession: UserProfile = await authSession.getAuthSession();
 
     if (userSession.loginStatus) {
         const token = userSession.data?.token;
-        if(token) {
-            request.headers.Authorization =  'Bearer ' +token.access_token;
+        if (token) {
+            request.headers.Authorization = 'Bearer ' + token.access_token;
         }
 
     }
@@ -44,15 +44,15 @@ axiosInstance.interceptors.request.use( async function (request) {
     const version = DeviceInfo.getVersion();
     request.params = { ...request.params, device: 'mobile' };
     request.params = { ...request.params, deviceType: Platform.OS };
-    request.params = { ...request.params, version:  version };
+    request.params = { ...request.params, version: version };
 
 
     return request;
 }, function (error) {
     return Promise.resolve({
-        data : {
-            status : false,
-            error : "There was error while processing request, please try again.",
+        data: {
+            status: false,
+            error: "There was error while processing request, please try again.",
         }
     });
 });

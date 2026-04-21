@@ -25,6 +25,7 @@ import Environment from "@/shared/utils/Environment.tsx";
 import { MILISEARCH_MASTER_INDEX, MILISEARCH_MASTER_KEY, MILISEARCH_URL } from "@env";
 import useEffectOnce from "@/shared/hooks/useEffectOnce.tsx";
 import _ from "lodash";
+import dayjs from "dayjs";
 import { styles } from "./styles";
 
 interface SearchDialogProps {
@@ -66,8 +67,9 @@ export default function Search({ visible = true, onClose, onItemSelected }: Sear
 
     function formatDate(dateString: string): string {
         if (!dateString) return "N/A";
-        const date = new Date(dateString);
-        return `${String(date.getDate()).padStart(2, '0')} ${date.toLocaleString('en-US', { month: 'short' })} ${date.getFullYear()}`;
+        const date = dayjs(dateString);
+        if (!date.isValid()) return dateString;
+        return date.format("DD MMM YYYY");
     }
 
     useEffectOnce(() => {

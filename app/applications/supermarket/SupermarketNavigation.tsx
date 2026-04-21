@@ -1,4 +1,5 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import RoutesTab from "@/shared/routes/supermarkettab";
 import Typography from "@/shared/component/typography";
 import { palette, semantic } from "@/shared/constants/colors.ts";
@@ -12,12 +13,21 @@ import React from "react";
 const Tab = createBottomTabNavigator();
 
 export default function SupermarketNavigation() {
+    const insets = useSafeAreaInsets();
 
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
                 headerShown: false,
-                tabBarStyle: styles.tabBar,
+                tabBarStyle: [
+                    styles.tabBar,
+                    {
+                        height: Platform.OS === 'ios'
+                            ? normalize(80) + (insets.bottom > 0 ? normalize(5) : 0)
+                            : normalize(55) + insets.bottom,
+                        paddingBottom: Platform.OS === 'ios' ? normalize(30) : insets.bottom,
+                    }
+                ],
                 tabBarItemStyle: styles.tabBarItem,
                 tabBarShowLabel: true,
             })}
@@ -60,9 +70,8 @@ const styles = StyleSheet.create({
         position: 'absolute',
         borderTopWidth: 1,
         borderTopColor: 'rgba(0,0,0,0.05)',
-        elevation: 10,
-        height: Platform.OS === 'ios' ? normalize(88) : normalize(60),
-        paddingBottom: Platform.OS === 'ios' ? normalize(30) : 0,
+        elevation: 20,
+        // height and paddingBottom are now handled dynamically in screenOptions
         paddingTop: 0,
         ...Platform.select({
             ios: {

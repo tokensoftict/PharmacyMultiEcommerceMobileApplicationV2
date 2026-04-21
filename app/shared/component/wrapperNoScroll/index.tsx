@@ -7,6 +7,7 @@ import {design, semantic} from '@/shared/constants/colors';
 import useEffectOnce from "@/shared/hooks/useEffectOnce.tsx";
 import {store} from "@/redux/store/store.tsx";
 import AddToCartDialog from "@/shared/component/addToCartDialog";
+import * as action from "@/redux/actions";
 import {SafeAreaProvider,SafeAreaView, Edge} from "react-native-safe-area-context";
 
 import { StyleProp, ViewStyle } from "react-native";
@@ -43,6 +44,10 @@ export default function WrapperNoScroll({
         });
     }, []);
 
+    const handleClose = () => {
+        store.dispatch(action.setProductDialogData(undefined));
+    };
+
     return (
 
         <SafeAreaProvider>
@@ -60,7 +65,7 @@ export default function WrapperNoScroll({
 
                     <View style={{ backgroundColor : transparent ? 'transparent' : semantic.background.white.w101, flex : 1, width : '100%', height : '100%'}}>
 
-                        <AddToCartDialog product={addToCartProduct}/>
+                        <AddToCartDialog product={addToCartProduct} onClose={handleClose} />
                         <OverlayLoader loading={loading} title={""} height={overlayLoaderHeight} />
                         <KeyboardAvoidingView
                             style={{ flex: 1 }}

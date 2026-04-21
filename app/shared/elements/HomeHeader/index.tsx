@@ -9,7 +9,7 @@ import {
     TouchableOpacity,
     ScrollView
 } from 'react-native';
-import {SafeAreaView} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { _styles } from './styles';
 import { normalize } from '@/shared/helpers';
 import AddToCartDialog from '@/shared/component/addToCartDialog';
@@ -22,13 +22,18 @@ import { homeNotifications, homeNotification, location, search, shoppingBag, sto
 import useDarkMode from '@/shared/hooks/useDarkMode.tsx';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NavigationProps } from '@/shared/routes/stack.tsx';
+import { useDispatch, useSelector } from 'react-redux';
 
 import HorizontalProductList from "@/shared/component/HorizontalProductList";
 import TopBrands from "shared/elements/TopBrands";
 import FlashDeals from "@/shared/elements/FlashDeals";
 import ImageSlider from "@/shared/elements/ImageSlider";
+import PromoCarousel from "@/shared/elements/PromoCarousel";
 import HomeSkeleton from './HomeSkeleton';
 import { useFocusEffect } from '@react-navigation/native';
+import { qrcode } from '@/assets/icons';
+import Toasts from '@/shared/utils/Toast';
+import * as action from "@/redux/actions";
 
 interface WrapperProps {
     loading?: boolean;
@@ -50,14 +55,7 @@ export default function HomeHeader({
     const { isDarkMode } = useDarkMode();
     const styles = _styles(isDarkMode);
     const navigation = useNavigation<NavigationProps>();
-    const [addToCartProduct, setAddToCartProduct] = useState();
-
-    useEffectOnce(() => {
-        store.subscribe(() => {
-            const selectedProduct = store.getState().systemReducer.product;
-            setAddToCartProduct(selectedProduct);
-        });
-    }, []);
+    const addToCartProduct = useSelector((state: any) => state.systemReducer.product);
 
     React.useLayoutEffect(() => {
         const parent = navigation.getParent();
@@ -90,7 +88,8 @@ export default function HomeHeader({
     );
 
     const renderComponent = ({ item, index }: { item: any; index: number }) => {
-        const key = `${item.type}-${index}`;
+        const itemId = item.promotionId ?? item.id ?? index;
+        const key = `${item.component}-${itemId}`;
         let component = <View key={key} />;
 
         if (item.component === 'topBrands') {
@@ -109,8 +108,8 @@ export default function HomeHeader({
             );
         } else if (item.component === 'FlashDeals') {
             component = <FlashDeals key={key} title={item.label} deals={item.data} />;
-        /* } else if (item.component === 'ImageSlider') {
-            component = <ImageSlider key={key} sliders={item.data} />; */
+        } else if (item.component === 'PromoCarousel') {
+            component = <PromoCarousel key={key} data={item.data} />;
         }
 
         return (
@@ -143,6 +142,24 @@ export default function HomeHeader({
                         <View style={styles.actionButtons}>
                             <TouchableOpacity
                                 style={styles.iconBtn}
+                                onPress={() => {
+                                    const auth = store.getState().systemReducer.auth;
+                                    if (auth && auth.loginStatus) {
+                                        navigation.navigate('scanShop');
+                                    } else {
+                                        Toasts('You must be logged in to use Scan & Shop');
+                                        navigation.navigate('login');
+                                    }
+                                }}
+                            >
+                                <Icon
+                                    icon={qrcode}
+                                    height={normalize(20)}
+                                    tintColor={isDarkMode ? '#FFF' : '#D32F2F'}
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.iconBtn}
                                 onPress={() => navigation.navigate('search')}
                             >
                                 <Icon icon={search} height={normalize(20)} tintColor={isDarkMode ? '#FFF' : '#1A1D1E'} />
@@ -155,19 +172,24 @@ export default function HomeHeader({
                 </View>
             )}
 
-            <AddToCartDialog product={addToCartProduct} />
+            <AddToCartDialog
+                product={addToCartProduct}
+                onClose={() => {
+                    store.dispatch(action.setProductDialogData(undefined));
+                }}
+            />
 
             {loading ? (
                 <HomeSkeleton />
             ) : (
                 <FlatList
                     data={data}
-                    keyExtractor={(_, index) => index.toString()}
+                    keyExtractor={(item, index) => `${item.component}-${item.promotionId ?? item.id ?? index}`}
                     renderItem={renderComponent}
                     refreshControl={
                         <RefreshControl refreshing={loading ?? false} onRefresh={onRefresh} tintColor="#D32F2F" />
                     }
-                    contentContainerStyle={[styles.scrollContent, { paddingTop: normalize(20) }]}
+                    contentContainerStyle={[styles.scrollContent, { paddingTop: normalize(2) }]}
                     showsVerticalScrollIndicator={false}
                 />
             )}

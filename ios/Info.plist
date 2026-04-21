@@ -64,7 +64,9 @@
 		</dict>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string/>
+	<string>Your location is used to verify if you are within the store to use the Scan &amp; Shop feature.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Your camera is used to scan product barcodes.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Urbanist-Black.ttf</string>

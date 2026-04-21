@@ -128,8 +128,8 @@ export default function ViewReminder() {
             <HeaderWithIcon title="MEDICATION DETAILS" />
 
             <View style={{ flex: 1 }}>
-                <ScrollView 
-                    style={styles.container} 
+                <ScrollView
+                    style={styles.container}
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: normalize(40) }}
                 >
@@ -154,7 +154,7 @@ export default function ViewReminder() {
                                 <Typography style={styles.detailLabel}>Dosage</Typography>
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <Icon icon={drug} width={14} height={14} tintColor={palette.main.p500} customStyles={{ marginRight: 6 }} />
-                                    <Typography style={styles.detailValue}>{medication?.dosage}</Typography>
+                                    <Typography style={styles.detailValue}>{medication?.dosage} {medication?.dosage_form}</Typography>
                                 </View>
                             </View>
                             <View style={styles.detailItem}>
@@ -192,25 +192,25 @@ export default function ViewReminder() {
                 )}
             </View>
 
-                <ButtonSheet 
-                    onClose={() => setOpenIntervalDialog(false)} 
-                    dispatch={openIntervalDialog} 
-                    height={normalize(400)}
-                >
-                    <View style={styles.sheetContainer}>
-                        <Typography style={styles.sheetTitle}>Snooze Duration</Typography>
-                        <FlatList
-                            data={intervalList}
-                            keyExtractor={(item) => item.id}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity style={styles.intervalItem} onPress={() => snoozeNotification(item)}>
-                                    <Typography style={styles.intervalText}>{item.name}</Typography>
-                                    <Icon icon={history} width={20} height={20} tintColor="#94A3B8" />
-                                </TouchableOpacity>
-                            )}
-                        />
-                    </View>
-                </ButtonSheet>
+            <ButtonSheet
+                onClose={() => setOpenIntervalDialog(false)}
+                dispatch={openIntervalDialog}
+                height={normalize(400)}
+            >
+                <View style={styles.sheetContainer}>
+                    <Typography style={styles.sheetTitle}>Snooze Duration</Typography>
+                    <FlatList
+                        data={intervalList}
+                        keyExtractor={(item) => item.id}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity style={styles.intervalItem} onPress={() => snoozeNotification(item)}>
+                                <Typography style={styles.intervalText}>{item.name}</Typography>
+                                <Icon icon={history} width={20} height={20} tintColor="#94A3B8" />
+                            </TouchableOpacity>
+                        )}
+                    />
+                </View>
+            </ButtonSheet>
         </WrapperNoScroll>
     );
 }

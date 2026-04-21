@@ -249,7 +249,7 @@ const MedReminderForm = () => {
                                 schedule.id,
                                 schedule.drugName,
                                 schedule.dosage,
-                                "mg",
+                                schedule.dosage_form,
                                 new Date(dayjs(schedule.js_date)).getTime() + index,
                                 schedule,
                                 new AuthSessionService().getEnvironment(),
@@ -302,7 +302,7 @@ const MedReminderForm = () => {
                 <View style={{ marginBottom: normalize(24) }}>
                     <Input
                         label={"Dosage per Intake"}
-                        placeholder="e.g., 500mg"
+                        placeholder="e.g., 23 tablets, 20mg, 20mls...."
                         value={dosage}
                         keyboardType="numeric"
                         onChangeText={(dosage) => setDosage(dosage)}
@@ -314,7 +314,7 @@ const MedReminderForm = () => {
                     <Input
                         label={"Total Dosage in Package"}
                         style={{ borderWidth: 1, padding: normalize(8), marginBottom: normalize(10) }}
-                        placeholder="e.g., 23 tablets, 20mg, 20mls"
+                        placeholder="e.g., 23 tablets, 20mg, 20mls...."
                         keyboardType="numeric"
                         value={totalDosageInPackage}
                         onChangeText={(total) => setTotalDosageInPackage(total)}

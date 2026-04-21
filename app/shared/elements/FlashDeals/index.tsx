@@ -91,17 +91,7 @@ export default function FlashDeals({ title, deals }: flashDealProps) {
                     </Animated.View>
                 </View>
 
-                <View style={styles.progressContainer}>
-                    <View style={styles.progressInfo}>
-                        <Typography style={styles.progressText}>Stock Left</Typography>
-                        <Typography style={[styles.progressText, { color: '#D50000', fontFamily: FONT.BOLD }]}>
-                            {stockLeft} items
-                        </Typography>
-                    </View>
-                    <View style={styles.progressBarBg}>
-                        <View style={[styles.progressBarFill, { width: `${progress * 100}%` }]} />
-                    </View>
-                </View>
+                {/* Progress bar removed as requested */}
             </TouchableOpacity>
         );
     };

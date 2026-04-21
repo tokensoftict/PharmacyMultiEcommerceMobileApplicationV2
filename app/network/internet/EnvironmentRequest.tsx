@@ -15,7 +15,7 @@ export default class EnvironmentRequest {
     constructor() {
         const environment = new AuthSessionService().getEnvironment();
         this.request = environment === "wholesales" ? new WholesalesRequest() : (environment === "supermarket" ? new SupermarketRequest() : new SalesRepresentativesRequest());
-        console.log(environment);
+    
         if (environment === "") {
             this.request = new SupermarketRequest();
         }

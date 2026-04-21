@@ -12,21 +12,20 @@ export const styles = StyleSheet.create({
     },
     // Profile Card
     profileCard: {
-        backgroundColor: '#fff',
-        marginHorizontal: normalize(20),
-        marginTop: normalize(10), // Reduced from negative to positive for clean spacing
+        marginHorizontal: Platform.OS === 'ios' ? normalize(2) : normalize(20),
         borderRadius: normalize(24),
         padding: normalize(16),
         elevation: 12,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.15,
         shadowRadius: 12,
+        overflow: 'hidden',
     },
     profileMain: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: normalize(20),
+        marginBottom: normalize(10),
     },
     imageContainer: {
         position: 'relative',
@@ -37,6 +36,7 @@ export const styles = StyleSheet.create({
         borderRadius: normalize(24),
         borderWidth: 2,
         borderColor: '#F0F0F0',
+        backgroundColor: "#FFFFFF"
     },
     editBadge: {
         position: 'absolute',
@@ -82,29 +82,35 @@ export const styles = StyleSheet.create({
     loyaltyContainer: {
         borderTopWidth: 1,
         borderTopColor: '#F0F0F0',
-        paddingTop: normalize(15),
+        paddingTop: normalize(20),
+        paddingBottom: Platform.OS === 'ios' ? normalize(25) : normalize(0),
     },
     loyaltyHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: normalize(10),
+        marginBottom: normalize(12),
+        width: '100%',
     },
     loyaltyTitle: {
-        fontSize: normalize(12),
+        fontSize: normalize(14),
         color: '#1A1D1E',
         fontFamily: FONT.BOLD,
+        flex: 1,
     },
     pointsText: {
         fontSize: normalize(14),
         color: '#D50000',
         fontFamily: FONT.BOLD,
+        textAlign: 'right',
+        marginRight: Platform.OS === 'ios' ? normalize(22) : normalize(0),
     },
     progressBarBg: {
         height: normalize(8),
         backgroundColor: '#F5F5F5',
         borderRadius: normalize(4),
         overflow: 'hidden',
+        marginRight: Platform.OS === 'ios' ? normalize(22) : normalize(0),
     },
     progressBarFill: {
         height: '100%',
@@ -116,6 +122,7 @@ export const styles = StyleSheet.create({
         fontSize: normalize(10),
         color: '#9A9A9A',
         fontFamily: FONT.NORMAL,
+        lineHeight: normalize(16),
     },
 
     // Quick Actions Grid

@@ -1,27 +1,27 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as action from "@/redux/actions";
 import { store } from "@/redux/store/store";
-import {AUTH_URL} from "@env";
+import { AUTH_URL } from "@env";
 
-export default class AuthSessionService{
+export default class AuthSessionService {
     /**
      * @param data
      */
-    async setAuthSession(data :any) {
+    async setAuthSession(data: any) {
         await AsyncStorage.setItem("auth", JSON.stringify(data));
         store.dispatch(action.setApplicationData(data))
     }
 
-    setTempSession(data :any) {
+    setTempSession(data: any) {
         store.dispatch(action.setApplicationData(data))
     }
 
-    getTempSession(){
+    getTempSession() {
         return store.getState().systemReducer.auth;
     }
 
     async completeSession() {
-        const data =store.getState().systemReducer.auth;
+        const data = store.getState().systemReducer.auth;
         await AsyncStorage.setItem("auth", JSON.stringify(data));
     }
 
@@ -29,7 +29,7 @@ export default class AuthSessionService{
         return await AsyncStorage.getItem("hasShownIntroPage") ?? "NO";
     }
 
-    async setIntroPageStatus(status : string) {
+    async setIntroPageStatus(status: string) {
         await AsyncStorage.setItem("hasShownIntroPage", status)
     }
 
@@ -49,9 +49,9 @@ export default class AuthSessionService{
     }
 
 
-    fetchData = async (token : string) => {
+    fetchData = async (token: string) => {
         try {
-            const response = await fetch(AUTH_URL+"me?deviceKey="+store.getState().systemReducer.fireBaseKey, {
+            const response = await fetch(AUTH_URL + "me?deviceKey=" + store.getState().systemReducer.fireBaseKey, {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`, // Attach token here
@@ -72,21 +72,21 @@ export default class AuthSessionService{
     };
 
 
-    async autoLogin()  {
+    async autoLogin() {
         let data = await AsyncStorage.getItem("auth") ?? false;
-        if(!data) return false;
+        if (!data) return false;
         const session = JSON.parse(data)
         store.dispatch(action.setApplicationData(session));
         data = JSON.parse(data) ?? [];
         // @ts-ignore
         const refreshData = await this.fetchData(data.data.token.access_token ?? "unknown_token")
-        if(refreshData.status == "401") {
+        if (refreshData.status == "401") {
             const tempSession = this.getTempSession();
             tempSession['loginStatus'] = false;
             this.setTempSession(tempSession);
             return false;
         }
-        if(refreshData.status === true) {
+        if (refreshData.status === true) {
             refreshData['loginStatus'] = true;
             await this.setAuthSession(refreshData);
             return true;
@@ -106,13 +106,13 @@ export default class AuthSessionService{
         return store.getState().systemReducer.auth;
     }
 
-    setPageSessionData(key : string, value : any)  {
+    setPageSessionData(key: string, value: any) {
         const data = store.getState().systemReducer.pageRouteData;
         data[key] = value;
         store.dispatch(action.setPageRouterData(data));
     }
 
-    setEnvironment(environment :string) {
+    setEnvironment(environment: string) {
         store.dispatch(action.setEnvironment(environment));
     }
 
@@ -120,7 +120,7 @@ export default class AuthSessionService{
         return store.getState().systemReducer.environment;
     }
 
-    setLaunchPage(page:string) {
+    setLaunchPage(page: string) {
         store.dispatch(action.setLaunchPage(page));
     }
 
@@ -132,7 +132,7 @@ export default class AuthSessionService{
         store.dispatch(action.setLaunchPage(""));
     }
 
-    setImpersonateCustomerData(data :any) {
+    setImpersonateCustomerData(data: any) {
         store.dispatch(action.setImpersonateData(data));
     }
 
@@ -144,14 +144,14 @@ export default class AuthSessionService{
         store.dispatch(action.setImpersonateData(false));
     }
 
-    getPageSessionData(key:string) {
-        if(store.getState().systemReducer.pageRouteData.hasOwnProperty(key)){
+    getPageSessionData(key: string) {
+        if (store.getState().systemReducer.pageRouteData.hasOwnProperty(key)) {
             return store.getState().systemReducer.pageRouteData[key];
         }
         return "";
     }
 
-    setTrashedUserData(data :any) {
+    setTrashedUserData(data: any) {
         store.dispatch(action.setTrashedUserData(data));
     }
 
@@ -159,17 +159,23 @@ export default class AuthSessionService{
         return store.getState().systemReducer.trashedUserData ?? false;
     }
 
-    async setDeviceToken(token :string) {
+    async setDeviceToken(token: string) {
+        token = token.replace(/"/g, '');
         store.dispatch(action.setFirebaseDeviceToken(token));
         await AsyncStorage.setItem("deviceToken", JSON.stringify(token));
     }
 
-    async getDeviceToken() : Promise<string | null> {
-        return await AsyncStorage.getItem("deviceToken");
+    async getDeviceToken(): Promise<string | null> {
+        let key = await AsyncStorage.getItem("deviceToken");
+        if (key) {
+            key = key.replace(/"/g, '');
+        }
+        store.dispatch(action.setFirebaseDeviceToken(key));
+        return key;
     }
 
-    async saveHomePageData(key : string, data : string) {
-        if(key === "supermarket") {
+    async saveHomePageData(key: string, data: string) {
+        if (key === "supermarket") {
             store.dispatch(action.setSuperMarketHomeData(data))
         } else {
             store.dispatch(action.setWholeSalesHomeData(data))
@@ -177,7 +183,7 @@ export default class AuthSessionService{
         await AsyncStorage.setItem(key, data);
     }
 
-    async getHomePageData(key : string) : Promise<string | null> {
+    async getHomePageData(key: string): Promise<string | null> {
         return await AsyncStorage.getItem(key);
     }
 }

@@ -3,9 +3,12 @@ import notifee, {AndroidImportance, TimestampTrigger, TriggerType} from '@notife
 export async function scheduleNotification(notificationId : number, drugName : string, dosage : string , measurement : string, dateTime : string|number, extra : any, environment : string, notificationType : string) {
 
     const channelId =  await notifee.createChannel({
-        id: 'med_reminder_notification',
-        name: 'Medication Reminder',
+        id: 'psgdc_high_priority_v1',
+        name: 'PSGDC Notifications',
         importance: AndroidImportance.HIGH,
+        sound: 'medication_reminder',
+        vibration: true,
+        vibrationPattern: [500, 500, 500, 500, 500, 500],
     });
 
     // Convert dateTime to timestamp
@@ -31,16 +34,17 @@ export async function scheduleNotification(notificationId : number, drugName : s
             android: {
                 channelId: channelId,
                 importance: AndroidImportance.HIGH,
-                // @ts-ignore
-                fullScreenIntent: true,
-                sound: 'default',
-                vibrationPattern: [500, 1000, 500, 1000],
+                sound: 'medication_reminder',
+                vibrationPattern: [500, 500, 500, 500, 500, 500],
                 smallIcon: 'ic_launcher',
                 largeIcon: require('@/assets/images/logo.png'),
                 pressAction: {
                     id: 'default',
                 },
             },
+            ios: {
+                sound: 'medication_reminder.wav',
+            }
         },
         trigger
     );

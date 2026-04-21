@@ -11,7 +11,8 @@ import {
     StyleSheet,
     Dimensions,
     Pressable,
-    Alert
+    Alert,
+    Keyboard
 } from 'react-native';
 import { normalize } from "@/shared/helpers";
 import { currencyType } from "@/shared/constants/global";
@@ -37,10 +38,11 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface ProductList {
     visible: boolean;
-    product: ProductListInterface | Data | undefined,
+    product: ProductListInterface | Data | undefined;
+    onClose: (visible: boolean) => void;
 }
 
-const ProductDialog = ({ visible, product }: ProductList) => {
+const ProductDialog = ({ visible, product, onClose }: ProductList) => {
     const { isDarkMode } = useDarkMode();
     const [buyNowQuantity, setBuyNowQuantity] = useState(1);
     const [buyNowLoading, setBuyNowLoading] = useState(false);
@@ -59,13 +61,13 @@ const ProductDialog = ({ visible, product }: ProductList) => {
             Animated.parallel([
                 Animated.timing(fadeAnim, {
                     toValue: 1,
-                    duration: 300,
+                    duration: 150,
                     useNativeDriver: true,
                 }),
                 Animated.spring(slideAnim, {
                     toValue: 0,
-                    friction: 8,
-                    tension: 50,
+                    friction: 6,
+                    tension: 100,
                     useNativeDriver: true,
                 })
             ]).start();
@@ -86,21 +88,9 @@ const ProductDialog = ({ visible, product }: ProductList) => {
     }, [visible]);
 
     const handleClose = useCallback(() => {
-        Animated.parallel([
-            Animated.timing(fadeAnim, {
-                toValue: 0,
-                duration: 250,
-                useNativeDriver: true,
-            }),
-            Animated.timing(slideAnim, {
-                toValue: SCREEN_HEIGHT,
-                duration: 250,
-                useNativeDriver: true,
-            })
-        ]).start(() => {
-            store.dispatch(action.setProductDialogData(undefined));
-        });
-    }, [fadeAnim, slideAnim]);
+        Keyboard.dismiss();
+        onClose(false);
+    }, [onClose]);
 
     const navigateTo = () => {
         // @ts-ignore
@@ -136,6 +126,7 @@ const ProductDialog = ({ visible, product }: ProductList) => {
             console.log(response);
             if (response.data.status === true) {
                 Toasts('Item added to cart!');
+                store.dispatch(action.notifyCartUpdated());
                 handleClose();
             }
             setAddToCartLoading(false);
@@ -208,8 +199,8 @@ const ProductDialog = ({ visible, product }: ProductList) => {
                     >
                         <View style={styles.indicator} />
 
-                        <TouchableOpacity style={styles.closeBtn} onPress={handleClose}>
-                            <Icon icon={iconClose} customStyles={{ tintColor: isDarkMode ? '#FFF' : '#333', width: normalize(20), height: normalize(20) }} />
+                        <TouchableOpacity style={styles.closeBtn} onPress={handleClose} activeOpacity={0.7} hitSlop={{top: 30, bottom: 30, left: 30, right: 30}}>
+                            <Icon icon={iconClose} customStyles={{ tintColor: isDarkMode ? '#FFF' : '#333', width: normalize(32), height: normalize(32) }} />
                         </TouchableOpacity>
 
                         <View style={styles.content}>
@@ -245,6 +236,13 @@ const ProductDialog = ({ visible, product }: ProductList) => {
                                             {product?.quantity} In Stock
                                         </Typography>
                                     </View>
+                                    {product?.carton !== undefined && product.carton > 1 && !Environment.isSuperMarketEnvironment() && (
+                                        <View style={[styles.tag, { backgroundColor: '#334155' }]}>
+                                            <Typography style={[styles.tagText, { color: '#FFF' }]}>
+                                                {product.carton} / Carton
+                                            </Typography>
+                                        </View>
+                                    )}
                                     {product?.expiry_date && (
                                         <View style={[styles.tag, { backgroundColor: isDarkMode ? semantic.fill.f02 : '#F8FAFC' }]}>
                                             <Typography style={[styles.tagText, { color: isDarkMode ? '#94A3B8' : '#475569' }]}>

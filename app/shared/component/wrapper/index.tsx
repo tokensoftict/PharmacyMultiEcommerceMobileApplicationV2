@@ -10,6 +10,7 @@ import useEffectOnce from "@/shared/hooks/useEffectOnce.tsx";
 import {store} from "@/redux/store/store.tsx";
 import {SafeAreaView} from "react-native-safe-area-context";
 import Environment from "@/shared/utils/Environment.tsx";
+import * as action from "@/redux/actions";
 
 interface WrapperProps {
     children: React.ReactNode;
@@ -39,6 +40,10 @@ export default function Wrapper({
         });
     }, []);
 
+    const handleClose = () => {
+        store.dispatch(action.setProductDialogData(undefined));
+    };
+
     return (
         Environment.checkForImpersonateCustomerData() ?
             <View style={{flex : 1,  backgroundColor: semantic.background.white.w101}}>
@@ -63,7 +68,7 @@ export default function Wrapper({
                         keyboardVerticalOffset={Platform.OS === "ios" ? normalize(50) : 0} // adjust if needed
                     >
                         <View style={{backgroundColor : semantic.background.white.w101, flex : 1, width : '100%', height : '100%'}}>
-                            <AddToCartDialog product={addToCartProduct}/>
+                            <AddToCartDialog product={addToCartProduct} onClose={handleClose} />
                             <OverlayLoader loading={loading} title={""} height={overlayLoaderHeight}/>
                             <ScrollView
                                 refreshControl={

@@ -10,7 +10,8 @@ import {
     Animated,
     Dimensions,
     Pressable,
-    StyleSheet
+    StyleSheet,
+    Keyboard
 } from "react-native";
 import Typography from "@/shared/component/typography";
 import { currencyType } from "@/shared/constants/global";
@@ -25,6 +26,8 @@ import { close as iconClose, trash, white_shopping_cart } from "@/assets/icons";
 import Icon from "@/shared/component/icon";
 import { FONT } from '@/shared/constants/fonts';
 import useDarkMode from "@/shared/hooks/useDarkMode";
+import { store } from "@/redux/store/store";
+import * as action from "@/redux/actions";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -108,21 +111,9 @@ export default function UpdateCartDialog({ product, onClose, visible, onCartUpda
     }, [visible, product?.cart_quantity]);
 
     const handleClose = useCallback(() => {
-        Animated.parallel([
-            Animated.timing(fadeAnim, {
-                toValue: 0,
-                duration: 250,
-                useNativeDriver: true,
-            }),
-            Animated.timing(slideAnim, {
-                toValue: SCREEN_HEIGHT,
-                duration: 250,
-                useNativeDriver: true,
-            })
-        ]).start(() => {
-            onClose(false);
-        });
-    }, [fadeAnim, slideAnim, onClose]);
+        Keyboard.dismiss();
+        onClose(false);
+    }, [onClose]);
 
     function removeProduct() {
         setRemoveProductLoading(true);
@@ -130,6 +121,7 @@ export default function UpdateCartDialog({ product, onClose, visible, onCartUpda
             setRemoveProductLoading(false);
             if (response.data.status === true) {
                 Toasts("Product removed successfully");
+                store.dispatch(action.notifyCartUpdated());
                 handleClose();
                 onCartUpdated();
             } else {
@@ -145,6 +137,7 @@ export default function UpdateCartDialog({ product, onClose, visible, onCartUpda
             cartService.add(product?.id, addToCartQuantity, true, selectedOptions).then((response) => {
                 if (response.data.status === true) {
                     Toasts('Cart updated successfully!');
+                    store.dispatch(action.notifyCartUpdated());
                     handleClose();
                     onCartUpdated();
                 }
@@ -183,8 +176,8 @@ export default function UpdateCartDialog({ product, onClose, visible, onCartUpda
                     >
                         <View style={styles.indicator} />
                         
-                        <TouchableOpacity style={styles.closeBtn} onPress={handleClose}>
-                            <Icon icon={iconClose} customStyles={{ tintColor: isDarkMode ? '#FFF' : '#333', width: normalize(20), height: normalize(20) }} />
+                        <TouchableOpacity style={styles.closeBtn} onPress={handleClose} activeOpacity={0.7} hitSlop={{top: 30, bottom: 30, left: 30, right: 30}}>
+                            <Icon icon={iconClose} customStyles={{ tintColor: isDarkMode ? '#FFF' : '#333', width: normalize(32), height: normalize(32) }} />
                         </TouchableOpacity>
 
                         <View style={styles.content}>

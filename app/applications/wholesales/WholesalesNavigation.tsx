@@ -1,4 +1,5 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import RoutesTab from "@/shared/routes/wholesalestab";
 import ImpersonateTab from "@/shared/routes/impersonater_wholesalestab";
 import Typography from "@/shared/component/typography";
@@ -14,6 +15,7 @@ import Environment from "@/shared/utils/Environment.tsx";
 const Tab = createBottomTabNavigator();
 
 export default function WholesalesNavigation() {
+    const insets = useSafeAreaInsets();
 
     let tab = RoutesTab;
     if (Environment.checkForImpersonateCustomerData()) {
@@ -25,7 +27,15 @@ export default function WholesalesNavigation() {
         <Tab.Navigator
             screenOptions={({ route }) => ({
                 headerShown: false,
-                tabBarStyle: styles.tabBar,
+                tabBarStyle: [
+                    styles.tabBar,
+                    {
+                        height: Platform.OS === 'ios'
+                            ? normalize(80) + (insets.bottom > 0 ? normalize(5) : 0)
+                            : normalize(55) + insets.bottom,
+                        paddingBottom: Platform.OS === 'ios' ? normalize(30) : insets.bottom,
+                    }
+                ],
                 tabBarItemStyle: styles.tabBarItem,
                 tabBarShowLabel: true,
             })}
@@ -65,12 +75,11 @@ export default function WholesalesNavigation() {
 const styles = StyleSheet.create({
     tabBar: {
         backgroundColor: '#FFFFFF',
-        position: 'absolute',
+
         borderTopWidth: 1,
         borderTopColor: 'rgba(0,0,0,0.05)',
         elevation: 10,
-        height: Platform.OS === 'ios' ? normalize(88) : normalize(60),
-        paddingBottom: Platform.OS === 'ios' ? normalize(30) : 0,
+        // height and paddingBottom are now handled dynamically in screenOptions
         paddingTop: 0,
         ...Platform.select({
             ios: {

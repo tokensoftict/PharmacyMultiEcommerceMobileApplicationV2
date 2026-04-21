@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import Animated, {
@@ -7,6 +7,8 @@ import Animated, {
     interpolate,
     runOnJS,
     useAnimatedStyle,
+    withRepeat,
+    withTiming,
 } from "react-native-reanimated";
 import { palette, semantic } from "@/shared/constants/colors.ts";
 import { normalize } from "@/shared/helpers";
@@ -16,6 +18,7 @@ import { FONT } from "@/shared/constants/fonts";
 import useDarkMode from "@/shared/hooks/useDarkMode";
 import Icon from "@/shared/component/icon";
 import { arrowForward } from "@/assets/icons";
+import LinearGradient from "react-native-linear-gradient";
 
 const { width } = Dimensions.get("window");
 const SWIPE_WIDTH = width * 0.85;
@@ -25,8 +28,17 @@ const SWIPE_THRESHOLD = SWIPE_WIDTH - BUTTON_WIDTH;
 // @ts-ignore
 const SwipeToComplete = ({ swipedAndCompleteOrder }) => {
     const translateX = useSharedValue(0);
+    const shimmerX = useSharedValue(-SWIPE_WIDTH);
     const { isDarkMode } = useDarkMode();
     const { checkoutButton } = useGlobal();
+
+    useEffect(() => {
+        shimmerX.value = withRepeat(
+            withTiming(SWIPE_WIDTH, { duration: 2500 }),
+            -1,
+            false
+        );
+    }, []);
 
     const completeOrder = () => {
         setTimeout(() => {
@@ -81,12 +93,28 @@ const SwipeToComplete = ({ swipedAndCompleteOrder }) => {
         };
     });
 
+    const shimmerStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ translateX: shimmerX.value }],
+        };
+    });
+
     return (
         <View style={[styles.container, { opacity: checkoutButton ? 1 : 0 }]}>
+            <Typography style={styles.description}>Almost done! Swipe to complete your order</Typography>
             <View style={styles.swipeContainer}>
                 <View style={[styles.track, { backgroundColor: isDarkMode ? semantic.fill.f03 : '#F1F5F9' }]}>
                     <Animated.View style={[styles.activeTrack, activeTrackStyle]} />
                     
+                    <Animated.View style={[styles.shimmerBox, shimmerStyle]}>
+                        <LinearGradient
+                            colors={['transparent', 'rgba(255,255,255,0.4)', 'transparent']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={StyleSheet.absoluteFill}
+                        />
+                    </Animated.View>
+
                     <Animated.View style={[styles.labelWrapper, labelStyle]}>
                         <Typography style={styles.label}>Swipe to Confirm Order</Typography>
                     </Animated.View>
@@ -114,6 +142,13 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: 'transparent',
     },
+    description: {
+        fontSize: normalize(14),
+        fontFamily: FONT.MEDIUM,
+        color: semantic.alert.danger.d500,
+        marginBottom: normalize(16),
+        textAlign: 'center',
+    },
     swipeContainer: {
         width: SWIPE_WIDTH,
         height: normalize(64),
@@ -126,6 +161,12 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         position: "relative",
         overflow: "hidden",
+    },
+    shimmerBox: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        width: normalize(100),
     },
     activeTrack: {
         position: 'absolute',

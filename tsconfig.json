@@ -7,7 +7,6 @@
     "paths": {
       "@/*": ["*"],
       "@env": ["app/@types/react-native-dotenv.d.ts"]
-    },
-    "include": ["app"]
+    }
   }
 }

@@ -1,18 +1,22 @@
 import AuthSessionService from "../../../service/auth/AuthSessionService";
-import EnvironmentRequest, {EnvironmentRequestInterface} from "@/network/internet/EnvironmentRequest.tsx";
+import EnvironmentRequest, { EnvironmentRequestInterface } from "@/network/internet/EnvironmentRequest.tsx";
 
 export default class ProductService {
 
-    request : EnvironmentRequestInterface
-    authSessionService : AuthSessionService
+    request: EnvironmentRequestInterface
+    authSessionService: AuthSessionService
 
     constructor() {
         this.request = new EnvironmentRequest().getRequest();
         this.authSessionService = new AuthSessionService();
     }
 
-    getProduct(product_id : number){
-        return this.request.get("stock/"+product_id+"/show");
+    getProduct(product_id: number) {
+        return this.request.get("stock/" + product_id + "/show");
+    }
+
+    scanProduct(code: string) {
+        return this.request.get("stock/scan/" + code);
     }
 
 }

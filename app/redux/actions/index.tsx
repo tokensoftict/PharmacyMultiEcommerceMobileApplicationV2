@@ -70,3 +70,10 @@ export const setWholeSalesHomeData = (data:string) => (dispatch:any) => {
     payload: data,
   })
 }
+
+export const notifyCartUpdated = () => (dispatch:any) => {
+  dispatch({
+    type : actionTypes.CART_UPDATED,
+    payload: Date.now(),
+  })
+}

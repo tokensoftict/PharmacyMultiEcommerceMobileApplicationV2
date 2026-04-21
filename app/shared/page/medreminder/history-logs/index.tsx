@@ -1,21 +1,21 @@
-import React, {useCallback, useState} from 'react';
-import {styles} from "./styles"
+import React, { useCallback, useState } from 'react';
+import { styles } from "./styles"
 import dayjs from 'dayjs';
-import {palette, design} from "@/shared/constants/colors.ts";
-import {ActivityIndicator, Alert, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View} from "react-native";
+import { palette, design } from "@/shared/constants/colors.ts";
+import { ActivityIndicator, Alert, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Icon from "@/shared/component/icon";
-import {checkIcon, drug, history, medica} from "@/assets/icons";
+import { checkIcon, drug, history, medica } from "@/assets/icons";
 import Typography from "@/shared/component/typography";
-import {useFocusEffect, useNavigation} from "@react-navigation/native";
-import {NavigationProps} from "@/shared/routes/stack.tsx";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { NavigationProps } from "@/shared/routes/stack.tsx";
 import WeeklyCalendarStrip from "@/shared/component/WeeklyCalendarStrip";
 // import {CalendarProvider, WeekCalendar} from "react-native-calendars";
-import {MedReminderSchedules} from "@/service/medReminder/interface/MedReminderInterface.tsx";
+import { MedReminderSchedules } from "@/service/medReminder/interface/MedReminderInterface.tsx";
 import MedReminderService from "@/service/medReminder/MedReminderService.tsx";
 import Toastss from "@/shared/utils/Toast.tsx";
-import {normalize} from "@/shared/helpers";
+import { normalize } from "@/shared/helpers";
 import formatDate from "@/shared/utils/DateFormatter.ts";
-import {useLoading} from "@/shared/utils/LoadingProvider.tsx";
+import { useLoading } from "@/shared/utils/LoadingProvider.tsx";
 import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
 import HeaderWithIcon from "@/shared/component/headerBack";
 import LinearGradient from 'react-native-linear-gradient';
@@ -28,72 +28,61 @@ export default function HistoryLogs() {
     const [refreshLoading, setRefreshLoading] = useState<boolean>(false);
     const [medicationHistory, setMedicationHistory] = useState<MedReminderSchedules[]>([]);
     const [selectedDate, setSelectedDate] = useState(dayjs().format('YYYY-MM-DD'));
-    const {showLoading, hideLoading} = useLoading();
-    
-    function navigate(path : string, params = {}) {
+    const { showLoading, hideLoading } = useLoading();
+
+    function navigate(path: string, params = {}) {
         // @ts-ignore
         navigation.navigate(path, params);
     }
 
-    const loadTodayHistory = useCallback(() => {
-        setLoading(true);
-        (new MedReminderService()).loadTodayHistory("today-history").then((response) => {
+    const fetchHistory = useCallback((date: string, isRefresh: boolean = false) => {
+        if (isRefresh) setRefreshLoading(true);
+        else setLoading(true);
+
+        const service = new MedReminderService();
+        const promise = date === dayjs().format('YYYY-MM-DD')
+            ? service.loadTodayHistory("today-history")
+            : service.loadHistoryWithFilter(date);
+
+        promise.then((response) => {
             setLoading(false);
             setRefreshLoading(false);
             if (response.data.status === true) {
                 setMedicationHistory(response.data.data);
             } else {
                 setMedicationHistory([]);
-                Toastss("Failed to load medication schedules.");
+                Toastss(response.data.message || "Failed to load medication schedules.");
             }
         }).catch(() => {
             setLoading(false);
             setRefreshLoading(false);
+            Toastss("An error occurred while loading history.");
         });
     }, []);
 
-    const loadCustomHistory = function(dateString:string) {
-        setLoading(true);
-        setSelectedDate(dateString);
-        (new MedReminderService()).loadHistoryWithFilter(dateString).then((response) => {
-            setLoading(false);
-            setRefreshLoading(false);
-            if (response.data.status === true) {
-                setMedicationHistory(response.data.data);
-            } else {
-                setMedicationHistory([]);
-                Toastss("Failed to load history.");
-            }
-        }).catch(() => {
-            setLoading(false);
-            setRefreshLoading(false);
-        });
-    }
-
     useFocusEffect(
         useCallback(() => {
-            loadTodayHistory();
-        }, [loadTodayHistory])
+            fetchHistory(selectedDate);
+        }, [fetchHistory, selectedDate])
     );
 
     function refreshLoadingTrigger() {
-        setRefreshLoading(true);
-        loadTodayHistory();
+        fetchHistory(selectedDate, true);
     }
 
-    const makeScheduleHasTaken = function (schedule_id : number | string) {
+    const makeScheduleHasTaken = function (schedule_id: number | string) {
         Alert.alert('Confirm Action', 'Mark this medication as taken?', [
             { text: 'Cancel', style: 'cancel' },
-            { 
-                text: 'Yes, Taken', 
+            {
+                text: 'Yes, Taken',
                 onPress: () => {
-                    const updateData = { status : 'Completed' };
+                    const updateData = { status: 'Completed' };
                     showLoading("Updating...");
                     (new MedReminderService()).updateHistoryStatus(schedule_id, updateData).then((response) => {
                         hideLoading();
-                        if(response.data.status === true){
+                        if (response.data.status === true) {
                             Toastss("Updated successfully.");
-                            loadTodayHistory();
+                            fetchHistory(selectedDate);
                         }
                     })
                 }
@@ -114,13 +103,14 @@ export default function HistoryLogs() {
             </View>
 
             <HeaderWithIcon title="HISTORY LOGS" />
-            
+
             <View style={styles.container}>
                 <Animated.View entering={FadeInUp.duration(600)}>
-                     <WeeklyCalendarStrip 
+                    <WeeklyCalendarStrip
                         selectedDate={selectedDate}
                         onDateChange={(d) => {
-                            loadCustomHistory(d);
+                            setSelectedDate(d);
+                            fetchHistory(d);
                         }}
                     />
                 </Animated.View>
@@ -135,9 +125,9 @@ export default function HistoryLogs() {
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ paddingBottom: normalize(100) }}
                         refreshControl={
-                            <RefreshControl 
-                                refreshing={refreshLoading} 
-                                onRefresh={refreshLoadingTrigger} 
+                            <RefreshControl
+                                refreshing={refreshLoading}
+                                onRefresh={refreshLoadingTrigger}
                                 tintColor={palette.main.p500}
                                 colors={[palette.main.p500]}
                             />
@@ -156,8 +146,8 @@ export default function HistoryLogs() {
                                     <Icon icon={drug} width={normalize(40)} height={normalize(40)} tintColor="#94A3B8" />
                                 </View>
                                 <Typography style={styles.emptyStateText}>No schedule found for this date</Typography>
-                                <TouchableOpacity 
-                                    onPress={() => navigate('medReminderForm')} 
+                                <TouchableOpacity
+                                    onPress={() => navigate('medReminderForm')}
                                     style={styles.addMedicationButton}
                                     activeOpacity={0.8}
                                 >
@@ -173,11 +163,11 @@ export default function HistoryLogs() {
                             medicationHistory.map((medication, index) => {
                                 const taken = (medication.status !== "Pending" && medication.status !== "Cancelled");
                                 return (
-                                    <Animated.View 
-                                        key={medication.id} 
+                                    <Animated.View
+                                        key={medication.id}
                                         entering={FadeInDown.delay(index * 100).duration(600)}
                                     >
-                                        <TouchableOpacity 
+                                        <TouchableOpacity
                                             activeOpacity={0.7}
                                             style={styles.doseCard}
                                             onPress={() => navigate('viewReminder', { schedule: medication })}
@@ -193,7 +183,7 @@ export default function HistoryLogs() {
                                                         <Typography style={styles.timeText}>{medication.scheduled_at}</Typography>
                                                     </View>
                                                     <View style={styles.dot} />
-                                                    <Typography style={styles.dosageInfo}>{medication.dosage}mg</Typography>
+                                                    <Typography style={styles.dosageInfo}>{medication.dosage}{medication.dosage_form}</Typography>
                                                 </View>
                                             </View>
                                             {taken ? (

@@ -17,6 +17,7 @@ superMarketAxiosInstance.interceptors.request.use(async function (request) {
     if (userSession.loginStatus) {
         const token = userSession.data?.token;
         if (token) {
+            console.log(token.access_token);
             request.headers.Authorization = 'Bearer ' + token.access_token;
         }
     }

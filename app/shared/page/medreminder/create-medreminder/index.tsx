@@ -205,7 +205,7 @@ export default function MedReminderWizard() {
                             schedule.id,
                             schedule.drugName,
                             schedule.dosage,
-                            "mg",
+                            schedule.dosage_form,
                             // @ts-ignore
                             new Date(dayjs(schedule.js_date)).getTime() + index,
                             schedule,

@@ -40,6 +40,16 @@ export interface Token {
     access_token: string | undefined;
 }
 
+export interface MemberGroup {
+    id: number | undefined;
+    name: string | undefined;
+    label: string | undefined;
+    color: string | undefined;
+    bg_color: string | undefined;
+    card_gradient_start: string | undefined;
+    card_gradient_end: string | undefined;
+}
+
 export interface Data {
     id: number | undefined;
     name: string | undefined;
@@ -52,5 +62,22 @@ export interface Data {
     image: string | undefined;
     apps: Apps[] | undefined;
     token: Token | undefined;
-    dosageForms : any
+    dosageForms : any;
+    loyaltyPoints: number | undefined;
+    memberGroup: MemberGroup | undefined;
+    retailLoyaltyPoints: number | undefined;
+    retailMemberGroup: MemberGroup | undefined;
+    memberSince: string | undefined;
+    nextTierPoints: number | undefined;
+    retailNextTierPoints: number | undefined;
+    totalOrders: number | undefined;
+    retailtotalOrders: number | undefined;
+    totalSpend: number | undefined;
+    totalSpendFormatted: string | undefined;
+    retailTotalSpend: number | undefined;
+    retailTotalSpendFormatted: string | undefined;
+    progress: number | undefined;
+    retailProgress: number | undefined;
+    nextMemberGroup: string | undefined;
+    nextRetailMemberGroup: string | undefined;
 }

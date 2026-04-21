@@ -38,6 +38,8 @@ import StoreDialog from "@/shared/page/myaccount/contactus";
 import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
 import HeaderWithIcon from "@/shared/component/headerBack";
 import { cancelAllScheduledNotifications } from "@/shared/utils/ScheduleNotification.tsx";
+import { currencyType } from '@/shared/constants/global';
+import LinearGradient from 'react-native-linear-gradient';
 
 
 const QuickAction = ({ icon, label, subLabel, onPress }: any) => (
@@ -58,12 +60,29 @@ function MyAccount() {
     const [showContactUs, setShowContactUs] = useState<boolean>(false);
 
     // Hardcoded analytics for redesign appeal
-    const memberGroup = userProfile?.data?.memberGroup;
-    const loyaltyPoints = 2850;
-    const nextTierPoints = 5000;
-    const progress = (loyaltyPoints / nextTierPoints) * 100;
-    const totalOrders = 86;
-    const memberSince = "Oct 2023";
+    const isRetail = Environment.isSuperMarketEnvironment();
+    const memberGroup = isRetail ? userProfile?.data?.retailMemberGroup : userProfile?.data?.memberGroup;
+    const loyaltyPoints = (isRetail ? userProfile?.data?.retailLoyaltyPoints : userProfile?.data?.loyaltyPoints) ?? 0;
+    const nextTierPoints = (isRetail ? userProfile?.data?.retailNextTierPoints : userProfile?.data?.nextTierPoints) ?? 0;
+    const nextTierPointsFormatted = isRetail ? userProfile?.data?.retailNextTierPoints_formatted : userProfile?.data?.nextTierPoints_formatted;
+    const progress = (isRetail ? userProfile?.data?.retailProgress : userProfile?.data?.progress) ?? 0;
+    const totalOrders = userProfile?.data?.totalOrders ?? 0;
+    const memberSince = userProfile?.data?.memberSince ?? "N/A";
+    const nextMemberGroup = (isRetail ? userProfile?.data?.nextRetailMemberGroup : userProfile?.data?.nextMemberGroup) ?? "N/A";
+
+    const hasGradient = !!(memberGroup?.card_gradient_start && memberGroup?.card_gradient_end);
+    const cardColors = hasGradient
+        ? [memberGroup!.card_gradient_start!, memberGroup!.card_gradient_end!]
+        : ['#FFFFFF', '#FFFFFF'];
+
+    // Dynamic text colors for premium look
+    const textMainColor = hasGradient ? '#FFFFFF' : '#1A1D1E';
+    const textSubColor = hasGradient ? 'rgba(255, 255, 255, 0.9)' : '#6A6A6A';
+    const progressBg = hasGradient ? 'rgba(255, 255, 255, 0.35)' : '#F5F5F5';
+    const progressFill = hasGradient ? '#FFFFFF' : '#D50000';
+    const footerColor = hasGradient ? 'rgba(255, 255, 255, 0.85)' : '#9A9A9A';
+
+
 
     useFocusEffect(() => {
         setUserProfile(authService.getAuthSession);
@@ -268,7 +287,12 @@ function MyAccount() {
             <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
 
                 {/* Overlapping Profile Card */}
-                <View style={styles.profileCard}>
+                <LinearGradient
+                    colors={cardColors}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.profileCard}
+                >
                     <View style={styles.profileMain}>
                         <View style={styles.imageContainer}>
                             <Image
@@ -280,15 +304,15 @@ function MyAccount() {
                             </TouchableOpacity>
                         </View>
                         <View style={styles.infoContent}>
-                            <Typography style={styles.userName}>
+                            <Typography style={[styles.userName, { color: textMainColor }]}>
                                 {userProfile?.data?.firstname} {userProfile?.data?.lastname}
                             </Typography>
-                            <Typography style={styles.userPhone}>{userProfile?.data?.phone}</Typography>
+                            <Typography style={[styles.userPhone, { color: textSubColor }]}>{userProfile?.data?.phone}</Typography>
 
                             {
                                 memberGroup && (
-                                    <View style={[styles.groupBadge, { backgroundColor: memberGroup.bg_color }]}>
-                                        <Typography style={[styles.groupText, { color: memberGroup.color }]}>
+                                    <View style={[styles.groupBadge, { backgroundColor: hasGradient ? 'rgba(255, 255, 255, 0.2)' : memberGroup.bg_color }]}>
+                                        <Typography style={[styles.groupText, { color: textMainColor }]}>
                                             {memberGroup.label}
                                         </Typography>
                                     </View>
@@ -298,19 +322,19 @@ function MyAccount() {
                     </View>
 
                     {/* Loyalty Progress */}
-                    <View style={styles.loyaltyContainer}>
+                    <View style={[styles.loyaltyContainer, { borderTopColor: hasGradient ? 'rgba(255, 255, 255, 0.1)' : '#F0F0F0' }]}>
                         <View style={styles.loyaltyHeader}>
-                            <Typography style={styles.loyaltyTitle}>PS Loyalty Rewards</Typography>
-                            <Typography style={styles.pointsText}>{userProfile?.data?.loyaltyPoints ?? (0).toFixed(2)} PTS</Typography>
+                            <Typography style={[styles.loyaltyTitle, { color: textMainColor }]}>PS Loyalty Rewards</Typography>
+                            <Typography style={[styles.pointsText, { color: hasGradient ? '#FFFFFF' : '#D50000' }]}>{loyaltyPoints} PTS</Typography>
                         </View>
-                        {/* <View style={styles.progressBarBg}>
-                            <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
+                        <View style={[styles.progressBarBg, { backgroundColor: progressBg }]}>
+                            <View style={[styles.progressBarFill, { width: `${progress}%`, backgroundColor: progressFill }]} />
                         </View>
-                        <Typography style={styles.loyaltyFooter}>
-                            Earn {nextTierPoints - loyaltyPoints} more points to reach Platinum
-                        </Typography> */}
+                        <Typography style={[styles.loyaltyFooter, { color: footerColor }]}>
+                            Spend up to {currencyType}{nextTierPointsFormatted} and upgrade to {nextMemberGroup}
+                        </Typography>
                     </View>
-                </View>
+                </LinearGradient>
 
                 {/* Quick Actions Grid */}
                 <View style={styles.gridContainer}>

@@ -46,6 +46,7 @@ import IntroSlider from "@/applications/introSlider";
 import QrcodeScreen from "@/shared/page/qrcode";
 import Search from "@/shared/page/search";
 import FoodDeliveryHomeScreen from "@/applications/food_delivery/FoodDeliveryHomeScreen";
+import ScanShopScreen from "@/applications/scanShop/ScanShopScreen";
 
 export type RootStackParamList = {
     wholesales: undefined,
@@ -101,6 +102,7 @@ export type RootStackParamList = {
     search: undefined,
     loginWithOutPassword: undefined,
     food_delivery: undefined,
+    scanShop: undefined,
 }
 
 export type RouteItem = {
@@ -346,6 +348,11 @@ const RoutesStack: RouteItem[] = [
     {
         path: 'food_delivery',
         component: FoodDeliveryHomeScreen,
+        private: true
+    },
+    {
+        path: 'scanShop',
+        component: ScanShopScreen,
         private: true
     },
 ];

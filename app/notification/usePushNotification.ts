@@ -1,6 +1,6 @@
-import { PermissionsAndroid, Platform } from "react-native";
+import { PermissionsAndroid, Platform, Linking } from "react-native";
 import messaging from '@react-native-firebase/messaging';
-import notifee, { EventType } from "@notifee/react-native";
+import notifee, { AndroidImportance, EventType } from "@notifee/react-native";
 import AuthSessionService from "@/service/auth/AuthSessionService";
 import SpInAppUpdates, {
     IAUUpdateKind,
@@ -31,6 +31,8 @@ const requestUserPermission = async () => {
         if (!enabled) {
             return;
         }
+
+        await messaging().registerDeviceForRemoteMessages();
     }
 }
 
@@ -62,6 +64,9 @@ const checkForUpdate = async () => {
 const getToken = async () => {
     if (await new AuthSessionService().getDeviceToken() === null) {
         try {
+            if (Platform.OS === 'ios' && !messaging().isDeviceRegisteredForRemoteMessages) {
+                await messaging().registerDeviceForRemoteMessages();
+            }
             const token = await messaging().getToken();
             await new AuthSessionService().setDeviceToken(token);
             await messaging().subscribeToTopic("psgdc_notification");
@@ -122,6 +127,11 @@ export const handleNotification = (notification: any) => {
                 id: "new-arrivals"
             });
             break;
+        case "OPEN_URL":
+            if (notificationExtra.url || data.url) {
+                Linking.openURL(notificationExtra.url || data.url);
+            }
+            break;
     }
 };
 
@@ -129,8 +139,12 @@ export const setupNotificationListeners = () => {
     // 1. Foreground messaging (Firebase)
     messaging().onMessage(async remoteMessage => {
         const channelId = await notifee.createChannel({
-            id: 'default',
-            name: 'Default Channel',
+            id: 'psgdc_high_priority_v1',
+            name: 'PSGDC Notifications',
+            importance: AndroidImportance.HIGH,
+            sound: 'medication_reminder',
+            vibration: true,
+            vibrationPattern: [500, 500, 500, 500, 500, 500],
         });
 
         await notifee.displayNotification({
@@ -139,10 +153,17 @@ export const setupNotificationListeners = () => {
             data: remoteMessage.data,
             android: {
                 channelId,
+                importance: AndroidImportance.HIGH,
+                sound: 'medication_reminder',
+                vibrationPattern: [500, 500, 500, 500, 500, 500],
+                smallIcon: 'ic_launcher',
                 pressAction: {
                     id: 'default',
                 },
             },
+            ios: {
+                sound: 'medication_reminder.wav',
+            }
         });
     });
 
@@ -161,8 +182,14 @@ export const setupNotificationListeners = () => {
 
 export const bootUpApplication = async () => {
     // Fire and forget non-critical tasks
-    requestAllNotificationPermissions().catch(console.log);
-    getToken().catch(console.log);
+    if (Platform.OS === 'ios') {
+        // iOS requires permission and registration before token request
+        await requestAllNotificationPermissions().catch(console.log);
+        getToken().catch(console.log);
+    } else {
+        requestAllNotificationPermissions().catch(console.log);
+        getToken().catch(console.log);
+    }
     checkForUpdate().catch(console.log);
 
     const authService = new AuthSessionService();
