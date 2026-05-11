@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, TouchableOpacity, View, Alert } from "react-native";
+import { ActivityIndicator, Image, ScrollView, TouchableOpacity, View, Alert, Platform } from "react-native";
 import { _styles } from './styles'
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Header from "./components/header";
 import useDarkMode from "@/shared/hooks/useDarkMode";
 import Typography from "@/shared/component/typography";
@@ -18,6 +19,7 @@ import Toasts from "@/shared/utils/Toast";
 import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
 import CartService from "@/service/cart/CartService";
 import Environment from "@/shared/utils/Environment";
+import { useGlobal } from "@/shared/helpers/GlobalContext.tsx";
 import HeaderWithIcon from "@/shared/component/headerBack";
 import { normalize } from "@/shared/helpers";
 import { FONT } from '@/shared/constants/fonts';
@@ -29,6 +31,7 @@ export default function DetailProduct() {
     const route = useRoute();
     const { isDarkMode } = useDarkMode()
     const styles = _styles(isDarkMode)
+    const insets = useSafeAreaInsets();
     const [isLoading, setIsLoading] = useState(false);
     const productService = new ProductService();
     const [productInformation, setProductInformation] = useState<ProductInformationInterface>();
@@ -102,10 +105,14 @@ export default function DetailProduct() {
         });
     }
 
+    const { setCartCount, setCartTotal } = useGlobal();
+
     function handleBuyNow(acceptDependent: boolean = false) {
         setBuyNowLoading(true);
         cartService.add(productInformation?.data?.id, buyNowQuantity, acceptDependent, selectedOptions).then((response: any) => {
             if (response.data.status === true) {
+                setCartCount(response.data.data?.meta?.noItems || 0);
+                setCartTotal(response.data.data?.meta?.totalItemsInCarts_formatted || "0.00");
                 navigateTo();
             }
             setBuyNowLoading(false);
@@ -130,6 +137,8 @@ export default function DetailProduct() {
         setAddToCartLoading(true);
         cartService.add(productInformation?.data.id, addToCartQuantity, acceptDependent, selectedOptions).then((response) => {
             if (response.data.status === true) {
+                setCartCount(response.data.data?.meta?.noItems || 0);
+                setCartTotal(response.data.data?.meta?.totalItemsInCarts_formatted || "0.00");
                 Toasts('Item has been added to cart Successfully!');
             }
         }).catch(() => {
@@ -369,7 +378,7 @@ export default function DetailProduct() {
                     </View>
                 </ScrollView>
 
-                <View style={styles.footer}>
+                <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom + normalize(10) : (Platform.OS === 'ios' ? normalize(34) : normalize(20)) }]}>
                     {(productInformation?.data.store.quantity ?? 0) > 0 ? (
                         <>
                             <View style={styles.quantityRow}>

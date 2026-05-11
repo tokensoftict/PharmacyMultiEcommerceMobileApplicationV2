@@ -15,8 +15,9 @@ import { semantic } from "@/shared/constants/colors";
 interface ProductList {
     product: Items | undefined,
     onPress: (product: Items | undefined) => void,
+    error?: string,
 }
-function CartItemHorizontalList({ product, onPress }: ProductList) {
+function CartItemHorizontalList({ product, onPress, error }: ProductList) {
     const { isDarkMode } = useDarkMode()
     const styles = _styles(isDarkMode)
     const [cant, setCant] = useState(1)
@@ -31,7 +32,7 @@ function CartItemHorizontalList({ product, onPress }: ProductList) {
     return (
         <TouchableOpacity
             onPress={() => !product?.is_dependent && onPress(product)}
-            style={styles.container}
+            style={[styles.container, error && { borderColor: semantic.alert.danger.d500, borderWidth: 1 }]}
             activeOpacity={product?.is_dependent ? 1 : 0.7}
         >
             <View style={[styles.innerContainer, product?.is_dependent && styles.linkedContainer]}>
@@ -82,6 +83,12 @@ function CartItemHorizontalList({ product, onPress }: ProductList) {
                             <Typography style={styles.category}>{product?.quantity} Available</Typography>
                             <Typography style={styles.expiry}>Exp : {product?.expiry_date ?? "N/A"}</Typography>
                         </View>
+
+                        {error && (
+                            <Typography style={{ color: semantic.alert.danger.d500, fontFamily: FONT.BOLD, fontSize: normalize(12), marginTop: normalize(4) }}>
+                                {error}
+                            </Typography>
+                        )}
 
                         {product?.is_dependent && (
                             <Typography style={styles.dependentNote}>* Mandatory item linked to parent</Typography>

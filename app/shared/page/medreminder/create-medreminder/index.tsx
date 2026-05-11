@@ -175,7 +175,7 @@ export default function MedReminderWizard() {
                                 const number: number = index + 1;
                                 const key = ordinalSuffix(number) + " Does Time";
                                 let object: any = {};
-                                object[key] = item.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                object[key] = item.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
                                 formattedSchedule.push(object)
                             }
                         });
@@ -563,7 +563,7 @@ export default function MedReminderWizard() {
                 </TouchableOpacity>
             </View>
 
-            <SearchDialog visible={isVisible} onClose={openSearchDialog} onItemSelected={onItemDrugSelected} />
+            <SearchDialog visible={isVisible} onClose={openSearchDialog} onItemSelected={onItemDrugSelected} storeType="PHARMACY" />
 
             {/* Medication Type Sheet */}
             <ButtonSheet onClose={() => triggerOpenMedicationTypeDialog(false)} dispatch={openMedicationTypeDialog} height={normalize(280)}>

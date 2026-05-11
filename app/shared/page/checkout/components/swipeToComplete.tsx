@@ -100,7 +100,10 @@ const SwipeToComplete = ({ swipedAndCompleteOrder }) => {
     });
 
     return (
-        <View style={[styles.container, { opacity: checkoutButton ? 1 : 0 }]}>
+        <View 
+            pointerEvents={checkoutButton ? "auto" : "none"}
+            style={[styles.container, { opacity: checkoutButton ? 1 : 0.5 }]}
+        >
             <Typography style={styles.description}>Almost done! Swipe to complete your order</Typography>
             <View style={styles.swipeContainer}>
                 <View style={[styles.track, { backgroundColor: isDarkMode ? semantic.fill.f03 : '#F1F5F9' }]}>

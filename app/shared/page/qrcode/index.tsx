@@ -15,7 +15,7 @@ export default function QrcodeScreen() {
     const [isLoading, setIsLoading] = useState(false);
 
     const screenWidth = Dimensions.get('window').width;
-    const qrSize = screenWidth * 0.65;
+    const qrSize = screenWidth * 0.8;
     const session = new AuthSessionService();
     const user = session.getAuthSession();
     const qrCodeService = new QrCodeService();
@@ -81,7 +81,7 @@ export default function QrcodeScreen() {
                             <View style={styles.scanNote}>
                                 <Typography style={styles.scanTitle}>ID: {user?.data?.id}</Typography>
                                 <Typography style={styles.scanSub}>
-                                    Present this QR code at checkout for quick identity verification and rewards.
+                                    Present this QR code at checkout for quick identity verification and rewards. Increase screen brightness for better scanning.
                                 </Typography>
                             </View>
                         </View>

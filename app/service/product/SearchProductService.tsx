@@ -38,6 +38,7 @@ export default class SearchProductService {
                 'admin_status',
                 'description',
                 'name',
+                'store_type'
             ]);
             // Add sortable attributes for quantity
             await this.meiliSearchIndex.updateSortableAttributes([
@@ -49,17 +50,21 @@ export default class SearchProductService {
         }
     }
 
-    async query(query: string, page: number = 1, limit: number = 21) {
+    async query(query: string, page: number = 1, limit: number = 21, storeType: string | null = null) {
         try {
             const authSession = this.authSessionService.getAuthSession();
             const searchEngine = authSession?.systemSettings?.searchEngine || "APISEARCH";
             if (searchEngine === "APISEARCH") {
-                return await this.apiSearch(query, page, limit);
+                return await this.apiSearch(query, page, limit, storeType);
             }
 
             const filter = Environment.isWholeSalesEnvironment()
                 ? ['is_wholesales = true', 'admin_status = true', 'wholesales_status = true']
                 : ['admin_status = true', 'retail_status = true'];
+
+            if (storeType) {
+                filter.push(`store_type = ${storeType}`);
+            }
 
             const sort = Environment.isWholeSalesEnvironment()
                 ? ['wholesales.quantity:desc']
@@ -92,10 +97,14 @@ export default class SearchProductService {
         }
     }
 
-    async apiSearch(query: string, page: number = 1, limit: number = 21) {
+    async apiSearch(query: string, page: number = 1, limit: number = 21, storeType: string | null = null) {
         try {
             const request = new EnvironmentRequest().getRequest();
-            const response = await request.get(`stock/search?query=${query}&page=${page}&limit=${limit}`);
+            let url = `stock/search?query=${query}&page=${page}&limit=${limit}`;
+            if (storeType) {
+                url += `&store_type=${storeType}`;
+            }
+            const response = await request.get(url);
             if (response.data.status === true) {
                 return {
                     hits: response.data.data,

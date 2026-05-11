@@ -23,7 +23,8 @@ import {
 import { CommonActions, useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NavigationProps } from "@/shared/routes/stack.tsx";
 import React, { useState } from "react";
-import { View, Image, TouchableOpacity, Alert, ScrollView } from "react-native";
+import { View, Image, TouchableOpacity, Alert, ScrollView, Switch } from "react-native";
+import { useGlobal } from "@/shared/helpers/GlobalContext.tsx";
 import { styles } from './styles';
 import Icon from "@/shared/component/icon";
 import Typography from "@/shared/component/typography";
@@ -33,7 +34,7 @@ import Section from "@/shared/component/section";
 import Environment from "@/shared/utils/Environment.tsx";
 import LoginService from "@/service/auth/LoginService.tsx";
 import { useLoading } from "@/shared/utils/LoadingProvider.tsx";
-import { semantic } from "@/shared/constants/colors.ts";
+import { semantic, palette } from "@/shared/constants/colors.ts";
 import StoreDialog from "@/shared/page/myaccount/contactus";
 import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
 import HeaderWithIcon from "@/shared/component/headerBack";
@@ -92,7 +93,24 @@ function MyAccount() {
         setShowContactUs(status)
     }
 
+    const { 
+        isWholesalesFloatingCartEnabled, setWholesalesFloatingCartEnabled,
+        isSupermarketFloatingCartEnabled, setSupermarketFloatingCartEnabled
+    } = useGlobal();
+
     function getAccountMenu(section: string) {
+        const isFloatingCartEnabled = Environment.isWholeSalesEnvironment() 
+            ? isWholesalesFloatingCartEnabled 
+            : isSupermarketFloatingCartEnabled;
+
+        const toggleFloatingCart = (value: boolean) => {
+            if (Environment.isWholeSalesEnvironment()) {
+                setWholesalesFloatingCartEnabled(value);
+            } else {
+                setSupermarketFloatingCartEnabled(value);
+            }
+        };
+
         const menuItems = {
             general: [
                 {
@@ -142,10 +160,28 @@ function MyAccount() {
                 {
                     name: 'My Store Profile',
                     leftIcon: <Icon icon={storeprofile} />,
-                    onPress: () => navigate('storeProfile'),
+                    onPress: () => navigate('storePendingApproval'),
                 },
             ],
             applicationSettings: [
+                {
+                    name: 'Express Cart',
+                    leftIcon: <Icon icon={switch_icon} />,
+                    rightElement: (
+                        <Switch 
+                            value={isFloatingCartEnabled} 
+                            onValueChange={toggleFloatingCart}
+                            trackColor={{ false: "#E2E8F0", true: palette.main.p500 }}
+                            thumbColor={"#FFFFFF"}
+                            ios_backgroundColor="#E2E8F0"
+                            style={{ 
+                                transform: [{ scaleX: 0.65 }, { scaleY: 0.65 }],
+                                marginRight: normalize(-8)
+                            }}
+                        />
+                    ),
+                    onPress: () => toggleFloatingCart(!isFloatingCartEnabled),
+                },
                 {
                     name: 'Notifications',
                     leftIcon: <Icon icon={notification} />,

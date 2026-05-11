@@ -129,6 +129,16 @@ export default function Dsd({ callback, deliveryMethod = "", showDialog = false,
 
                     <View style={styles.totalCard}>
                         <Typography style={styles.totalLabel}>Delivery Total</Typography>
+                        {dsd?.is_free && (
+                            <Typography style={{
+                                fontSize: normalize(16),
+                                color: '#64748B',
+                                textDecorationLine: 'line-through',
+                                marginBottom: normalize(4)
+                            }}>
+                                {currencyType} {dsd?.original_total}
+                            </Typography>
+                        )}
                         <Typography style={styles.totalValue}>
                             {
                                 // @ts-ignore

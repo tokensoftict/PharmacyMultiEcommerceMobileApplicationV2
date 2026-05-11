@@ -18,10 +18,12 @@ import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
 import AuthSessionService from "@/service/auth/AuthSessionService.tsx";
 import Toasts from "@/shared/utils/Toast.tsx";
 import { palette } from "@/shared/constants/colors.ts";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get('window');
 
 export default function CreateAccount() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProps>()
 
   const [isPasswordShown, setIsPasswordShown] = useState(true);
@@ -164,8 +166,8 @@ export default function CreateAccount() {
           style={[styles.circle, { bottom: normalize(50), right: -normalize(60), backgroundColor: '#EFF6FF', width: normalize(200), height: normalize(200) }]} 
         />
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          <View style={styles.content}>
+        <ScrollView showsVerticalScrollIndicator={true} contentContainerStyle={styles.scrollContent}>
+          <View style={[styles.content, { paddingBottom: Math.max(insets.bottom, normalize(40)) }]}>
             <Animated.View 
               entering={FadeInUp.duration(800)}
               style={styles.header}

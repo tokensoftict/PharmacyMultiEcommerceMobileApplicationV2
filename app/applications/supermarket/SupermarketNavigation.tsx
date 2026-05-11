@@ -7,13 +7,25 @@ import Icon from "@/shared/component/icon";
 import { normalize } from "@/shared/helpers";
 import { Platform, StyleSheet } from "react-native";
 import { FONT } from "@/shared/constants/fonts.ts";
-import React from "react";
+import React, { useEffect } from "react";
+import { useGlobal } from "@/shared/helpers/GlobalContext.tsx";
+import CartService from "@/service/cart/CartService.tsx";
 
 
 const Tab = createBottomTabNavigator();
 
 export default function SupermarketNavigation() {
     const insets = useSafeAreaInsets();
+    const { cartCount, setCartCount, setCartTotal } = useGlobal();
+
+    useEffect(() => {
+        (new CartService()).get().then((response) => {
+            if (response.data.status === true) {
+                setCartCount(response.data.data?.meta?.noItems || 0);
+                setCartTotal(response.data.data?.meta?.totalItemsInCarts_formatted || "0.00");
+            }
+        });
+    }, []);
 
     return (
         <Tab.Navigator
@@ -38,6 +50,13 @@ export default function SupermarketNavigation() {
                     name={route.name}
                     component={route.component}
                     options={{
+                        tabBarBadge: route.name === 'myCart' && cartCount > 0 ? cartCount : undefined,
+                        tabBarBadgeStyle: {
+                            backgroundColor: semantic.alert.danger.d500,
+                            color: 'white',
+                            fontSize: normalize(10),
+                            marginTop: Platform.OS === 'ios' ? normalize(-2) : 0,
+                        },
                         tabBarLabel: ({ focused }) => (
                             <Typography
                                 style={[

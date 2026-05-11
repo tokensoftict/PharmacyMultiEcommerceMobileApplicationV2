@@ -193,7 +193,7 @@ function MainMenu() {
 
     return (
         <WrapperNoScrollNoDialogNoSafeArea loading={loading}>
-            <StatusBar backgroundColor="#F44336" barStyle="light-content" translucent={false} />
+            <StatusBar backgroundColor="#F44336" barStyle="light-content" translucent />
 
             <View style={styles.headerContainer}>
                 <View style={styles.headerTop}>
@@ -201,19 +201,7 @@ function MainMenu() {
                         <Typography style={styles.headerSubtitle}>{todayDate}</Typography>
                         <Typography style={styles.headerGreeting}>Medication Tracker</Typography>
                     </View>
-                    <TouchableOpacity
-                        onPress={() => {
-                            if (navigation.canGoBack()) {
-                                navigation.goBack();
-                            } else {
-                                // @ts-ignore
-                                navigation.navigate(Environment.getEnvironment());
-                            }
-                        }}
-                        style={styles.notificationButton}
-                    >
-                        <Icon icon={arrowBack} width={24} height={24} tintColor="white" />
-                    </TouchableOpacity>
+
                 </View>
             </View>
 

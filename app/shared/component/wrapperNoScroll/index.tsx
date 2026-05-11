@@ -54,7 +54,7 @@ export default function WrapperNoScroll({
             <StatusBar 
                 backgroundColor={transparent ? 'transparent' : (backgroundColorStatusBar || design.text1.background)} 
                 barStyle={barStyle || (transparent ? "dark-content" : "light-content")} 
-                translucent={transparent}
+                translucent
             />
             <SafeAreaView
                 edges={edges || ['top']}

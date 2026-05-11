@@ -21,6 +21,7 @@ import Counter from "@/shared/component/counter";
 import { palette, semantic } from "@/shared/constants/colors";
 import CartService from "@/service/cart/CartService";
 import Toasts from "@/shared/utils/Toast";
+import { useGlobal } from "@/shared/helpers/GlobalContext.tsx";
 import { useFocusEffect } from "@react-navigation/native";
 import { close as iconClose, trash, white_shopping_cart } from "@/assets/icons";
 import Icon from "@/shared/component/icon";
@@ -115,12 +116,16 @@ export default function UpdateCartDialog({ product, onClose, visible, onCartUpda
         onClose(false);
     }, [onClose]);
 
+    const { setCartCount, setCartTotal } = useGlobal();
+
     function removeProduct() {
         setRemoveProductLoading(true);
         cartService.remove(product.id).then((response) => {
             setRemoveProductLoading(false);
             if (response.data.status === true) {
                 Toasts("Product removed successfully");
+                setCartCount(response.data.data?.meta?.noItems || 0);
+                setCartTotal(response.data.data?.meta?.totalItemsInCarts_formatted || "0.00");
                 store.dispatch(action.notifyCartUpdated());
                 handleClose();
                 onCartUpdated();
@@ -137,6 +142,8 @@ export default function UpdateCartDialog({ product, onClose, visible, onCartUpda
             cartService.add(product?.id, addToCartQuantity, true, selectedOptions).then((response) => {
                 if (response.data.status === true) {
                     Toasts('Cart updated successfully!');
+                    setCartCount(response.data.data?.meta?.noItems || 0);
+                    setCartTotal(response.data.data?.meta?.totalItemsInCarts_formatted || "0.00");
                     store.dispatch(action.notifyCartUpdated());
                     handleClose();
                     onCartUpdated();

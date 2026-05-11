@@ -82,8 +82,8 @@ android {
         applicationId "com.tokensoftict.psgdc"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 113
-        versionName "1.13"
+        versionCode 114
+        versionName "1.14"
     }
     signingConfigs {
          release {

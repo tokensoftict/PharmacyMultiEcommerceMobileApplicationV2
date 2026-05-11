@@ -31,6 +31,7 @@ export default function Dwi({ callback, showDialog = false, extra = [], delivery
                 title: extra[key].name,
                 // @ts-ignore
                 price: extra[key].amount,
+                original_price: extra[key].original_amount,
                 active: false
             })
         }

@@ -4,6 +4,7 @@ import Typography from "../typography";
 import { _styles } from "./styles";
 import useDarkMode from "../../hooks/useDarkMode.tsx";
 import Radio from "../radio";
+import { normalize } from '@/shared/helpers';
 import { activeOpacity, currencyType } from "../../constants/global";
 import FormatCurrency from "@/shared/utils/FormatCurrency.tsx";
 
@@ -12,6 +13,7 @@ export interface ListOptions {
   title: string;
   active: boolean,
   price?: string,
+  original_price?: string,
   option?: any
 }
 interface ListItemOptionProps {
@@ -19,7 +21,7 @@ interface ListItemOptionProps {
   options: ListOptions[];
   onChange?: (value: ListOptions) => void
 }
- function ListItemOption({options, onChange, value}: ListItemOptionProps) {
+function ListItemOption({ options, onChange, value }: ListItemOptionProps) {
   const [currentOptions, setCurrentOptions] = useState(options);
   function handleChange(optionSelected: ListOptions) {
     if (onChange) {
@@ -43,7 +45,7 @@ interface ListItemOptionProps {
     <View>
       {currentOptions.map(option => {
         return (
-          <Option  callback={handleChange} key={option.title} option={option} />
+          <Option callback={handleChange} key={option.title} option={option} />
         )
       })}
     </View>
@@ -54,20 +56,34 @@ interface OptionProps {
   option: ListOptions;
   callback?: (option: ListOptions) => void
 }
-export function Option({option, callback}: OptionProps) {
-  const {isDarkMode} = useDarkMode()
+export function Option({ option, callback }: OptionProps) {
+  const { isDarkMode } = useDarkMode()
   const styles = _styles(isDarkMode, option.active)
   return (
-    <TouchableOpacity  activeOpacity={activeOpacity} onPress={() => callback ? callback(option) : null} style={styles.container}>
+    <TouchableOpacity activeOpacity={activeOpacity} onPress={() => callback ? callback(option) : null} style={styles.container}>
       <View style={styles.containerInfo}>
-        <View style={{flex: 0.9}}>
+        <View style={{ flex: 0.9 }}>
           <Typography style={styles.title}>{option.title}</Typography>
         </View>
       </View>
       <View style={styles.row}>
-        {option?.price && (
-          <Typography style={styles.price}>{currencyType}{FormatCurrency(option?.price) || ''}</Typography>
-        )}
+        <View style={{ flexDirection: 'column', alignItems: 'flex-end', marginRight: normalize(8) }}>
+          {option?.original_price && (
+            <Typography style={{
+              fontSize: normalize(12),
+              color: '#64748B',
+              textDecorationLine: 'line-through',
+              marginBottom: normalize(2)
+            }}>
+              {currencyType}{FormatCurrency(option?.original_price) || ''}
+            </Typography>
+          )}
+          {option?.price !== undefined && (
+            <Typography style={[styles.price, option?.original_price && parseFloat(option.price) === 0 && { color: '#22C55E' }]}>
+              {currencyType}{FormatCurrency(option?.price) || '0.00'}
+            </Typography>
+          )}
+        </View>
         <Radio active={option.active} />
       </View>
     </TouchableOpacity>

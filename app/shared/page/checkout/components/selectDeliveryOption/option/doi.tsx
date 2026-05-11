@@ -54,6 +54,7 @@ export default function Doi({ callback, deliveryMethod = "", showDialog = false,
                 title: extra[key].name,
                 // @ts-ignore
                 price: extra[key].amount,
+                original_price: extra[key].original_amount,
                 active: false,
                 // @ts-ignore
                 option: extra[key].option,

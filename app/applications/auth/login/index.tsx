@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Dimensions, Platform } from "react-native";
+import { View, Image, TouchableOpacity, StyleSheet, Dimensions, Platform, ScrollView } from "react-native";
 import Animated, { FadeInDown, FadeInUp, withDelay, withSpring, useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
 import TitleAuth from "@/shared/component/titleAuth";
@@ -17,10 +17,12 @@ import Toasts from "@/shared/utils/Toast.tsx";
 import { CommonActions } from "@react-navigation/native";
 import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
 import { palette } from "@/shared/constants/colors.ts";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width, height } = Dimensions.get('window');
 
 export default function Login({ navigation }: any) {
+  const insets = useSafeAreaInsets();
   const [isPasswordShown, setIsPasswordShown] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -122,7 +124,7 @@ export default function Login({ navigation }: any) {
           style={[styles.circle, { bottom: normalize(100), left: -normalize(60), backgroundColor: '#F0F9FF', width: normalize(200), height: normalize(200) }]} 
         />
 
-        <View style={styles.content}>
+        <ScrollView showsVerticalScrollIndicator={true} contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, normalize(40)) }]}>
           <Animated.View 
             entering={FadeInUp.duration(800)}
             style={styles.header}
@@ -205,7 +207,7 @@ export default function Login({ navigation }: any) {
               </TouchableOpacity>
             </View>
           </Animated.View>
-        </View>
+        </ScrollView>
       </View>
     </WrapperNoScroll>
   );
@@ -223,9 +225,10 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: normalize(24),
     justifyContent: 'center',
+    paddingVertical: normalize(40),
   },
   header: {
     alignItems: 'center',

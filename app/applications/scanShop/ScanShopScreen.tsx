@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useScanner } from './hooks/useScanner';
 import { ScannerView } from './components/ScannerView';
 import { CartList } from './components/CartList';
@@ -30,79 +31,80 @@ interface CartItem {
 }
 
 const ScanShopScreen = () => {
-    const { isDarkMode } = useDarkMode();
-    const [cartData, setCartData] = useState<CartInterface>();
-    const [isLoading, setIsLoading] = useState(false);
-    const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState<Items>();
+  const { isDarkMode } = useDarkMode();
+  const insets = useSafeAreaInsets();
+  const [cartData, setCartData] = useState<CartInterface>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Items>();
 
-    const productService = new ProductService();
-    const cartService = new CartService();
-    const navigation = useNavigation<NavigationProps>();
+  const productService = new ProductService();
+  const cartService = new CartService();
+  const navigation = useNavigation<NavigationProps>();
 
-    const dispatch = useDispatch<any>();
-    const cartUpdateToken = useSelector((state: any) => state.systemReducer.cartUpdateToken);
+  const dispatch = useDispatch<any>();
+  const cartUpdateToken = useSelector((state: any) => state.systemReducer.cartUpdateToken);
 
-    const loadCartItems = useCallback(() => {
-        const env = Environment.getEnvironment();
-        setIsLoading(true);
-        cartService.get().then((response) => {
-            setIsLoading(false);
-            if (response.data.status === true) {
-                setCartData(response.data);
-            }
-        }).catch((err) => {
-            console.log("Cart Load Error:", err);
-            setIsLoading(false);
-        });
-    }, []);
+  const loadCartItems = useCallback(() => {
+    const env = Environment.getEnvironment();
+    setIsLoading(true);
+    cartService.get().then((response) => {
+      setIsLoading(false);
+      if (response.data.status === true) {
+        setCartData(response.data);
+      }
+    }).catch((err) => {
+      console.log("Cart Load Error:", err);
+      setIsLoading(false);
+    });
+  }, []);
 
-    // Refresh cart when the cart update token changes
-    React.useEffect(() => {
-        if (cartUpdateToken > 0) {
-            loadCartItems();
-        }
-    }, [cartUpdateToken, loadCartItems]);
+  // Refresh cart when the cart update token changes
+  React.useEffect(() => {
+    if (cartUpdateToken > 0) {
+      loadCartItems();
+    }
+  }, [cartUpdateToken, loadCartItems]);
 
-    useFocusEffect(
-        useCallback(() => {
-            loadCartItems();
-        }, [loadCartItems])
-    );
+  useFocusEffect(
+    useCallback(() => {
+      loadCartItems();
+    }, [loadCartItems])
+  );
 
-    React.useEffect(() => {
-        const auth = store.getState().systemReducer.auth;
-        if (!auth || !auth.loginStatus) {
-            Toasts('Please login to use Scan & Shop');
-            navigation.replace('login');
-        }
-    }, [navigation]);
+  React.useEffect(() => {
+    const auth = store.getState().systemReducer.auth;
+    if (!auth || !auth.loginStatus) {
+      Toasts('Please login to use Scan & Shop');
+      navigation.replace('login');
+    }
+  }, [navigation]);
 
-    const handleScan = useCallback(async (code: string) => {
-        setIsLoading(true);
-        try {
-            const response = await productService.scanProduct(code);
-            if (response.data.status === true) {
-                const product = response.data.data;
-                // Show confirmation dialog via Redux
-                dispatch(action.setProductDialogData(product));
-            } else {
-                Toasts(response.data.error || 'Product not found');
-            }
-        } catch (error) {
-            Toasts('Failed to fetch product information');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [dispatch]);
+  const handleScan = useCallback(async (code: string) => {
+    setIsLoading(true);
+    try {
+      const response = await productService.scanProduct(code);
+      if (response.data.status === true) {
+        const product = response.data.data;
+        // Show confirmation dialog via Redux
+        dispatch(action.setProductDialogData(product));
+      } else {
+        Toasts(response.data.error || 'Product not found');
+      }
+    } catch (error) {
+      Toasts('Failed to fetch product information');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch]);
 
   const { device, hasPermission, codeScanner, isScanning } = useScanner(handleScan);
 
-    const onItemPress = (item: Items | undefined) => {
-        if (!item) return;
-        setSelectedProduct(item);
-        setIsUpdateModalVisible(true);
-    };
+  const onItemPress = (item: Items | undefined) => {
+    if (!item) return;
+    setSelectedProduct(item);
+    setIsUpdateModalVisible(true);
+  };
 
   // No longer blocking based on radius
   /*
@@ -126,8 +128,10 @@ const ScanShopScreen = () => {
 
   return (
     <WrapperNoScroll loading={isLoading} barStyle="light-content">
-      <View style={styles.container}>
-        <HeaderWithIcon title="SCAN & SHOP" />
+      <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 10), }]}>
+        <View style={{ zIndex: 10, backgroundColor: isDarkMode ? '#1A1D1E' : '#FFFFFF' }}>
+          <HeaderWithIcon title="SCAN & SHOP" />
+        </View>
 
         <ScannerView
           device={device}

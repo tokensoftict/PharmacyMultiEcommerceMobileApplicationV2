@@ -47,7 +47,7 @@ export default function Wrapper({
     return (
         Environment.checkForImpersonateCustomerData() ?
             <View style={{flex : 1,  backgroundColor: semantic.background.white.w101}}>
-                <StatusBar backgroundColor={design.text1.background} barStyle="light-content" />
+                <StatusBar backgroundColor={design.text1.background} barStyle="light-content" translucent />
                 <OverlayLoader loading={loading} title={""} height={overlayLoaderHeight} />
                 <ScrollView
                     refreshControl={
@@ -61,7 +61,7 @@ export default function Wrapper({
                     flex: 1,
                     backgroundColor : semantic.background.white.w101,
                 }}>
-                    <StatusBar backgroundColor={design.text1.background} barStyle="light-content" />
+                    <StatusBar backgroundColor={design.text1.background} barStyle="light-content" translucent />
                     <KeyboardAvoidingView
                         style={{ flex: 1 }}
                         behavior={Platform.OS === "ios" ? "padding" : undefined}

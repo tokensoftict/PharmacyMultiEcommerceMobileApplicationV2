@@ -19,4 +19,15 @@ export default class OrderService {
     get(orderId : any) {
         return this.request.get(`order/${orderId}/show`);
     }
+
+    uploadProofOfPayment(orderId: any, file: any) {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        return this.request.post(`order/${orderId}/upload-proof`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    }
 }

@@ -282,6 +282,7 @@ const CheckoutStepper = () => {
             </View>
             <OrderSuccessDialog
                 visible={modalVisible}
+                order={order}
                 onClose={closeModal}
                 onViewOrder={onViewOrder}
             />

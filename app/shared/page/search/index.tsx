@@ -17,6 +17,7 @@ import Input from "@/shared/component/input";
 import { normalize, storage } from "@/shared/helpers";
 import { palette } from "@/shared/constants/colors.ts";
 import { activeOpacity, currencyType } from "@/shared/constants/global.ts";
+import { FONT } from "@/shared/constants/fonts.ts";
 import SearchProductService from "@/service/product/SearchProductService.tsx";
 import { useNavigation } from "@react-navigation/native";
 import { NavigationProps } from "@/shared/routes/stack.tsx";
@@ -32,17 +33,19 @@ interface SearchDialogProps {
     visible?: boolean;
     onClose?: () => void;
     onItemSelected?: (item: any) => void;
+    storeType?: string | null;
 }
 
 const RECENT_SEARCHES_KEY = 'recent_searches_ps_gdc';
 
-export default function Search({ visible = true, onClose, onItemSelected }: SearchDialogProps) {
+export default function Search({ visible = true, onClose, onItemSelected, storeType = null }: SearchDialogProps) {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<any[]>([]);
     const [submittedResults, setSubmittedResults] = useState<any[]>([]);
     const [popularProducts, setPopularProducts] = useState<any[]>([]);
     const [recentSearches, setRecentSearches] = useState<string[]>([]);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const translateYAnim = useRef(new Animated.Value(-10)).current;
@@ -121,7 +124,7 @@ export default function Search({ visible = true, onClose, onItemSelected }: Sear
         else setFooterLoading(true);
 
         try {
-            const data = await meilisearch.query("Peace", page, 20);
+            const data = await meilisearch.query("Peace", page, 20, storeType);
 
             // Frontend sorting as a reliable secondary layer
             const env = Environment.isWholeSalesEnvironment() ? "wholesales" : "retail";
@@ -142,7 +145,7 @@ export default function Search({ visible = true, onClose, onItemSelected }: Sear
             setLoading(false);
             setFooterLoading(false);
         }
-    }, [popularProductLastPage]);
+    }, [popularProductLastPage, storeType]);
 
     const handleSearch = useCallback(async (searchQuery: string, page: number = 1) => {
         if (!searchQuery || searchQuery.length < 3) {
@@ -153,10 +156,13 @@ export default function Search({ visible = true, onClose, onItemSelected }: Sear
         setIsSubmitted(false);
         if (page > 1 && page > searchResultLastPage) return;
 
-        if (page === 1) setResults([]); // Clear previous instant results
+        if (page === 1) {
+            setResults([]);
+            setIsSearching(true);
+        }
 
         try {
-            const data = await meilisearch.query(searchQuery, page, 20);
+            const data = await meilisearch.query(searchQuery, page, 20, storeType);
             
             // Frontend sorting as a reliable secondary layer
             const env = Environment.isWholeSalesEnvironment() ? "wholesales" : "retail";
@@ -173,8 +179,10 @@ export default function Search({ visible = true, onClose, onItemSelected }: Sear
             setResults(prev => page === 1 ? sortedHits : [...prev, ...sortedHits]);
         } catch (error) {
             console.error("Instant search error:", error);
+        } finally {
+            setIsSearching(false);
         }
-    }, [searchResultLastPage]);
+    }, [searchResultLastPage, storeType]);
 
     const debouncedSearch = useCallback(_.debounce((val: string) => handleSearch(val, 1), 300), [handleSearch]);
 
@@ -194,7 +202,7 @@ export default function Search({ visible = true, onClose, onItemSelected }: Sear
         }
 
         try {
-            const data = await meilisearch.query(submitQuery, page, 20);
+            const data = await meilisearch.query(submitQuery, page, 20, storeType);
             
             // Frontend sorting as a reliable secondary layer
             const env = Environment.isWholeSalesEnvironment() ? "wholesales" : "retail";
@@ -215,7 +223,7 @@ export default function Search({ visible = true, onClose, onItemSelected }: Sear
             setLoading(false);
             setFooterLoading(false);
         }
-    }, [querySubmitLastPage, recentSearches]);
+    }, [querySubmitLastPage, recentSearches, storeType]);
 
     const navigateTo = (productId: string) => {
         // @ts-ignore
@@ -337,28 +345,40 @@ export default function Search({ visible = true, onClose, onItemSelected }: Sear
                     </ScrollView>
                 )}
 
-                {!loading && !isSubmitted && results.length > 0 && query.length >= 3 && (
+                {!loading && !isSubmitted && query.length >= 3 && (
                     <View style={styles.suggestionsList}>
-                        <Typography style={styles.sectionTitle}>SUGGESTIONS</Typography>
-                        <FlatList
-                            data={results}
-                            keyExtractor={(item, idx) => `sug-${item.id}-${idx}`}
-                            renderItem={({ item }) => {
-                                const info = item?.[Environment.isWholeSalesEnvironment() ? "wholesales" : "retail"] || {};
-                                const isOutOfStock = (info.quantity || 0) <= 0;
-                                return (
-                                    <TouchableOpacity
-                                        style={styles.suggestionItem}
-                                        onPress={() => { setQuery(item.name); handleQuerySubmit(item.name, 1); }}
-                                    >
-                                        <Icon icon={search} width={18} height={18} tintColor="#94A3B8" />
-                                        <Typography style={[styles.suggestionText, isOutOfStock && { color: '#94A3B8' }]}>
-                                            {item.name} {isOutOfStock && <Typography style={{ color: '#D50000', fontSize: normalize(10), fontWeight: '700' }}> (OUT OF STOCK)</Typography>}
-                                        </Typography>
-                                    </TouchableOpacity>
-                                );
-                            }}
-                        />
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: normalize(8) }}>
+                            <Typography style={styles.sectionTitle}>SUGGESTIONS</Typography>
+                            {isSearching && <ActivityIndicator size="small" color={palette.main.p500} />}
+                        </View>
+                        
+                        {!isSearching && results.length === 0 ? (
+                            <View style={{ paddingVertical: normalize(20), alignItems: 'center' }}>
+                                <Typography style={{ color: '#94A3B8', fontSize: normalize(14), fontFamily: FONT.REGULAR }}>
+                                    No suggestions found for "{query}"
+                                </Typography>
+                            </View>
+                        ) : (
+                            <FlatList
+                                data={results}
+                                keyExtractor={(item, idx) => `sug-${item.id}-${idx}`}
+                                renderItem={({ item }) => {
+                                    const info = item?.[Environment.isWholeSalesEnvironment() ? "wholesales" : "retail"] || {};
+                                    const isOutOfStock = (info.quantity || 0) <= 0;
+                                    return (
+                                        <TouchableOpacity
+                                            style={styles.suggestionItem}
+                                            onPress={() => { setQuery(item.name); handleQuerySubmit(item.name, 1); }}
+                                        >
+                                            <Icon icon={search} width={18} height={18} tintColor="#94A3B8" />
+                                            <Typography style={[styles.suggestionText, isOutOfStock && { color: '#94A3B8' }]}>
+                                                {item.name} {isOutOfStock && <Typography style={{ color: '#D50000', fontSize: normalize(10), fontWeight: '700' }}> (OUT OF STOCK)</Typography>}
+                                            </Typography>
+                                        </TouchableOpacity>
+                                    );
+                                }}
+                            />
+                        )}
                     </View>
                 )}
 

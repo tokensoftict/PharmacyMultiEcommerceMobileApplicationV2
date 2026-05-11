@@ -31,6 +31,7 @@ import { useGlobal } from "@/shared/helpers/GlobalContext.tsx";
 import CartService from "@/service/cart/CartService.tsx";
 import CartItemHorizontalList from "@/shared/component/cartItemHorizontalList";
 import UpdateCartDialog from "@/shared/component/updateCartDialog";
+import { Button } from "@/shared/component/buttons";
 
 export default function ConfirmCheckout({ onValidate }: { onValidate: (validateFn: () => Promise<boolean>) => void }) {
     const [isLoading, setIsLoading] = useState(false);
@@ -54,6 +55,9 @@ export default function ConfirmCheckout({ onValidate }: { onValidate: (validateF
     const [cartItemSelected, setCartItemSelected] = useState<any>();
 
     const { checkoutButton, setCheckoutButton } = useGlobal();
+    const [errorMessage, setErrorMessage] = useState("");
+    const [inventoryErrors, setInventoryErrors] = useState<any[]>([]);
+    const [inventoryErrorDialog, setInventoryErrorDialog] = useState(false);
     const [confirmOrderDetails, setConfirmOrderDetails] = useState<any>({
         'totalToPay': 0,
         'totalToPayFormatted': 0.0,
@@ -69,6 +73,8 @@ export default function ConfirmCheckout({ onValidate }: { onValidate: (validateF
     function loadConfirmOrder() {
         setIsLoading(true);
         setCheckoutButton(false);
+        setErrorMessage("");
+        setInventoryErrors([]);
         checkOutService.getConfirmOrder().then((response: any) => {
             if (response.data.status) {
                 setConfirmOrderDetails(response.data.data);
@@ -78,7 +84,18 @@ export default function ConfirmCheckout({ onValidate }: { onValidate: (validateF
                         setHasCoupon(item);
                     }
                 })
+            } else {
+                setErrorMessage(response.data.message || "The order could not be completed at this time.");
+                if (response.data.inventory_errors && response.data.inventory_errors.length > 0) {
+                    setInventoryErrors(response.data.inventory_errors);
+                    setInventoryErrorDialog(true);
+                }
+                setCheckoutButton(false);
             }
+            setIsLoading(false);
+        }).catch((error) => {
+            setErrorMessage("A network error occurred. Please try again.");
+            setCheckoutButton(false);
             setIsLoading(false);
         });
     }
@@ -373,6 +390,12 @@ export default function ConfirmCheckout({ onValidate }: { onValidate: (validateF
 
                 <View style={styles.card}>
                     <Typography style={styles.sectionTitle}>Payment Details</Typography>
+                    {errorMessage !== "" && (
+                        <View style={{ marginBottom: normalize(20) }}>
+                            <ErrorText style={{ marginBottom: normalize(12) }}>{errorMessage}</ErrorText>
+                            <Button title="Retry Loading" onPress={loadConfirmOrder} />
+                        </View>
+                    )}
                     {isLoading ? (
                         <ActivityIndicator size="large" color={semantic.alert.danger.d500} style={{ marginVertical: normalize(20) }} />
                     ) : (
@@ -382,9 +405,21 @@ export default function ConfirmCheckout({ onValidate }: { onValidate: (validateF
                                     {item?.id && <CheckBox onChange={() => toggleExtraTotal(item)} value={item.autoCheck} />}
                                     <Typography style={[styles.analysisLabel, !item?.id && { marginLeft: 0 }]}>{item.name}</Typography>
                                 </View>
-                                <Typography style={styles.analysisAmount}>
-                                    {currencyType} {item.amount_formatted}
-                                </Typography>
+                                <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+                                    {item?.is_free && (
+                                        <Typography style={{
+                                            fontSize: normalize(12),
+                                            color: '#64748B',
+                                            textDecorationLine: 'line-through',
+                                            marginBottom: normalize(2)
+                                        }}>
+                                            {currencyType} {item.original_amount_formatted}
+                                        </Typography>
+                                    )}
+                                    <Typography style={[styles.analysisAmount, item?.is_free && { color: '#22C55E' }]}>
+                                        {currencyType} {item.amount_formatted}
+                                    </Typography>
+                                </View>
                             </View>
                         ))
                     )}
@@ -497,13 +532,17 @@ export default function ConfirmCheckout({ onValidate }: { onValidate: (validateF
                             showsVerticalScrollIndicator={false}
                             contentContainerStyle={styles.cartListScroll}
                         >
-                            {(cartItemList?.data.items ?? []).map((item, index) => (
-                                <CartItemHorizontalList
-                                    key={index}
-                                    product={item}
-                                    onPress={onEditItem}
-                                />
-                            ))}
+                            {(cartItemList?.data.items ?? []).map((item, index) => {
+                                const invError = inventoryErrors.find(e => e.id === item.id);
+                                return (
+                                    <CartItemHorizontalList
+                                        key={index}
+                                        product={item}
+                                        onPress={onEditItem}
+                                        error={invError?.message}
+                                    />
+                                )
+                            })}
                         </ScrollView>
                     )}
                 </View>
@@ -515,6 +554,60 @@ export default function ConfirmCheckout({ onValidate }: { onValidate: (validateF
                 visible={openUpdateCartModal}
                 onClose={(status: boolean) => setOpenUpdateCartModal(status)}
             />
+
+            <ButtonSheet dispatch={inventoryErrorDialog} height={normalize(450)}>
+                <View style={styles.dialogContent}>
+                    <View style={styles.dialogHeader}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Icon icon={close} height={normalize(24)} tintColor={semantic.alert.danger.d500} />
+                            <Typography style={[styles.dialogTitle, { marginLeft: normalize(12), color: semantic.alert.danger.d500 }]}>Inventory Issue</Typography>
+                        </View>
+                        <TouchableOpacity onPress={() => setInventoryErrorDialog(false)}>
+                            <Icon icon={close} height={normalize(24)} tintColor={isDarkMode ? '#FFF' : '#000'} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <Typography style={{ fontSize: normalize(14), color: '#64748B', marginBottom: normalize(20) }}>
+                        Some items in your cart cannot be fulfilled with current stock. Please review and update your cart.
+                    </Typography>
+
+                    <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: normalize(220) }}>
+                        {inventoryErrors.map((err, idx) => (
+                            <View key={idx} style={{ 
+                                backgroundColor: isDarkMode ? semantic.fill.f03 : '#FFF1F2', 
+                                padding: normalize(16), 
+                                borderRadius: normalize(12), 
+                                marginBottom: normalize(12),
+                                borderLeftWidth: 4,
+                                borderLeftColor: semantic.alert.danger.d500
+                            }}>
+                                <Typography style={{ fontFamily: FONT.BOLD, fontSize: normalize(14), color: isDarkMode ? '#FFF' : '#1A1D1E' }}>{err.name}</Typography>
+                                <Typography style={{ fontSize: normalize(12), color: semantic.alert.danger.d500, marginTop: normalize(4) }}>{err.message}</Typography>
+                                <Typography style={{ fontSize: normalize(11), color: '#64748B', marginTop: normalize(4) }}>Available: {err.available} | Requested: {err.requested}</Typography>
+                            </View>
+                        ))}
+                    </ScrollView>
+
+                    <View style={{ flexDirection: 'row', gap: normalize(12), marginTop: normalize(20) }}>
+                        <TouchableOpacity 
+                            style={[styles.removeBtn, { flex: 1, backgroundColor: isDarkMode ? semantic.fill.f04 : '#F1F5F9', borderColor: 'transparent' }]} 
+                            onPress={() => setInventoryErrorDialog(false)}
+                        >
+                            <Typography style={[styles.removeBtnText, { color: isDarkMode ? '#FFF' : '#64748B' }]}>Close</Typography>
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                            style={[styles.applyBtn, { flex: 1, height: normalize(48) }]} 
+                            onPress={() => {
+                                setInventoryErrorDialog(false);
+                                setCartReviewDialog(true);
+                                loadCartItems();
+                            }}
+                        >
+                            <Typography style={styles.applyBtnText}>Review Cart</Typography>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </ButtonSheet>
         </View>
     );
 }

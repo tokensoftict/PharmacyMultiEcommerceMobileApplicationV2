@@ -26,11 +26,10 @@ export default function WrapperNoScrollNoDialog({
     const {isDarkMode} = useDarkMode();
     return (
         <SafeAreaProvider>
-            <StatusBar backgroundColor={design.text1.background} barStyle="light-content" />
+            <StatusBar backgroundColor={design.text1.background} barStyle="light-content" translucent />
             <SafeAreaView style={{
                 flex: 1,
                 backgroundColor : semantic.background.white.w101,
-                marginTop : normalize(32)
             }}>
                 <KeyboardAvoidingView
                     style={{ flex: 1 }}

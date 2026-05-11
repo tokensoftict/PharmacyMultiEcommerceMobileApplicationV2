@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, Vibration, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Vibration, StyleSheet, Platform } from "react-native";
 import LottieView from "lottie-react-native";
 import SoundPlayer from 'react-native-sound-player'
 import ModalComponent from "react-native-modal";
@@ -7,11 +7,15 @@ import Typography from "@/shared/component/typography";
 import { normalize } from "@/shared/helpers";
 import { FONT } from "@/shared/constants/fonts";
 import { semantic } from "@/shared/constants/colors";
+import { pick } from '@react-native-documents/picker';
+import OrderService from "@/service/order/OrderService.tsx";
+import Toasts from "@/shared/utils/Toast.tsx";
 
 // @ts-ignore
-const OrderSuccessDialog = ({ visible, onClose, onViewOrder }) => {
+const OrderSuccessDialog = ({ visible, onClose, onViewOrder, order }) => {
 
     const animationRef = useRef(null);
+    const [isUploading, setIsUploading] = React.useState(false);
 
     useEffect(() => {
         if (visible) {
@@ -29,6 +33,39 @@ const OrderSuccessDialog = ({ visible, onClose, onViewOrder }) => {
             Vibration.vibrate(500); // Standard vibration
         }
     }, [visible]);
+
+    const handleUploadProof = async () => {
+        try {
+            const [file] = await pick({
+                mode: 'open',
+            });
+
+            if (file) {
+                setIsUploading(true);
+                const orderService = new OrderService();
+                
+                const fileToUpload = {
+                    uri: Platform.OS === 'android' ? file.uri : file.uri?.replace('file://', ''),
+                    type: file.type,
+                    name: file.name || `proof_${order?.id}.jpg`,
+                };
+
+                const response = await orderService.uploadProofOfPayment(order?.id, fileToUpload);
+                if (response.data.status) {
+                    Toasts("Proof of payment uploaded successfully!");
+                } else {
+                    Toasts("Failed to upload proof of payment.");
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            // Ignore cancel error
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const isBankTransfer = order?.payment_method_id === 1 || order?.payment_method_id === 5;
 
     return (
         <ModalComponent isVisible={visible} animationIn="zoomIn" animationOut="zoomOut">
@@ -50,6 +87,17 @@ const OrderSuccessDialog = ({ visible, onClose, onViewOrder }) => {
                 <Typography style={styles.subText}>Your order has been received and is being processed by our team.</Typography>
 
                 <View style={styles.buttonContainer}>
+                    {isBankTransfer && (
+                        <TouchableOpacity 
+                            style={[styles.uploadButton, isUploading && { opacity: 0.7 }]} 
+                            onPress={handleUploadProof}
+                            disabled={isUploading}
+                        >
+                            <Typography style={styles.viewOrderText}>
+                                {isUploading ? "Uploading..." : "Upload Proof of Payment"}
+                            </Typography>
+                        </TouchableOpacity>
+                    )}
                     <TouchableOpacity style={styles.viewOrderButton} onPress={onViewOrder}>
                         <Typography style={styles.viewOrderText}>View Order Details</Typography>
                     </TouchableOpacity>
@@ -102,6 +150,18 @@ const styles = StyleSheet.create({
     buttonContainer: {
         width: '100%',
         gap: normalize(12),
+    },
+    uploadButton: {
+        backgroundColor: '#22C55E', // Green for upload
+        paddingVertical: normalize(16),
+        width: '100%',
+        borderRadius: normalize(16),
+        alignItems: 'center',
+        shadowColor: '#22C55E',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 4,
     },
     viewOrderButton: {
         backgroundColor: semantic.alert.danger.d500,

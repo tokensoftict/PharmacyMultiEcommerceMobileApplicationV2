@@ -75,16 +75,25 @@ export function attachInterceptors(instance: AxiosInstance) {
             switch (status) {
                 case 422:
                     return Promise.resolve({
-                        data: { status: false, error: responseData?.error || "Validation failed. Please check your input." },
+                        data: {
+                            status: false,
+                            message: responseData?.message || responseData?.error || "Validation failed. Please check your input.",
+                            inventory_errors: responseData?.inventory_errors || [],
+                            error: responseData?.error || responseData?.message
+                        },
                     });
                 case 404:
                     return Promise.resolve({
-                        data: { status: false, error: "The requested resource was not found." },
+                        data: { status: false, message: "The requested resource was not found.", error: "The requested resource was not found." },
                     });
                 case 401:
                 case 400:
                     return Promise.resolve({
-                        data: { status: false, error: responseData?.error || "Invalid request. Please try again." },
+                        data: {
+                            status: false,
+                            message: responseData?.message || responseData?.error || "Invalid request. Please try again.",
+                            error: responseData?.error || responseData?.message || "Invalid request. Please try again."
+                        },
                     });
                 default:
                     return Promise.reject({

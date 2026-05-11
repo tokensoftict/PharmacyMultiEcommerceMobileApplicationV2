@@ -65,7 +65,7 @@ export default function PickUpAtStore({ callback, deliveryMethod = "", showDialo
                         <Icon icon={close} height={normalize(24)} tintColor={isDarkMode ? '#FFF' : '#000'} />
                     </TouchableOpacity>
                 </View>
-                
+
                 <View style={styles.addressCard}>
                     <Typography style={styles.addressText}>{extra?.address}</Typography>
                 </View>

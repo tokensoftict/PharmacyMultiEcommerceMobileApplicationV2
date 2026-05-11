@@ -24,9 +24,11 @@ import Header from "@/shared/component/header";
 import HeaderWithIcon from "@/shared/component/headerBack";
 import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
 import { semantic } from "@/shared/constants/colors.ts";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // @ts-ignore
 export default function CreateWholesales({ navigation }) {
+    const insets = useSafeAreaInsets();
     const [isLoading, setIsLoading] = useState(false);
 
     const [business_name, setBusiness_name] = useState("");
@@ -195,7 +197,7 @@ export default function CreateWholesales({ navigation }) {
     return (
         <WrapperNoScroll titleLoader={"Creating store Please wait..."}>
             <HeaderWithIcon title="Create Your Store" />
-            <ScrollView style={{ width: '100%', backgroundColor: semantic.fill.f03, borderTopEndRadius: normalize(20), borderTopStartRadius: normalize(20), }} showsVerticalScrollIndicator={false}>
+            <ScrollView style={{ width: '100%', backgroundColor: semantic.fill.f03, borderTopEndRadius: normalize(20), borderTopStartRadius: normalize(20), }} showsVerticalScrollIndicator={true} contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, normalize(40)) }}>
                 <View style={styles.container}>
                     <View style={styles.titleImageContainer}>
                         <TitleAuth title="Create Your Store" />

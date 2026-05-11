@@ -48,9 +48,11 @@ wholesalesAxiosInstance.interceptors.request.use(async function (request) {
     ];
 
     const version = DeviceInfo.getVersion();
+    const versionCode = DeviceInfo.getBuildNumber();
     request.params = { ...request.params, device: 'mobile' };
     request.params = { ...request.params, deviceType: Platform.OS };
     request.params = { ...request.params, version: version };
+    request.params = { ...request.params, versionCode: versionCode };
 
 
     return request;

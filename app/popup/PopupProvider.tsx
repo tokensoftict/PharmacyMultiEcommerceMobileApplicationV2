@@ -1,6 +1,6 @@
 // PopupProvider.tsx
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
-import { Modal, View, TouchableOpacity, Image, StyleSheet, Animated, Easing } from "react-native";
+import { Modal, View, TouchableOpacity, Image, StyleSheet, Animated, Easing, ActivityIndicator } from "react-native";
 import Typography from "@/shared/component/typography";
 import { normalize } from "@/shared/helpers";
 import PopupService from "@/popup/PopupService.ts";
@@ -34,13 +34,24 @@ const PopupContext = createContext<PopupContextType>({ startPopups: () => { } })
 export const usePopup = () => useContext(PopupContext);
 
 export const PopupProvider = ({ children }: { children: React.ReactNode }) => {
-    const [remainingPopups, setRemainingPopups] = useState<PopupData[]>([]);
-    const [currentPopup, setCurrentPopup] = useState<PopupData | null>(null);
+    const [allPopups, setAllPopups] = useState<PopupData[]>([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
     const [visible, setVisible] = useState(false);
+    const [imageLoading, setImageLoading] = useState(true);
+    const currentPopup = allPopups[currentIndex];
     const popUpService = new PopupService();
     const navigation = useNavigation<NavigationProps>();
 
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        let timeout: NodeJS.Timeout;
+        if (imageLoading) {
+            // Fallback: forcefully hide spinner after 3 seconds if RN fails to fire onLoadEnd
+            timeout = setTimeout(() => setImageLoading(false), 3000);
+        }
+        return () => clearTimeout(timeout);
+    }, [imageLoading]);
 
     // animation
     const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -65,64 +76,32 @@ export const PopupProvider = ({ children }: { children: React.ReactNode }) => {
         if (res.data.status === true) {
             // @ts-ignore
             const data = res.data.data.filter((item) => item.application === Environment.getEnvironment())
-            setRemainingPopups(data);
+            setAllPopups(data);
             return data; // return fetched popups
         } else {
-            setRemainingPopups([]);
+            setAllPopups([]);
             return [];
         }
     };
 
-    const showRandomPopup = useCallback(() => {
-        // filter only not-shown popups
-        const notShownPopups = remainingPopups.filter((item) => !item.show);
-
-        if (notShownPopups.length === 0) return;
-
-        const randomIndex = Math.floor(Math.random() * notShownPopups.length);
-        const selected = notShownPopups[randomIndex];
-
-        // mark selected popup as shown
-        setRemainingPopups((prev) =>
-            prev.map((p) =>
-                p.id === selected.id ? { ...p, show: true } : p
-            )
-        );
-
-
-        setCurrentPopup(selected);
-        setVisible(true);
-        animateIn();
-    }, [remainingPopups]);
-
-    const scheduleNextPopup = () => {
-        if (timerRef.current) clearTimeout(timerRef.current);
-
-        if (remainingPopups.length === 0) return;
-
-        // random delay between 10s – 30s
-        const delay = Math.floor(Math.random() * (30000 - 10000 + 1)) + 10000;
-
-        timerRef.current = setTimeout(() => {
-            showRandomPopup();
-        }, delay);
-    };
-
     const handleInteraction = () => {
-        if (!currentPopup) return;
-
         animateOut(() => {
             setVisible(false);
-
-            // remove popup from list
-            setRemainingPopups(prev => prev.filter(p => p.id !== currentPopup.id));
-
-            // reset current
-            setCurrentPopup(null);
-
-            // schedule next popup
-            scheduleNextPopup();
         });
+    };
+
+    const handleNext = () => {
+        if (currentIndex < allPopups.length - 1) {
+            setImageLoading(true);
+            setCurrentIndex(prev => prev + 1);
+        }
+    };
+
+    const handlePrev = () => {
+        if (currentIndex > 0) {
+            setImageLoading(true);
+            setCurrentIndex(prev => prev - 1);
+        }
     };
 
     const startPopups = useCallback(() => {
@@ -134,14 +113,7 @@ export const PopupProvider = ({ children }: { children: React.ReactNode }) => {
 
             // wait 5s before first popup
             timerRef.current = setTimeout(() => {
-                const randomIndex = Math.floor(Math.random() * fetched.length);
-                const selected = fetched[randomIndex];
-                setCurrentPopup(selected);
-                setRemainingPopups((prev) =>
-                    prev.map((p) =>
-                        p.id === selected.id ? { ...p, show: true } : p
-                    )
-                );
+                setCurrentIndex(0);
                 setVisible(true);
                 animateIn();
             }, 5000);
@@ -159,8 +131,10 @@ export const PopupProvider = ({ children }: { children: React.ReactNode }) => {
 
         handleInteraction();
 
-        // @ts-ignore
-        navigation.navigate(currentPopup.link.page, currentPopup.link.extraData)
+        if (currentPopup.link && currentPopup.link.page) {
+            // @ts-ignore
+            navigation.navigate(currentPopup.link.page, currentPopup.link.extraData);
+        }
     }
 
     return (
@@ -175,13 +149,51 @@ export const PopupProvider = ({ children }: { children: React.ReactNode }) => {
                         </TouchableOpacity>
 
                         {currentPopup?.image && (
-                            <Image source={{ uri: currentPopup.image }} style={styles.image} resizeMode="contain" />
+                            <View style={styles.imageContainer}>
+                                {imageLoading && (
+                                    <ActivityIndicator size="large" color="#d9534f" style={styles.loader} />
+                                )}
+                                <Image
+                                    key={currentIndex}
+                                    source={{ uri: currentPopup.image }}
+                                    style={[styles.image, { opacity: imageLoading ? 0 : 1 }]}
+                                    resizeMode="contain"
+                                    onLoadStart={() => setImageLoading(true)}
+                                    onLoad={() => setImageLoading(false)}
+                                    onLoadEnd={() => setImageLoading(false)}
+                                    onError={() => setImageLoading(false)}
+                                />
+                            </View>
                         )}
                         <Typography style={styles.title}>{currentPopup?.title}</Typography>
                         <Typography style={styles.message}>{currentPopup?.message}</Typography>
                         <TouchableOpacity style={styles.button} onPress={handleCTAClick}>
                             <Typography style={styles.buttonText}>{currentPopup?.cta || "Close"}</Typography>
                         </TouchableOpacity>
+
+                        {allPopups.length > 1 && (
+                            <View style={styles.navContainer}>
+                                <TouchableOpacity
+                                    style={[styles.navButton, currentIndex === 0 && styles.navButtonDisabled]}
+                                    onPress={handlePrev}
+                                    disabled={currentIndex === 0}
+                                >
+                                    <Typography style={styles.navButtonText}>{"< Prev"}</Typography>
+                                </TouchableOpacity>
+
+                                <Typography style={styles.pageText}>
+                                    {currentIndex + 1} / {allPopups.length}
+                                </Typography>
+
+                                <TouchableOpacity
+                                    style={[styles.navButton, currentIndex === allPopups.length - 1 && styles.navButtonDisabled]}
+                                    onPress={handleNext}
+                                    disabled={currentIndex === allPopups.length - 1}
+                                >
+                                    <Typography style={styles.navButtonText}>{"Next >"}</Typography>
+                                </TouchableOpacity>
+                            </View>
+                        )}
                     </Animated.View>
                 </View>
             </Modal>
@@ -224,10 +236,21 @@ const styles = StyleSheet.create({
         shadowRadius: 10,
         elevation: 6,
     },
-    image: {
+    imageContainer: {
         width: "100%",
         height: normalize(180),
         marginBottom: normalize(15),
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    loader: {
+        position: "absolute",
+        zIndex: 1,
+    },
+    image: {
+        width: "100%",
+        height: "100%",
+        zIndex: 2,
     },
     title: {
         fontSize: normalize(18),
@@ -247,6 +270,35 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: "#fff",
-
+        fontWeight: "bold",
+    },
+    navContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        width: "100%",
+        marginTop: normalize(20),
+        paddingTop: normalize(15),
+        borderTopWidth: 1,
+        borderTopColor: "#EEE",
+    },
+    navButton: {
+        backgroundColor: "#F0F0F0",
+        paddingVertical: normalize(8),
+        paddingHorizontal: normalize(15),
+        borderRadius: normalize(20),
+    },
+    navButtonDisabled: {
+        opacity: 0.5,
+    },
+    navButtonText: {
+        color: "#333",
+        fontSize: normalize(13),
+        fontWeight: "bold",
+    },
+    pageText: {
+        color: "#888",
+        fontSize: normalize(12),
+        fontWeight: "500",
     },
 });

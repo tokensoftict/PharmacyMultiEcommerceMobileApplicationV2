@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {NavigationContainer} from "@react-navigation/native";
 import {createStackNavigator} from "@react-navigation/stack";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import RoutesStack, {RootStackParamList} from "@/shared/routes/stack";
 import {store} from '@/redux/store/store';
 import {Provider} from 'react-redux';
@@ -12,6 +13,8 @@ import * as NavigationService from "@/shared/utils/NavigationService";
 import { navigationRef } from "@/shared/utils/NavigationService";
 import RNBootSplash from "react-native-bootsplash";
 import {InternetProvider} from "@/shared/helpers/InternetContext";
+import {GlobalProvider} from "@/shared/helpers/GlobalContext";
+import FloatingCartBar from "@/shared/component/floatingCartBar";
 import {PopupProvider} from "@/popup/PopupProvider";
 import {SafeAreaProvider} from "react-native-safe-area-context";
 const Stack = createStackNavigator<RootStackParamList>();
@@ -39,35 +42,40 @@ function App(): React.JSX.Element {
     }
 
     return (
-        <Provider store={store}>
-            <SafeAreaProvider>
-                <NavigationContainer 
-                    ref={navigationRef}
-                    onReady={() => {
-                        NavigationService.flushPendingNavigation();
-                    }}
-                >
-                    <InternetProvider>
-                        <LoadingProvider>
-                            <PopupProvider>
-                                <Stack.Navigator
-                                    // @ts-ignore
-                                    initialRouteName={page}
-                                    screenOptions={{ headerShown: false }}>
-                                    {RoutesStack.map(route => (
-                                        <Stack.Screen
-                                            key={route.path}
-                                            name={route.path}
-                                            component={route.component}
-                                        />
-                                    ))}
-                                </Stack.Navigator>
-                            </PopupProvider>
-                        </LoadingProvider>
-                    </InternetProvider>
-                </NavigationContainer>
-            </SafeAreaProvider>
-        </Provider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <Provider store={store}>
+                <SafeAreaProvider>
+                    <NavigationContainer 
+                        ref={navigationRef}
+                        onReady={() => {
+                            NavigationService.flushPendingNavigation();
+                        }}
+                    >
+                        <InternetProvider>
+                            <GlobalProvider>
+                                <LoadingProvider>
+                                    <PopupProvider>
+                                        <Stack.Navigator
+                                            // @ts-ignore
+                                            initialRouteName={page}
+                                            screenOptions={{ headerShown: false }}>
+                                            {RoutesStack.map(route => (
+                                                <Stack.Screen
+                                                    key={route.path}
+                                                    name={route.path}
+                                                    component={route.component}
+                                                />
+                                            ))}
+                                        </Stack.Navigator>
+                                        <FloatingCartBar />
+                                    </PopupProvider>
+                                </LoadingProvider>
+                            </GlobalProvider>
+                        </InternetProvider>
+                    </NavigationContainer>
+                </SafeAreaProvider>
+            </Provider>
+        </GestureHandlerRootView>
     );
 }
 

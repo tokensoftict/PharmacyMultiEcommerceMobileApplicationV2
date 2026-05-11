@@ -20,6 +20,7 @@ import { currencyType } from "@/shared/constants/global";
 import { semantic } from "@/shared/constants/colors";
 import Environment from "@/shared/utils/Environment.tsx";
 import UpdateCartDialog from "@/shared/component/updateCartDialog";
+import { useGlobal } from "@/shared/helpers/GlobalContext.tsx";
 
 
 
@@ -43,14 +44,20 @@ function Cart() {
         }, [])
     );
 
+    const { setCartCount, setCartTotal } = useGlobal();
+
     function loadCartItems() {
         setIsLoading(true);
         (new CartService()).get().then((response) => {
             setIsLoading(false);
             if (response.data.status === true) {
                 setCartItemList(response.data)
+                setCartCount(response.data.data?.meta?.noItems || 0);
+                setCartTotal(response.data.data?.meta?.totalItemsInCarts_formatted || "0.00");
             } else {
                 setCartErrorList(response.data.message);
+                setCartCount(0);
+                setCartTotal("0.00");
             }
         }, (error) => {
             setIsLoading(false);
@@ -131,9 +138,21 @@ function Cart() {
                                                 <Typography style={styles.summaryLabel}>
                                                     {cartItemList?.data.meta?.doorStepDelivery.name}
                                                 </Typography>
-                                                <Typography style={styles.summaryValue}>
-                                                    {currencyType} {cartItemList?.data.meta?.doorStepDelivery.amount_formatted}
-                                                </Typography>
+                                                <View style={{ alignItems: 'flex-end' }}>
+                                                    {cartItemList?.data.meta?.doorStepDelivery.is_free && (
+                                                        <Typography style={{
+                                                            fontSize: normalize(12),
+                                                            color: '#64748B',
+                                                            textDecorationLine: 'line-through',
+                                                            marginBottom: normalize(2)
+                                                        }}>
+                                                            {currencyType} {cartItemList?.data.meta?.doorStepDelivery.original_amount_formatted}
+                                                        </Typography>
+                                                    )}
+                                                    <Typography style={[styles.summaryValue, cartItemList?.data.meta?.doorStepDelivery.is_free && { color: '#22C55E' }]}>
+                                                        {cartItemList?.data.meta?.doorStepDelivery.is_free ? `${currencyType} 0.00` : `${currencyType} ${cartItemList?.data.meta?.doorStepDelivery.amount_formatted}`}
+                                                    </Typography>
+                                                </View>
                                             </View>
                                             <View style={styles.summaryRow}>
                                                 <Typography style={styles.summaryLabel}>Delivery Date</Typography>

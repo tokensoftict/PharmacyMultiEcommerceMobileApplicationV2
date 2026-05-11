@@ -36,7 +36,7 @@ const CustomDatePicker = ({ label, value, onChange, mode = 'date', style, displa
                                 value: date,
                                 mode: 'time',
                                 display: display || 'default',
-                                is24Hour: true,
+                                is24Hour: false,
                                 onChange: (_, timeValue) => {
                                     if (timeValue) {
                                         const finalDateTime = new Date(date);
@@ -57,7 +57,7 @@ const CustomDatePicker = ({ label, value, onChange, mode = 'date', style, displa
                     // @ts-ignore
                     mode,
                     display: display || 'default',
-                    is24Hour: true,
+                    is24Hour: false,
                     onChange: (_, newDate) => {
                         if (newDate) handleChange(newDate);
                     }
@@ -75,9 +75,9 @@ const CustomDatePicker = ({ label, value, onChange, mode = 'date', style, displa
         if (!selectedDate) return '';
         switch (mode) {
             case 'time':
-                return selectedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                return selectedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
             case 'datetime':
-                return selectedDate.toLocaleString();
+                return selectedDate.toLocaleString([], { hour: '2-digit', minute: '2-digit', hour12: true });
             case 'date':
             default:
                 return selectedDate.toLocaleDateString();
@@ -101,6 +101,7 @@ const CustomDatePicker = ({ label, value, onChange, mode = 'date', style, displa
                         // @ts-ignore
                         mode={mode}
                         display={display}
+                        is24Hour={false}
                         onChange={onDateChange}
                     />
                 )}
@@ -112,6 +113,7 @@ const CustomDatePicker = ({ label, value, onChange, mode = 'date', style, displa
                 // @ts-ignore
                 mode={mode}
                 display={display}
+                is24Hour={false}
                 onChange={onDateChange}
             />
         )

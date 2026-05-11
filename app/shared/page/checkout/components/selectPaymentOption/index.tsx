@@ -88,6 +88,7 @@ export default function SelectPaymentOption({ onValidate }: { onValidate: (valid
   function copyToClipboard(text: string) {
     Clipboard.setString(text);
     Toastss("Account number copied to clipboard!");
+    setShowBankModal(false);
   }
 
   return (

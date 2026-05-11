@@ -1,9 +1,9 @@
 
 export default function FormatCurrency(amount : string|number, decimalCount = 2, decimal = ".", thousands = ",") {
-    if(!amount) return false;
+    if(amount === undefined || amount === null) return false;
 
     if (typeof amount === "string") {
-        amount = parseInt(amount);
+        amount = parseFloat(amount);
     }
     try {
         decimalCount = Math.abs(decimalCount);

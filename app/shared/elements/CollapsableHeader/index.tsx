@@ -115,7 +115,7 @@ export default function CollapsableHeader({
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar backgroundColor={design.text1.background} barStyle="light-content" />
+            <StatusBar backgroundColor={design.text1.background} barStyle="light-content" translucent />
 
             {/* Floating Search Bar */}
             <Animated.View

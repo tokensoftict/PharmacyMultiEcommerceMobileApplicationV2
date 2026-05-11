@@ -1,10 +1,11 @@
 import useEffectOnce from "@/shared/hooks/useEffectOnce.tsx";
+
 import React, { useState } from "react";
 import OrderService from "@/service/order/OrderService.tsx";
 import Toasts from "@/shared/utils/Toast.tsx";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NavigationProps } from "@/shared/routes/stack.tsx";
-import { ScrollView, View, StyleSheet, Dimensions, Platform } from "react-native";
+import { ScrollView, View, StyleSheet, Dimensions, Platform, TouchableOpacity } from "react-native";
 import { normalize } from "@/shared/helpers";
 import { palette, semantic } from "@/shared/constants/colors.ts";
 import HeaderWithIcon from "@/shared/component/headerBack";
@@ -69,19 +70,61 @@ export default function ShowOrder() {
         </View>
     );
 
+    const [isUploading, setIsUploading] = useState(false);
+
+    const handleUploadProof = async () => {
+        const { pick } = require('@react-native-documents/picker');
+        try {
+            const [file] = await pick({
+                mode: 'open',
+            });
+
+            if (file) {
+                setIsUploading(true);
+
+                const fileToUpload = {
+                    uri: Platform.OS === 'android' ? file.uri : file.uri?.replace('file://', ''),
+                    type: file.type,
+                    name: file.name || `proof_${order?.id}.jpg`,
+                };
+
+                const response = await orderService.uploadProofOfPayment(order?.id, fileToUpload);
+                console.log("response", response.data);
+                if (response.data.status) {
+                    Toasts("Proof of payment uploaded successfully!");
+                    // Refresh order data
+                    setIsLoading(true)
+                    orderService.get(order?.id).then((response) => {
+                        setIsLoading(false);
+                        if (response.data.status) {
+                            setOrder(response.data.data);
+                        }
+                    });
+                } else {
+                    Toasts("Failed to upload proof of payment.");
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            // Ignore cancel error
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     return (
         <View style={styles.mainContainer}>
             <LinearGradient
                 colors={['#F8FAFC', '#F1F5F9', '#E2E8F0']}
                 style={StyleSheet.absoluteFill}
             />
-            
+
             <WrapperNoScroll loading={isLoading} barStyle="light-content" style={{ flex: 1 }}>
                 <HeaderWithIcon title={"ORDER DETAILS"} />
-                
+
                 {!isLoading && order && (
                     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-                        
+
                         <Animated.View entering={FadeInUp.duration(600)} style={styles.card}>
                             <Typography style={styles.cardTitle}>Basic Information</Typography>
                             <DetailRow label="Order Number" value={order?.orderId} />
@@ -109,18 +152,41 @@ export default function ShowOrder() {
                             <Typography style={styles.cardTitle}>Payment Summary</Typography>
                             <DetailRow label="Payment Method" value={order?.paymentMethod} />
                             <View style={[styles.divider, { marginVertical: normalize(10) }]} />
-                            
+
                             {order?.orderTotals?.map((item, index) => (
                                 <View key={'orderTotal-' + index} style={styles.summaryRow}>
                                     <Typography style={styles.summaryLabel}>{item.name}</Typography>
                                     <Typography style={styles.summaryValue}>{currencyType}{item.value_formatted}</Typography>
                                 </View>
                             ))}
-                            
+
                             <View style={styles.totalRow}>
                                 <Typography style={styles.totalLabel}>Total Amount</Typography>
                                 <Typography style={styles.totalValue}>{currencyType}{order?.totalAmount}</Typography>
                             </View>
+
+                            {(order?.payment_method_id === 1 || order?.payment_method_id === 5) && !order?.prove_of_payment && (
+                                <View style={{ marginTop: normalize(20) }}>
+                                    <TouchableOpacity
+                                        style={[styles.uploadButton, isUploading && { opacity: 0.7 }]}
+                                        onPress={handleUploadProof}
+                                        disabled={isUploading}
+                                    >
+                                        <Typography style={styles.uploadButtonText}>
+                                            {isUploading ? "Uploading..." : "Upload Proof of Payment"}
+                                        </Typography>
+                                    </TouchableOpacity>
+                                    <Typography style={styles.uploadHelpText}>
+                                        Please upload a clear image of your transfer receipt.
+                                    </Typography>
+                                </View>
+                            )}
+
+                            {order?.prove_of_payment && (
+                                <View style={styles.proofBadge}>
+                                    <Typography style={styles.proofBadgeText}>Proof of Payment Uploaded</Typography>
+                                </View>
+                            )}
                         </Animated.View>
 
                         <View style={{ height: normalize(40) }} />
@@ -229,5 +295,35 @@ const styles = StyleSheet.create({
         fontSize: normalize(16),
         fontWeight: Platform.OS === 'ios' ? '900' : undefined,
         color: palette.main.p500,
+    },
+    uploadButton: {
+        backgroundColor: '#22C55E',
+        paddingVertical: normalize(14),
+        borderRadius: normalize(16),
+        alignItems: 'center',
+    },
+    uploadButtonText: {
+        color: '#FFFFFF',
+        fontSize: normalize(14),
+        fontWeight: '700',
+    },
+    uploadHelpText: {
+        fontSize: normalize(11),
+        color: '#64748B',
+        textAlign: 'center',
+        marginTop: normalize(8),
+    },
+    proofBadge: {
+        backgroundColor: '#DCFCE7',
+        paddingVertical: normalize(8),
+        paddingHorizontal: normalize(12),
+        borderRadius: normalize(8),
+        marginTop: normalize(12),
+        alignSelf: 'flex-start',
+    },
+    proofBadgeText: {
+        color: '#166534',
+        fontSize: normalize(12),
+        fontWeight: '600',
     }
 });
