@@ -1,120 +1,136 @@
 import { Dimensions, StyleSheet } from "react-native";
-import { normalize } from "@/shared/helpers";
-import { labels, palette } from "@/shared/constants/colors";
+import { labels } from "@/shared/constants/colors";
+import { theme } from "@/shared/theme";
+import { FONT } from "@/shared/constants/fonts";
 
 const screenWidth = Dimensions.get('window').width;
-const itemWidth = (screenWidth - 45) / 2;
 
+/**
+ * SalesRepresentativeHome Styles (Latest Design Refactor)
+ *
+ * Refactored using the centralized theme spacing, shadows, border-radius,
+ * and responsive typography system to align cleanly.
+ */
 export const styles = StyleSheet.create({
     container: {
-        flex: 0.2,
         flexDirection: "row",
         backgroundColor: '#F7D9D9',
-        paddingTop: normalize(80),
-        paddingVertical: normalize(30),
-        paddingHorizontal: normalize(20),
-        borderBottomLeftRadius: normalize(30),
-        borderBottomRightRadius: normalize(30),
+        paddingVertical: theme.spacing.lg,
+        paddingHorizontal: theme.spacing.md,
+        borderBottomLeftRadius: theme.borderRadius.lg,
+        borderBottomRightRadius: theme.borderRadius.lg,
     },
     avatar: {
-        width: normalize(80),
-        height: normalize(80),
-        marginRight: normalize(12),
+        width: 80,
+        height: 80,
+        borderRadius: theme.borderRadius.full,
+        marginRight: theme.spacing.sm,
     },
     avatarCustomer: {
-        width: normalize(40),
-        height: normalize(40),
-        marginRight: normalize(12),
+        width: 40,
+        height: 40,
+        borderRadius: theme.borderRadius.full,
+        marginRight: theme.spacing.sm,
     },
     headerText: {
         color: labels.type4.textColor,
-        fontSize: normalize(20),
-
+        fontSize: theme.typography.lg,
+        fontFamily: FONT.BOLD,
     },
     subHeaderText: {
-        fontSize: normalize(12),
+        fontSize: theme.typography.xs,
+        color: '#475569',
+        marginTop: 2,
     },
     code: {
-        fontSize: normalize(12),
-
-        borderBottomWidth: normalize(1),
-        borderColor: '#d32f2f'
+        fontSize: theme.typography.xs,
+        fontFamily: FONT.BOLD,
+        borderBottomWidth: 1,
+        borderColor: '#d32f2f',
+        color: '#d32f2f',
     },
     cardRow: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        marginVertical: normalize(10),
+        marginVertical: theme.spacing.xs,
+        paddingHorizontal: theme.spacing.xs,
     },
     card: {
         backgroundColor: '#d32f2f',
         flex: 1,
-        marginHorizontal: normalize(5),
-        padding: normalize(15),
-        borderRadius: normalize(12),
+        marginHorizontal: theme.spacing.xs,
+        padding: theme.spacing.md,
+        borderRadius: theme.borderRadius.sm,
+        ...theme.shadows.sm,
     },
     cardFull: {
         backgroundColor: '#c62828',
         flex: 1,
-        marginHorizontal: normalize(10),
-        padding: normalize(20),
-        borderRadius: normalize(12),
+        marginHorizontal: theme.spacing.sm,
+        padding: theme.spacing.md,
+        borderRadius: theme.borderRadius.sm,
+        ...theme.shadows.sm,
     },
     cardContent: {
         alignItems: 'center'
     },
     cardTitle: {
         color: '#fff',
-        fontSize: normalize(16),
-        marginTop: normalize(5),
-
+        fontSize: theme.typography.sm,
+        marginTop: 2,
+        fontFamily: FONT.MEDIUM,
     },
     cardValue: {
         color: '#fff',
-        fontSize: normalize(22),
-
-        marginTop: normalize(5)
+        fontSize: theme.typography.xl,
+        fontFamily: FONT.BOLD,
+        marginTop: 2,
     },
     tabContainer: {
         flex: 1,
-        padding: normalize(10),
+        padding: theme.spacing.sm,
         backgroundColor: '#fff'
     },
     searchInput: {
-        height: normalize(40),
+        height: theme.MIN_TOUCH_TARGET,
         borderColor: '#ccc',
-        borderWidth: normalize(1),
-        paddingHorizontal: normalize(10),
-        borderRadius: normalize(8),
-        marginBottom: normalize(10),
+        borderWidth: 1,
+        paddingHorizontal: theme.spacing.sm,
+        borderRadius: theme.borderRadius.xs / 2,
+        marginBottom: theme.spacing.sm,
     },
     gridItem: {
-        marginBottom: normalize(10),
+        marginBottom: theme.spacing.xs,
     },
     gridCard: {
         backgroundColor: '#fff3f3',
-        borderRadius: normalize(10),
-        padding: normalize(10),
+        borderRadius: theme.borderRadius.sm,
+        padding: theme.spacing.sm,
         borderColor: '#ffcdd2',
-        borderWidth: normalize(1),
+        borderWidth: 1,
+        ...theme.shadows.sm,
     },
     header: {
-
+        flex: 1,
     },
     gridContent: {
         justifyContent: 'center',
     },
     gridTitle: {
-        fontSize: normalize(14),
-
+        fontSize: theme.typography.sm,
+        fontFamily: FONT.BOLD,
         color: '#b00020',
-        marginBottom: normalize(5),
+        marginBottom: 2,
     },
     gridSub: {
-        fontSize: normalize(12),
+        fontSize: theme.typography.xs,
         color: '#555',
+        marginTop: 1,
     },
     status: {
-        fontSize: normalize(12),
+        fontSize: theme.typography.xs,
         color: labels.type4.textColor,
+        fontFamily: FONT.MEDIUM,
+        marginTop: 2,
     },
 });

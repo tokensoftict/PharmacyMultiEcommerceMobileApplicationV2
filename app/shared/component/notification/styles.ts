@@ -1,48 +1,49 @@
 import { StyleSheet } from "react-native";
 import { semantic } from "@/shared/constants/colors";
-import { normalize } from "@/shared/helpers";
+import { theme } from "../../theme";
 
+/**
+ * Notification list component item styles (Latest Design Refactor)
+ *
+ * Refactored using the centralized theme spacing, shadows, border-radius,
+ * and responsive typography system to align cleanly.
+ */
 export const _styles = (isDarkMode: boolean) => StyleSheet.create({
   container: {
-    backgroundColor: 'white',
-    shadowColor: semantic.fill.f04,
-    shadowOffset: {
-      width: normalize(0),
-      height: normalize(6),
-    },
-    shadowOpacity: 0.21,
-    shadowRadius: 6.65,
-    elevation: 9,
+    backgroundColor: isDarkMode ? semantic.fill.f02 : '#FFFFFF',
+    ...theme.shadows.sm,
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: normalize(12),
-    borderRadius: normalize(16),
-    borderWidth: normalize(2),
-    borderColor: isDarkMode ? semantic.fill.f01 : semantic.fill.f04,
-    padding: normalize(12),
+    marginVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1.5,
+    borderColor: isDarkMode ? semantic.fill.f04 : '#F1F5F9',
+    padding: theme.spacing.sm,
   },
   containerInfo: {
     flex: 1,
   },
   iconContainer: {
-    backgroundColor: isDarkMode ? semantic.fill.f01 : semantic.fill.f04,
-    marginRight: normalize(8),
-    paddingVertical: normalize(16),
-    paddingHorizontal: normalize(18),
-    borderRadius: normalize(16)
+    backgroundColor: isDarkMode ? semantic.fill.f01 : '#F8FAFC',
+    marginRight: theme.spacing.sm,
+    width: theme.MIN_TOUCH_TARGET + 8, // 52dp aspect square
+    height: theme.MIN_TOUCH_TARGET + 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.borderRadius.sm,
   },
   iconSize: {
-    tintColor: "#000",
-    width: normalize(32),
-    height: normalize(32)
+    tintColor: isDarkMode ? "#FFF" : "#000",
+    width: theme.spacing.lg,
+    height: theme.spacing.lg,
   },
   title: {
-
-    fontSize: normalize(14)
+    fontSize: theme.typography.sm,
+    color: isDarkMode ? semantic.text.white : semantic.text.black,
   },
   description: {
     color: semantic.text.grey,
-    marginTop: normalize(8),
-    fontSize: normalize(10)
-  }
-})
+    marginTop: theme.spacing.xs / 2,
+    fontSize: theme.typography.xs,
+  },
+});

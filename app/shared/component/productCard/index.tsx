@@ -155,7 +155,7 @@ const ProductCard = ({ product, style }: ProductCardProps) => {
 
                 {showCustomPrice && (
                     <Typography style={styles.doorStep}>
-                        Buy {product?.custom_price[0].min_qty} {Environment.isWholeSalesEnvironment() ? "cartons" : ""} for {currencyType} {product?.custom_price[0].price_formatted} each
+                        Buy {product?.custom_price[0].min_qty} {Environment.isWholeSalesEnvironment() ? "cartons" : ""} for {currencyType}{product?.custom_price[0].price_formatted} each
                     </Typography>
                 )}
             </View>

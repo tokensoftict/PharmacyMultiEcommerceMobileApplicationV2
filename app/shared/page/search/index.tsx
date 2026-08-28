@@ -28,6 +28,7 @@ import useEffectOnce from "@/shared/hooks/useEffectOnce.tsx";
 import _ from "lodash";
 import dayjs from "dayjs";
 import { styles } from "./styles";
+import CampaignEventBus from "@/campaign/CampaignEventBus";
 
 interface SearchDialogProps {
     visible?: boolean;
@@ -189,6 +190,7 @@ export default function Search({ visible = true, onClose, onItemSelected, storeT
     const handleQuerySubmit = useCallback(async (submitQuery: string, page: number = 1) => {
         if (!submitQuery.trim()) return;
 
+        CampaignEventBus.emit('SEARCH_PERFORMED', { query: submitQuery.trim() });
         Keyboard.dismiss();
         setIsSubmitted(true);
         saveRecentSearch(submitQuery);
@@ -354,7 +356,7 @@ export default function Search({ visible = true, onClose, onItemSelected, storeT
                         
                         {!isSearching && results.length === 0 ? (
                             <View style={{ paddingVertical: normalize(20), alignItems: 'center' }}>
-                                <Typography style={{ color: '#94A3B8', fontSize: normalize(14), fontFamily: FONT.REGULAR }}>
+                                <Typography style={{ color: '#94A3B8', fontSize: normalize(14), fontFamily: FONT.NORMAL }}>
                                     No suggestions found for "{query}"
                                 </Typography>
                             </View>

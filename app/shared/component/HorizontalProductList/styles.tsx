@@ -1,16 +1,22 @@
-import { Dimensions, StyleSheet } from 'react-native';
-import { normalize } from '@/shared/helpers';
+import { StyleSheet } from 'react-native';
 import { semantic } from '@/shared/constants/colors';
-const { width } = Dimensions.get('window');
+import { theme } from "@/shared/theme";
+
+/**
+ * HorizontalProductList Styles (Latest Design Refactor)
+ *
+ * Refactored using the centralized theme spacing, shadows, border-radius,
+ * and responsive typography system to align cleanly.
+ */
 export const styles = StyleSheet.create({
     container: {
-
+        marginBottom: theme.spacing.sm,
     },
     sectionHeaderContainer: {
         width: '100%',
-        height: normalize(50),
-        paddingVertical: normalize(12),
-        paddingHorizontal: normalize(16),
+        height: 50,
+        paddingVertical: theme.spacing.xs,
+        paddingHorizontal: theme.spacing.md,
         justifyContent: 'space-between',
         alignItems: 'center',
         flexDirection: 'row',
@@ -23,36 +29,34 @@ export const styles = StyleSheet.create({
     },
     sectionHeaderText: {
         color: '#fff',
-        fontSize: normalize(14),
-
+        fontSize: theme.typography.sm,
         alignSelf: 'center',
     },
     sectionHeaderSubText: {
         color: '#fff',
-        fontSize: normalize(10),
-
+        fontSize: theme.typography.xs,
         alignSelf: 'center',
     },
     divider: {
-        marginRight: normalize(10),
+        marginRight: theme.spacing.xs,
     },
     dividerDots: {
-        marginHorizontal: normalize(5),
+        marginHorizontal: theme.spacing.xs / 2,
     },
     image: {
-        height: normalize(132),
-        width: normalize(272),
-        borderRadius: normalize(12)
+        height: 130,
+        width: 270,
+        borderRadius: theme.borderRadius.md,
     },
     pagination: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: normalize(10),
+        marginTop: theme.spacing.xs,
     },
     titleSection: {
-        fontSize: normalize(18),
-        marginLeft: normalize(10),
+        fontSize: theme.typography.xl,
+        marginLeft: theme.spacing.xs,
     },
     containerBanner: {
         position: 'relative',
@@ -62,34 +66,32 @@ export const styles = StyleSheet.create({
         right: 0,
         top: 0,
         backgroundColor: semantic.background.red.d500,
-        height: normalize(132),
-        width: normalize(272),
-        borderRadius: normalize(12),
+        height: 130,
+        width: 270,
+        borderRadius: theme.borderRadius.md,
         opacity: 0.5,
     },
     containerInfo: {
         position: 'absolute',
-        left: normalize(6),
-        top: normalize(20)
+        left: theme.spacing.xs,
+        top: theme.spacing.md,
     },
     title: {
         color: semantic.text.white,
-
-        fontSize: normalize(18)
+        fontSize: theme.typography.xl,
     },
     description: {
-        marginTop: normalize(7),
+        marginTop: theme.spacing.xs,
         color: semantic.text.white,
-
+        fontSize: theme.typography.sm,
     },
     dot: {
-        width: normalize(9),
-        height: normalize(9),
-        borderRadius: 150,
+        width: 8,
+        height: 8,
+        borderRadius: theme.borderRadius.full,
         backgroundColor: semantic.text.grey,
     },
     dotActive: {
         backgroundColor: semantic.background.red.d500,
     },
 });
-

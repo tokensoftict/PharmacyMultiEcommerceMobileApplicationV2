@@ -1,63 +1,65 @@
 import { StyleSheet } from "react-native";
-import { normalize } from "../../../shared/helpers";
-import {palette, semantic} from "../../../shared/constants/colors.ts";
+import { palette, semantic } from "../../../shared/constants/colors.ts";
+import { theme } from "@/shared/theme";
+import { FONT } from "@/shared/constants/fonts";
 
+/**
+ * Brands Screen Styles (Latest Design Refactor)
+ *
+ * Refactored using the centralized theme spacing, shadows, border-radius,
+ * and responsive typography system to align cleanly.
+ */
 export const _styles = (isDarkMode: boolean) => StyleSheet.create({
-    holder : {
-        flexDirection : "column",
-        alignItems : "flex-start",
-        flex: 1,
-        paddingHorizontal:normalize(15),
-        paddingVertical: normalize(2),
-        backgroundColor : semantic.text.reallightgrey,
-        alignContent :"center",
-        justifyContent : "center"
+    holder: {
+        flexDirection: "column",
+        alignItems: "stretch",
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: theme.spacing.xs / 2,
+        backgroundColor: semantic.text.reallightgrey,
     },
     searchWrapper: {
-        paddingHorizontal: normalize(10),
-        paddingTop: normalize(10),
-        paddingBottom: normalize(10),
+        paddingHorizontal: theme.spacing.sm,
+        paddingTop: theme.spacing.sm,
+        paddingBottom: theme.spacing.sm,
         backgroundColor: '#fff',
-        marginTop: normalize(-15),
-        marginBottom: normalize(10),
+        marginTop: -theme.spacing.sm,
+        marginBottom: theme.spacing.sm,
     },
     categoryHeader: {
-        flexDirection : "row",
-        justifyContent : 'space-between',
-        paddingHorizontal: normalize(10),
-        paddingVertical : normalize(10),
-        borderStyle : 'solid',
-        borderColor : semantic.text.borderColor,
-        borderBottomWidth : normalize(2),
-        height : normalize(43)
+        flexDirection: "row",
+        justifyContent: 'space-between',
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: theme.spacing.sm,
+        borderStyle: 'solid',
+        borderColor: semantic.text.borderColor,
+        borderBottomWidth: 2,
+        height: 48,
     },
     seeAll: {
-        color : semantic.alert.danger.d500
+        color: semantic.alert.danger.d500,
+        fontFamily: FONT.BOLD,
+        fontSize: theme.typography.xs,
     },
     categoryName: {
-        color : semantic.text.black
+        color: semantic.text.black,
+        fontFamily: FONT.BOLD,
+        fontSize: theme.typography.sm,
     },
     categoryHolder: {
-        width : '100%',
-        backgroundColor : semantic.background.white.w500,
-        borderRadius: normalize(5),
-        shadowOpacity: 0.11,
-        shadowRadius: 3,
-        elevation: 0.5,
-        shadowOffset: {
-            width: normalize(0),
-            height: normalize(0),
-        },
-        marginBottom: normalize(5),
+        width: '100%',
+        alignSelf: 'stretch',
+        marginBottom: theme.spacing.xs,
     },
     categoryBody: {
-        width : '100%',
-        paddingHorizontal: normalize(12),
-        paddingVertical : normalize(15),
-        flexDirection : "row",
+        width: '100%',
+        paddingTop: theme.spacing.sm,
+        paddingBottom: theme.spacing.md,
+        flexDirection: "row",
         flexWrap: "wrap",
-        alignContent :"center",
-        justifyContent : "center"
     },
-
+    cardWrapper: {
+        width: '33.33%',              // 3 exact columns — immune to screen size
+        paddingHorizontal: theme.spacing.xs / 2,
+        paddingBottom: theme.spacing.xs,
+    },
 });

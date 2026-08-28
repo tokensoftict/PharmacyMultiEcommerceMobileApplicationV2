@@ -1,9 +1,7 @@
 import React from 'react';
-
-import { View, Text, TouchableOpacity, Image, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, Alert, ScrollView, Platform } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import WrapperNoScrollNoDialogNoSafeArea from "@/shared/component/wrapperNoScrollNoDialogNoSafeArea";
-import { normalize } from "@/shared/helpers";
 import { FONT } from "@/shared/constants/fonts.ts";
 import Typography from "@/shared/component/typography";
 import { labels } from "@/shared/constants/colors.ts";
@@ -11,12 +9,18 @@ import AuthSessionService from "@/service/auth/AuthSessionService.tsx";
 import Security from "@/service/auth/Security.tsx";
 import { useLoading } from "@/shared/utils/LoadingProvider.tsx";
 import { CommonActions } from "@react-navigation/native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { theme } from "@/shared/theme";
+import { isTablet } from '@/shared/helpers';
 
 // @ts-ignore
 export default function RestoreAccountScreen({ navigation }) {
+    const insets = useSafeAreaInsets();
+    const tablet = isTablet();
     const trashedUser = new AuthSessionService().getTrashedUserData();
     const service = new Security();
     const { showLoading, hideLoading } = useLoading();
+
     const handleRestore = () => {
         Alert.alert(
             'Are you want to restore your account?',
@@ -33,9 +37,9 @@ export default function RestoreAccountScreen({ navigation }) {
                             if (response.data.status === true) {
                                 Alert.alert('Account Restored', 'Great! Your account has been restored successfully, Please login to continue where you left off.');
                                 CommonActions.reset({
-                                    index: 0, // Set the index of the active screen
-                                    routes: [{ name: 'login' }], // Replace with your target screen
-                                })
+                                    index: 0,
+                                    routes: [{ name: 'login' }],
+                                });
                                 navigation.navigate('login');
                             } else {
                                 Alert.alert('Account Restore', 'There was an error restoring, your account');
@@ -49,8 +53,15 @@ export default function RestoreAccountScreen({ navigation }) {
 
     return (
         <WrapperNoScrollNoDialogNoSafeArea noBottomSpace={true}>
-            <ScrollView style={{ paddingTop: normalize(90), backgroundColor: '#ffffff', }}>
-                <View style={styles.container}>
+            <ScrollView 
+                showsVerticalScrollIndicator={false}
+                style={{ backgroundColor: '#ffffff' }}
+                contentContainerStyle={{
+                    paddingTop: Math.max(insets.top + theme.spacing.lg, 80),
+                    paddingBottom: Math.max(insets.bottom + theme.spacing.md, theme.spacing.xl),
+                }}
+            >
+                <View style={[styles.container, tablet && { maxWidth: 480, alignSelf: 'center', width: '100%' }]}>
                     <Animatable.View animation="fadeInDown" duration={200} style={styles.iconContainer}>
                         <Image
                             source={require("@/assets/images/account-restore.png")}
@@ -78,7 +89,6 @@ export default function RestoreAccountScreen({ navigation }) {
                             <Typography style={styles.restoreText}>Cancel And Go Back</Typography>
                         </TouchableOpacity>
                     </Animatable.View>
-
                 </View>
             </ScrollView>
         </WrapperNoScrollNoDialogNoSafeArea>
@@ -91,76 +101,66 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: normalize(20),
+        paddingHorizontal: theme.spacing.lg,
     },
     logo: {
-        width: normalize(150),
-        height: normalize(150),
+        width: 150,
+        height: 150,
         alignSelf: 'center',
     },
     iconContainer: {
-        marginBottom: normalize(30),
+        marginBottom: theme.spacing.md,
         backgroundColor: '#e0f7e9',
-        padding: normalize(30),
-        borderRadius: normalize(100),
+        padding: theme.spacing.md,
+        borderRadius: theme.borderRadius.full,
     },
     icon: {
-        width: normalize(60),
-        height: normalize(60),
+        width: 60,
+        height: 60,
         tintColor: '#2ecc71',
     },
     title: {
-        fontSize: normalize(20),
-
+        fontSize: theme.typography.md,
         color: '#333',
         textAlign: 'center',
         fontFamily: FONT.NORMAL,
-        marginBottom: normalize(10),
+        marginBottom: theme.spacing.xs,
     },
     userTitle: {
-        fontSize: normalize(26),
-
+        fontSize: theme.typography.xl,
         color: labels.type4.textColor,
         textAlign: 'center',
-        fontFamily: FONT.NORMAL,
-        marginBottom: normalize(10),
+        fontFamily: FONT.BOLD,
+        marginBottom: theme.spacing.xs,
     },
     subtitle: {
-        fontSize: normalize(16),
+        fontSize: theme.typography.sm,
         color: '#555',
         textAlign: 'center',
-        marginBottom: normalize(40),
+        marginBottom: theme.spacing.lg,
         fontFamily: FONT.NORMAL,
+        lineHeight: 22,
     },
     restoreButton: {
         backgroundColor: '#2ecc71',
-        paddingVertical: normalize(15),
-        paddingHorizontal: normalize(40),
-        borderRadius: normalize(30),
+        paddingVertical: theme.spacing.sm,
+        paddingHorizontal: theme.spacing.xl,
+        borderRadius: theme.borderRadius.full,
+        ...theme.shadows.sm,
         shadowColor: '#2ecc71',
-        shadowOffset: { width: normalize(0), height: normalize(10) },
-        shadowOpacity: 0.3,
-        shadowRadius: normalize(20),
-        elevation: normalize(6),
-        fontFamily: FONT.NORMAL,
     },
     goBack: {
         backgroundColor: labels.type4.textColor,
-        paddingVertical: normalize(15),
-        paddingHorizontal: normalize(40),
-        borderRadius: normalize(30),
-        marginTop: normalize(30),
+        paddingVertical: theme.spacing.sm,
+        paddingHorizontal: theme.spacing.xl,
+        borderRadius: theme.borderRadius.full,
+        marginTop: theme.spacing.md,
+        ...theme.shadows.sm,
         shadowColor: labels.type4.textColor,
-        shadowOffset: { width: normalize(0), height: normalize(10) },
-        shadowOpacity: 0.3,
-        shadowRadius: normalize(20),
-        elevation: normalize(6),
-        fontFamily: FONT.NORMAL,
     },
     restoreText: {
         color: '#fff',
-        fontSize: normalize(18),
-
-        fontFamily: FONT.NORMAL,
+        fontSize: theme.typography.body,
+        fontFamily: FONT.BOLD,
     },
-})
+});

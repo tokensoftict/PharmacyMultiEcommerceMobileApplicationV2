@@ -11,6 +11,7 @@ import {Product} from "@/service/order/interface/OrderListInterface.tsx";
 import CartService from "@/service/cart/CartService.tsx";
 import {useLoading} from "@/shared/utils/LoadingProvider.tsx";
 import Environment from "@/shared/utils/Environment.tsx";
+import { theme } from "@/shared/theme";
 
 interface ProductList {
     product: Product | undefined,
@@ -60,7 +61,7 @@ interface ProductList {
                         <View style={styles.actions}>
                             <Typography numberOfLines={2} ellipsizeMode={'tail'} style={styles.name}>{product?.name}</Typography>
                             <Typography style={styles.price}>Total: {currencyType} {product?.total}</Typography>
-                            <Typography style={{marginTop: normalize(10),fontSize : normalize(9)}}>Quantity: {product?.quantity}</Typography>
+                            <Typography style={{marginTop: theme.spacing.xs, fontSize : theme.typography.xs - 2}}>Quantity: {product?.quantity}</Typography>
                         </View>
                         {
                             (Environment.isSalesRepresentativeEnvironment()) ? <></> :

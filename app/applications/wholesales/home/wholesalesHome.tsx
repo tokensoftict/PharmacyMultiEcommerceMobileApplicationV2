@@ -4,6 +4,7 @@ import {homeBuild} from "@/service/wholesales/interface/WholesalesHomePageInterf
 import useEffectOnce from "@/shared/hooks/useEffectOnce.tsx";
 import HomeHeader from "@/shared/elements/HomeHeader";
 import {usePopup} from "@/popup/PopupProvider.tsx";
+import {useCampaign} from "@/campaign/CampaignProvider";
 
 
 
@@ -12,6 +13,7 @@ import {usePopup} from "@/popup/PopupProvider.tsx";
     const [homePageData, setHomePageData] = useState<homeBuild[]>([]);
     const wholesalesService = new WholesalesHomeService();
     const { startPopups } = usePopup();
+    const { triggerEvent } = useCampaign();
 
     useEffectOnce(function(){
         loadHomePage();
@@ -23,6 +25,7 @@ import {usePopup} from "@/popup/PopupProvider.tsx";
             setIsLoading(false);
             setHomePageData(response.data.data);
             startPopups();
+            triggerEvent('HOME_OPENED');
         }, function (error){setIsLoading(false)})
     }
 

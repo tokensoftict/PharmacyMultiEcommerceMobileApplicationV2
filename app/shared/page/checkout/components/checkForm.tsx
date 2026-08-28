@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Animated, Dimensions, Easing, Platform } from 'react-native';
+import { View, TouchableOpacity, Animated, Dimensions, Easing, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { _styles } from "./styles";
@@ -7,8 +7,8 @@ import useDarkMode from "@/shared/hooks/useDarkMode.tsx";
 import SelectCheckoutAddress from "@/shared/page/checkout/components/selectCheckoutAddress";
 import SelectDeliveryOption from "@/shared/page/checkout/components/selectDeliveryOption";
 import SelectPaymentOption from "@/shared/page/checkout/components/selectPaymentOption";
-import { normalize } from "@/shared/helpers";
 import ConfirmCheckout from "@/shared/page/checkout/components/confirmCheckout";
+import { normalize } from "@/shared/helpers";
 import { Icon } from "react-native-paper";
 import { arrowBack, arrowForward } from "@/assets/icons";
 import { semantic } from "@/shared/constants/colors.ts";
@@ -17,12 +17,12 @@ import OrderSuccessDialog from "@/shared/page/checkout/components/confirmCheckou
 import { useLoading } from "@/shared/utils/LoadingProvider.tsx";
 import Toastss from "@/shared/utils/Toast.tsx";
 import { CommonActions, useNavigation } from "@react-navigation/native";
-import { NavigationProps } from "@/shared/routes/stack.tsx";
 import CheckoutService from "@/service/checkout/CheckoutService.tsx";
 import AuthSessionService from "@/service/auth/AuthSessionService.tsx";
 import Typography from "@/shared/component/typography";
 import { usePaystack } from "react-native-paystack-webview";
-import styles from "@/shared/page/medreminder/create-medreminder/styles.ts";
+import { theme } from "@/shared/theme";
+import CampaignEventBus from "@/campaign/CampaignEventBus";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -37,12 +37,16 @@ const CheckoutStepper = () => {
     const [order, setOrder] = useState({});
     const [paymentMethod, setPaymentMethod] = useState();
     // @ts-ignore
-    const styles = new _styles(isDarkMode);
+    const styles = _styles(isDarkMode);
     const checkOutService = new CheckoutService();
     const { showLoading, hideLoading } = useLoading();
     const navigation = useNavigation();
 
     const { popup } = usePaystack();
+
+    useEffect(() => {
+        CampaignEventBus.emit('CHECKOUT_STARTED');
+    }, []);
 
     useEffect(() => {
         Animated.timing(slideAnim, {
@@ -59,8 +63,6 @@ const CheckoutStepper = () => {
         validationRefs.current[stepIndex] = validationFunc;
     };
 
-
-
     const nextStep = async () => {
         // @ts-ignore
         const validateFunc = validationRefs.current[step];
@@ -74,7 +76,6 @@ const CheckoutStepper = () => {
         }
 
         setStep((prev) => Math.min(prev + 1, 4));
-
     };
 
     const prevStep = () => {
@@ -83,6 +84,7 @@ const CheckoutStepper = () => {
 
     function popUpPayment() {
         showLoading("Please wait...");
+        CampaignEventBus.emit('PAYMENT_STARTED');
         checkOutService.getPayStackTransactionData().then((response) => {
 
             if (response.data.status === true) {
@@ -90,12 +92,15 @@ const CheckoutStepper = () => {
                 hideLoading();
                 paymentData['onSuccess'] = function (response: any) {
                     if (response.status === "success") {
+                        CampaignEventBus.emit('PAYMENT_SUCCESS', { reference: response.reference });
                         completeOrder(response.reference);
+                    } else {
+                        CampaignEventBus.emit('PAYMENT_FAILED');
                     }
                 }
 
                 paymentData['onCancel'] = function () {
-
+                    CampaignEventBus.emit('PAYMENT_FAILED');
                 }
 
                 paymentData['onLoad'] = function (response: any) {
@@ -103,15 +108,17 @@ const CheckoutStepper = () => {
                 }
 
                 paymentData['onError'] = function (response: any) {
-
+                    CampaignEventBus.emit('PAYMENT_FAILED', { error: response });
                 }
                 popup.checkout(paymentData);
             } else {
                 hideLoading();
+                CampaignEventBus.emit('PAYMENT_FAILED');
                 Toastss("There was an error generating payment, please try again");
             }
         }, function (error) {
             hideLoading();
+            CampaignEventBus.emit('PAYMENT_FAILED');
             Toastss("There was an error generating payment, please try again");
         })
     }
@@ -124,6 +131,10 @@ const CheckoutStepper = () => {
                 const orderDetails = response.data.data;
                 setOrder(orderDetails);
                 setModalVisible(true);
+                CampaignEventBus.emit('ORDER_PLACED', {
+                    order_id: orderDetails?.id,
+                    order_total: orderDetails?.total_amount,
+                });
             } else {
                 Toastss(response.data.message);
             }
@@ -235,8 +246,8 @@ const CheckoutStepper = () => {
                 styles.navigation,
                 {
                     paddingBottom: Platform.OS === 'ios'
-                        ? normalize(40) + (insets.bottom > 0 ? normalize(5) : 0)
-                        : normalize(24) + insets.bottom,
+                        ? Math.max(insets.bottom + theme.spacing.md, theme.spacing.xl)
+                        : insets.bottom + theme.spacing.lg,
                 }
             ]}>
 

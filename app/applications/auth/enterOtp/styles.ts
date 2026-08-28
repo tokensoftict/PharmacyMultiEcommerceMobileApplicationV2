@@ -1,35 +1,41 @@
 import { StyleSheet } from "react-native";
-import { normalize } from "../../../shared/helpers";
-import { palette } from "../../../shared/constants/colors";
+import { palette } from "../../../shared/constants/colors.ts";
+import { theme } from "@/shared/theme";
 
-
+/**
+ * Otp Validation Screen Styles (Latest Design Refactor)
+ *
+ * Refactored using the centralized theme spacing, shadows, border-radius,
+ * and responsive typography system to align cleanly.
+ */
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: normalize(32),
+    paddingHorizontal: theme.spacing.lg,
+    width: '100%',
   },
   containerEmail: {
     alignItems: 'center',
-    marginTop: normalize(32),
-    marginBottom: normalize(91)
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
   },
   textEmail: {
-    color: palette.main.p500
+    color: palette.main.p500,
   },
-  titleImageContainer :{
+  titleImageContainer: {
     flexDirection: 'row',
     alignItems: "flex-start",
-    justifyContent : "space-between"
+    justifyContent: "space-between",
   },
   form: {
-    marginBottom: normalize(80)
+    marginBottom: theme.spacing.md,
   },
   containerBtns: {
-    marginTop: normalize(20),
+    marginTop: theme.spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
   },
   divider: {
-    width: normalize(24)
-  }
-})
+    width: theme.spacing.md,
+  },
+});

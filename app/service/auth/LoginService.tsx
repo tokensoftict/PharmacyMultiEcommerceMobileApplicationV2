@@ -4,6 +4,7 @@ import { store } from "@/redux/store/store.tsx";
 import { scheduleNotification } from "@/shared/utils/ScheduleNotification.tsx";
 import dayjs from "dayjs";
 import notifee from "@notifee/react-native";
+import CampaignEventBus from "@/campaign/CampaignEventBus";
 export default class LoginService {
     request: Request
     authSessionService: AuthSessionService
@@ -195,6 +196,7 @@ export default class LoginService {
     prepareUserSession(response: any): object {
         response['loginStatus'] = true;
         this.authSessionService.setAuthSession(response);
+        CampaignEventBus.emit('LOGIN');
         return {
             status: true,
             message: "Login Successful"

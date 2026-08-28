@@ -1,214 +1,298 @@
-import { normalize } from '../../../shared/helpers';
 import { StyleSheet, Dimensions, Platform } from 'react-native';
 import { semantic, palette } from "@/shared/constants/colors.ts";
 import { FONT } from "@/shared/constants/fonts.ts";
+import { theme } from "@/shared/theme";
+import { normalize } from "@/shared/helpers";
+
+/**
+ * MyAccount Screen Styles
+ */
 
 const { width } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#F1F5F9',
     },
-    // Profile Card
-    profileCard: {
-        marginHorizontal: Platform.OS === 'ios' ? normalize(2) : normalize(20),
-        borderRadius: normalize(24),
-        padding: normalize(16),
-        elevation: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
+
+    // ── Profile Card ──────────────────────────────────────────────────────────
+    profileCardContainer: {
+        marginHorizontal: theme.spacing.md,
+        marginTop: theme.spacing.md,
+        borderRadius: theme.borderRadius.xl,
+        ...theme.shadows.lg,
+        backgroundColor: 'transparent',
+    },
+    profileCardGradient: {
+        borderRadius: theme.borderRadius.xl,
+        padding: theme.spacing.md,
         overflow: 'hidden',
     },
     profileMain: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: normalize(10),
+        marginBottom: theme.spacing.sm,
     },
     imageContainer: {
         position: 'relative',
     },
     avatar: {
-        width: normalize(60),
-        height: normalize(60),
-        borderRadius: normalize(24),
-        borderWidth: 2,
-        borderColor: '#F0F0F0',
-        backgroundColor: "#FFFFFF"
+        width: 68,
+        height: 68,
+        borderRadius: theme.borderRadius.lg,
+        borderWidth: 2.5,
+        borderColor: 'rgba(255,255,255,0.5)',
+        backgroundColor: '#FFFFFF',
     },
     editBadge: {
         position: 'absolute',
-        bottom: -normalize(4),
-        right: -normalize(4),
+        bottom: -4,
+        right: -4,
         backgroundColor: '#D50000',
-        width: normalize(28),
-        height: normalize(28),
-        borderRadius: normalize(14),
+        width: 26,
+        height: 26,
+        borderRadius: theme.borderRadius.full,
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 3,
+        borderWidth: 2,
         borderColor: '#fff',
+        ...theme.shadows.sm,
     },
     infoContent: {
-        marginLeft: normalize(16),
+        marginLeft: theme.spacing.md,
         flex: 1,
     },
     userName: {
-        fontSize: normalize(18),
+        fontSize: theme.typography.xl,
         color: '#1A1D1E',
         fontFamily: FONT.BOLD,
     },
     userPhone: {
-        fontSize: normalize(12),
+        fontSize: theme.typography.xs,
         color: '#6A6A6A',
         fontFamily: FONT.NORMAL,
-        marginTop: normalize(1),
+        marginTop: 2,
     },
     groupBadge: {
-        marginTop: normalize(8),
-        paddingHorizontal: normalize(10),
-        paddingVertical: normalize(4),
-        borderRadius: normalize(8),
+        marginTop: theme.spacing.xs,
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: theme.spacing.xs / 2,
+        borderRadius: theme.borderRadius.xs,
         alignSelf: 'flex-start',
     },
     groupText: {
-        fontSize: normalize(10),
+        fontSize: theme.typography.xs,
         fontFamily: FONT.BOLD,
     },
 
-    // Loyalty Progress
+    // ── Loyalty Progress ──────────────────────────────────────────────────────
     loyaltyContainer: {
         borderTopWidth: 1,
-        borderTopColor: '#F0F0F0',
-        paddingTop: normalize(20),
-        paddingBottom: Platform.OS === 'ios' ? normalize(25) : normalize(0),
+        borderTopColor: 'rgba(255,255,255,0.15)',
+        paddingTop: theme.spacing.md,
+        paddingBottom: theme.spacing.xs,
+        alignSelf: 'stretch',
     },
     loyaltyHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: normalize(12),
-        width: '100%',
+        marginBottom: theme.spacing.sm,
     },
     loyaltyTitle: {
-        fontSize: normalize(14),
+        fontSize: theme.typography.sm,
         color: '#1A1D1E',
         fontFamily: FONT.BOLD,
         flex: 1,
     },
     pointsText: {
-        fontSize: normalize(14),
+        fontSize: theme.typography.sm,
         color: '#D50000',
         fontFamily: FONT.BOLD,
         textAlign: 'right',
-        marginRight: Platform.OS === 'ios' ? normalize(22) : normalize(0),
     },
     progressBarBg: {
-        height: normalize(8),
+        height: 8,
         backgroundColor: '#F5F5F5',
-        borderRadius: normalize(4),
+        borderRadius: theme.borderRadius.full,
         overflow: 'hidden',
-        marginRight: Platform.OS === 'ios' ? normalize(22) : normalize(0),
     },
     progressBarFill: {
         height: '100%',
         backgroundColor: '#D50000',
-        borderRadius: normalize(4),
+        borderRadius: theme.borderRadius.full,
     },
     loyaltyFooter: {
-        marginTop: normalize(6),
-        fontSize: normalize(10),
+        marginTop: theme.spacing.xs / 2,
+        fontSize: theme.typography.xs,
         color: '#9A9A9A',
         fontFamily: FONT.NORMAL,
-        lineHeight: normalize(16),
+        lineHeight: theme.typography.xs * 1.8,
     },
 
-    // Quick Actions Grid
-    gridContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        paddingHorizontal: normalize(12),
-        marginTop: normalize(16),
+    // ── Quick Actions (horizontal pill scroll) ────────────────────────────────
+    quickScroll: {
+        marginTop: theme.spacing.md,
     },
-    gridItem: {
-        width: (width - normalize(48)) / 2,
-        backgroundColor: '#F8F9FB',
-        margin: normalize(6),
-        padding: normalize(16),
-        borderRadius: normalize(20),
+    quickScrollContent: {
+        paddingHorizontal: theme.spacing.md,
+        gap: theme.spacing.sm,
+    },
+    quickPill: {
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    gridIconWrapper: {
-        width: normalize(32),
-        height: normalize(32),
-        borderRadius: normalize(12),
-        backgroundColor: '#fff',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: normalize(8),
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-    },
-    gridLabel: {
-        fontSize: normalize(13),
-        color: '#1A1D1E',
-        fontFamily: FONT.MEDIUM,
-    },
-    gridSubLabel: {
-        fontSize: normalize(10),
-        color: '#9A9A9A',
-        fontFamily: FONT.NORMAL,
-        marginTop: normalize(2),
-    },
-
-    // Stats Bar
-    statsBar: {
-        flexDirection: 'row',
-        backgroundColor: '#FDF2F2',
-        marginHorizontal: normalize(20),
-        marginTop: normalize(16),
-        borderRadius: normalize(20),
-        padding: normalize(16),
-        justifyContent: 'space-around',
+        backgroundColor: '#FFFFFF',
+        borderRadius: theme.borderRadius.xl,
+        paddingVertical: theme.spacing.md,
+        paddingHorizontal: theme.spacing.lg,
+        minWidth: normalize(88),
+        ...theme.shadows.sm,
         borderWidth: 1,
-        borderColor: '#FFEBEE',
+        borderColor: '#E2E8F0',
     },
-    statBox: {
+    quickIconWrap: {
+        width: 44,
+        height: 44,
+        borderRadius: theme.borderRadius.lg,
+        justifyContent: 'center',
         alignItems: 'center',
+        marginBottom: theme.spacing.xs,
     },
-    statValue: {
-        color: '#D50000',
-        fontSize: normalize(16),
+    quickLabel: {
+        fontSize: normalize(12),
         fontFamily: FONT.BOLD,
+        color: '#1E293B',
+        textAlign: 'center',
     },
-    statLabel: {
-        color: 'rgba(255, 255, 255, 0.6)',
+    quickSub: {
         fontSize: normalize(10),
         fontFamily: FONT.NORMAL,
-        marginTop: normalize(4),
-    },
-    statDivider: {
-        width: 1,
-        height: '100%',
-        backgroundColor: 'rgba(213, 0, 0, 0.1)',
+        color: '#94A3B8',
+        textAlign: 'center',
+        marginTop: 2,
     },
 
-    // Menu section
-    sectionTitle: {
-        fontSize: normalize(14),
-        color: '#1A1D1E',
+    // ── Referral Banner Card ──────────────────────────────────────────────────
+    referralWrapper: {
+        marginHorizontal: theme.spacing.md,
+        marginTop: theme.spacing.md,
+    },
+    referralCard: {
+        borderRadius: theme.borderRadius.xl,
+        overflow: 'hidden',
+        ...theme.shadows.md,
+    },
+    referralGradient: {
+        padding: theme.spacing.md,
+        overflow: 'hidden',
+    },
+    referralDecorCircle: {
+        position: 'absolute',
+        width: 140,
+        height: 140,
+        borderRadius: 70,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        top: -50,
+        right: -40,
+    },
+    referralTop: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: theme.spacing.md,
+    },
+    referralIconBg: {
+        width: 40,
+        height: 40,
+        borderRadius: theme.borderRadius.lg,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    referralTitle: {
+        fontSize: normalize(15),
         fontFamily: FONT.BOLD,
-        marginTop: normalize(25),
-        marginBottom: normalize(0),
+        color: '#FFFFFF',
+    },
+    referralSub: {
+        fontSize: normalize(11),
+        fontFamily: FONT.NORMAL,
+        color: 'rgba(255,255,255,0.7)',
+        marginTop: 2,
+        flexWrap: 'wrap',
+    },
+    referralDetailBtn: {
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        borderRadius: theme.borderRadius.md,
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: theme.spacing.xs,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.25)',
+    },
+    referralDetailBtnText: {
+        fontSize: normalize(11),
+        fontFamily: FONT.BOLD,
+        color: '#FFFFFF',
+    },
+    referralCodeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: theme.spacing.xs,
+    },
+    referralCodeBox: {
+        flex: 1,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderRadius: theme.borderRadius.md,
+        paddingVertical: theme.spacing.sm,
+        paddingHorizontal: theme.spacing.md,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+        borderStyle: 'dashed',
+    },
+    referralCodeText: {
+        fontSize: normalize(16),
+        fontFamily: FONT.EXTRA_BOLD,
+        color: '#FFFFFF',
+        letterSpacing: 3,
+        textAlign: 'center',
+    },
+    referralActionBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+        paddingVertical: theme.spacing.sm,
+        paddingHorizontal: theme.spacing.sm,
+        borderRadius: theme.borderRadius.md,
+        borderWidth: 1,
+        borderColor: '#93C5FD',
+    },
+    referralActionBtnCopied: {
+        backgroundColor: '#22C55E',
+        borderColor: '#22C55E',
+    },
+    referralShareBtn: {
+        backgroundColor: palette.main.p500,
+        borderColor: palette.main.p500,
+    },
+    referralActionText: {
+        fontSize: normalize(11),
+        fontFamily: FONT.BOLD,
+        color: '#93C5FD',
+    },
+
+    // ── Menu Section ──────────────────────────────────────────────────────────
+    sectionTitle: {
+        fontSize: normalize(11),
+        color: '#94A3B8',
+        fontFamily: FONT.BOLD,
+        textTransform: 'uppercase',
+        letterSpacing: 1.2,
+        marginTop: theme.spacing.lg,
+        marginBottom: theme.spacing.xs / 2,
+        paddingHorizontal: theme.spacing.xs,
     },
     menuList: {
-        paddingHorizontal: normalize(24),
-        paddingBottom: normalize(120),
-    }
+        paddingHorizontal: theme.spacing.md,
+        paddingBottom: theme.spacing.xxl * 2,
+    },
 });

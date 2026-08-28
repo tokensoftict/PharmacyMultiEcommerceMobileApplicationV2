@@ -1,30 +1,36 @@
 import { StyleSheet } from "react-native";
-import { normalize } from "../../helpers";
 import { design, palette, semantic } from "../../constants/colors";
+import { theme } from "../../theme";
 
+/**
+ * OrderItemHorizontalList Styles (Latest Design Refactor)
+ *
+ * Refactored using the centralized theme spacing, shadows, border-radius,
+ * and responsive typography system to align cleanly.
+ */
 export const _styles = (isDarkMode: boolean) => StyleSheet.create({
   container: {
     flex: 1,
   },
   viewOrderButton: {
     backgroundColor: semantic.alert.danger.d500,
-    paddingHorizontal: normalize(10),
-    borderRadius: 5,
-    paddingVertical: normalize(8),
+    paddingHorizontal: theme.spacing.sm,
+    borderRadius: theme.borderRadius.xs / 2,
+    paddingVertical: theme.spacing.xs,
     alignItems: "center",
     justifyContent: "center",
+    minHeight: 28, // Compact design spec
   },
   buttonText: {
     color: "white",
-    fontSize: normalize(10),
-
+    fontSize: theme.typography.xs - 1,
   },
   priceTotalContainer: {
     flexDirection: 'row',
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: normalize(6),
-    marginTop: normalize(6),
+    marginBottom: theme.spacing.xs,
+    marginTop: theme.spacing.xs,
   },
   grid: {
     flex: 1,
@@ -35,73 +41,69 @@ export const _styles = (isDarkMode: boolean) => StyleSheet.create({
   },
   innerContainer: {
     flexDirection: 'row',
-    backgroundColor: semantic.text.white,
-    padding: normalize(10),
-    elevation: 50,
-    shadowColor: semantic.fill.f04,
-    shadowOffset: { width: normalize(4), height: normalize(4) },
-    shadowOpacity: 2,
-    shadowRadius: 1,
-    // flex: 1,
+    backgroundColor: isDarkMode ? semantic.fill.f02 : '#FFFFFF',
+    padding: theme.spacing.sm,
+    borderRadius: theme.borderRadius.sm,
+    borderWidth: 1,
+    borderColor: isDarkMode ? semantic.fill.f04 : '#F1F5F9',
+    ...theme.shadows.sm,
   },
   containerImage: {
-    width: normalize(80),
-    height: normalize(90),
+    width: 70, // Responsive aspect bounds
+    height: 80,
     backgroundColor: isDarkMode ? semantic.fill.f01 : semantic.fill.f04,
-    borderRadius: normalize(16)
+    borderRadius: theme.borderRadius.sm,
+    overflow: 'hidden',
   },
   image: {
     width: '100%',
-    height: normalize(90)
+    height: '100%',
+    resizeMode: 'contain',
   },
   name: {
-    fontSize: normalize(9),
-
+    fontSize: theme.typography.xs,
     color: isDarkMode ? semantic.text.white : semantic.text.black,
   },
   category: {
     color: isDarkMode ? semantic.text.white : design.text1.color,
     backgroundColor: isDarkMode ? semantic.text.black : design.text1.background,
-    padding: normalize(1),
-    paddingLeft: normalize(3),
-    borderRadius: normalize(10),
-    width: '30%',
-    fontSize: normalize(8),
-    marginVertical: normalize(2)
+    paddingHorizontal: theme.spacing.xs,
+    paddingVertical: 2,
+    borderRadius: theme.borderRadius.xs / 2,
+    alignSelf: 'flex-start',
+    fontSize: theme.typography.xs - 2,
+    marginVertical: theme.spacing.xs / 2,
   },
   price: {
-    fontSize: normalize(9),
+    fontSize: theme.typography.xs,
     color: isDarkMode ? semantic.text.white : semantic.text.black,
-
-    marginTop: normalize(2)
+    marginTop: 2,
   },
   special: {
-    fontSize: normalize(9),
+    fontSize: theme.typography.xs,
     color: semantic.alert.danger.d500,
     textDecorationLine: "line-through",
-    marginTop: normalize(5),
+    marginTop: theme.spacing.xs / 2,
   },
   specialHolder: {
     flexDirection: 'row'
   },
   doorStep: {
-    fontSize: normalize(10),
+    fontSize: theme.typography.xs - 2,
     color: isDarkMode ? semantic.text.white : palette.main.p500,
-
-    marginBottom: normalize(6),
+    marginBottom: theme.spacing.xs / 2,
   },
   totalPrice: {
     color: palette.main.p500,
-    fontSize: normalize(12),
-
-    marginLeft: normalize(25)
+    fontSize: theme.typography.xs,
+    marginLeft: theme.spacing.md,
   },
   containerInfo: {
     flex: 1,
     flexDirection: 'row',
     alignItems: "center",
     justifyContent: "space-between",
-    marginLeft: normalize(18)
+    marginLeft: theme.spacing.md,
   },
   actions: {
     flex: 1,
@@ -113,29 +115,25 @@ export const _styles = (isDarkMode: boolean) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderTopRightRadius: 10,
-    borderTopLeftRadius: 10,
-    backgroundColor: semantic.text.white,
-    padding: normalize(10),
-    paddingTop: normalize(0),
-    paddingBottom: normalize(0),
+    borderTopRightRadius: theme.borderRadius.sm,
+    borderTopLeftRadius: theme.borderRadius.sm,
+    backgroundColor: isDarkMode ? semantic.fill.f02 : '#FFFFFF',
+    padding: theme.spacing.sm,
     borderBottomColor: semantic.background.white.w111,
     borderStyle: 'solid',
-    borderBottomWidth: normalize(1),
+    borderBottomWidth: 1,
   },
   actionsFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottomRightRadius: 10,
-    borderBottomLeftRadius: 10,
-    backgroundColor: semantic.text.white,
-    padding: normalize(10),
-    paddingTop: normalize(0),
-    paddingBottom: normalize(0),
+    borderBottomRightRadius: theme.borderRadius.sm,
+    borderBottomLeftRadius: theme.borderRadius.sm,
+    backgroundColor: isDarkMode ? semantic.fill.f02 : '#FFFFFF',
+    padding: theme.spacing.sm,
     borderBottomColor: semantic.background.white.w111,
     borderStyle: 'solid',
-    borderBottomWidth: normalize(1),
+    borderBottomWidth: 1,
   },
   containerCant: {
     flexDirection: 'row',
@@ -144,15 +142,14 @@ export const _styles = (isDarkMode: boolean) => StyleSheet.create({
   },
   cant: {
     backgroundColor: palette.main.p500,
-    width: normalize(24),
-    height: normalize(24),
-    borderRadius: 150,
+    width: theme.spacing.md,
+    height: theme.spacing.md,
+    borderRadius: theme.borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center'
   },
   cantText: {
     color: semantic.text.white,
-    fontSize: normalize(16),
-
+    fontSize: theme.typography.sm,
   }
-})
+});

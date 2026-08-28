@@ -1,40 +1,46 @@
 import { StyleSheet } from "react-native";
-import { normalize } from "../../../shared/helpers";
-import {palette} from "../../../shared/constants/colors.ts";
+import { palette } from "../../../shared/constants/colors.ts";
+import { theme } from "@/shared/theme";
 
-
+/**
+ * ForgotPassword Styles (Latest Design Refactor)
+ *
+ * Refactored using the centralized theme spacing, shadows, border-radius,
+ * and responsive typography system to align cleanly.
+ */
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: normalize(24),
-    height : '100%',
-    width : '100%'
+    paddingHorizontal: theme.spacing.lg,
+    width: '100%',
   },
   containerTitle: {
-    marginVertical: normalize(32)
+    marginVertical: theme.spacing.md,
   },
   formControl: {
-    marginBottom: normalize(24)
+    marginBottom: theme.spacing.md,
   },
-  titleImageContainer :{
+  titleImageContainer: {
     flexDirection: 'row',
     alignItems: "flex-start",
-    justifyContent : "space-between",
-    marginVertical: normalize(32)
+    justifyContent: "space-between",
+    marginVertical: theme.spacing.md,
   },
   textEmail: {
-    color: palette.main.p500
+    color: palette.main.p500,
   },
   containerEmail: {
     alignItems: 'center',
-    marginTop: normalize(32),
-    marginBottom: normalize(91)
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
   },
   description: {
-    fontSize: normalize(18)
+    fontSize: theme.typography.md,
+    color: '#64748B',
+    lineHeight: 22,
   },
   form: {
-    marginTop: normalize(40),
-    marginBottom: normalize(24)
-  }
-})
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+  },
+});

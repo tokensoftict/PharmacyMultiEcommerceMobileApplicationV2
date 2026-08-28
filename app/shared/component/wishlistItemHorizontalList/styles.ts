@@ -1,87 +1,91 @@
 import { StyleSheet } from "react-native";
-import { normalize } from "../../helpers";
-import { design, palette, semantic } from "../../constants/colors";
+import { semantic } from "../../constants/colors";
 import { FONT } from "@/shared/constants/fonts";
+import { theme } from "@/shared/theme";
 
+/**
+ * WishlistItemHorizontalList Styles (Latest Design Refactor)
+ *
+ * Refactored using centralized theme tokens instead of normalize() calls.
+ */
 export const _styles = (isDarkMode: boolean) => StyleSheet.create({
   container: {
-    marginHorizontal: normalize(16),
-    marginVertical: normalize(8),
+    marginHorizontal: theme.spacing.sm,
+    marginVertical: theme.spacing.xs / 2,
   },
   innerContainer: {
     flexDirection: 'row',
     backgroundColor: isDarkMode ? semantic.fill.f02 : '#FFFFFF',
-    borderRadius: normalize(16),
-    padding: normalize(12),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    borderRadius: theme.borderRadius.sm,
+    padding: theme.spacing.xs + 2,
+    ...theme.shadows.sm,
+    borderWidth: 1,
+    borderColor: isDarkMode ? 'transparent' : '#F1F5F9',
   },
   containerImage: {
-    width: normalize(90),
-    height: normalize(90),
+    width: 72,
+    height: 72,
     backgroundColor: isDarkMode ? semantic.fill.f01 : '#F8F9FA',
-    borderRadius: normalize(12),
+    borderRadius: theme.borderRadius.xs,
     justifyContent: 'center',
     alignItems: 'center',
   },
   image: {
-    width: '85%',
-    height: '85%',
+    width: '80%',
+    height: '80%',
   },
   containerInfo: {
     flex: 1,
-    marginLeft: normalize(16),
+    marginLeft: theme.spacing.sm,
     justifyContent: 'space-between',
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    gap: theme.spacing.xs,
   },
   name: {
-    fontSize: normalize(15),
+    fontSize: theme.typography.md,
     fontFamily: FONT.BOLD,
     color: isDarkMode ? semantic.text.white : '#1A1D1E',
     flex: 1,
-    marginRight: normalize(8),
+    lineHeight: theme.typography.md * 1.3,
   },
   removeButton: {
-    padding: normalize(4),
+    padding: theme.spacing.xs / 2,
   },
   trashIcon: {
-    width: normalize(18),
-    height: normalize(18),
+    width: theme.spacing.md,
+    height: theme.spacing.md,
     tintColor: '#D50000',
   },
   priceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: normalize(4),
+    marginTop: theme.spacing.xs / 2,
   },
   price: {
-    fontSize: normalize(18),
+    fontSize: theme.typography.lg,
     fontFamily: FONT.BOLD,
     color: semantic.alert.danger.d500,
   },
   quantityBadge: {
     backgroundColor: isDarkMode ? semantic.fill.f04 : '#E8F5E9',
-    paddingHorizontal: normalize(8),
-    paddingVertical: normalize(4),
-    borderRadius: normalize(6),
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.xs,
   },
   quantityText: {
-    fontSize: normalize(10),
+    fontSize: theme.typography.xs,
     fontFamily: FONT.MEDIUM,
     color: isDarkMode ? semantic.text.white : '#2E7D32',
   },
   doorStep: {
-    fontSize: normalize(10),
+    fontSize: theme.typography.xs,
     color: '#757575',
     fontFamily: FONT.NORMAL,
-    marginTop: normalize(4),
+    marginTop: theme.spacing.xs,
   },
-})
+});

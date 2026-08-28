@@ -1,54 +1,51 @@
 import { StyleSheet } from 'react-native';
-import { normalize } from '@/shared/helpers';
-import { semantic, palette } from '@/shared/constants/colors.ts';
+import { semantic } from '@/shared/constants/colors.ts';
 import { FONT } from '@/shared/constants/fonts';
+import { theme } from "@/shared/theme";
 
+/**
+ * BrandLists Styles (Latest Design Refactor)
+ *
+ * Refactored using the centralized theme spacing, shadows, border-radius,
+ * and responsive typography system to align cleanly.
+ */
 export const styles = StyleSheet.create({
     searchWrapper: {
-        paddingHorizontal: normalize(16),
-        paddingTop: normalize(12),
-        paddingBottom: normalize(16),
+        paddingHorizontal: theme.spacing.md,
+        paddingTop: theme.spacing.xs,
+        paddingBottom: theme.spacing.sm,
         backgroundColor: semantic.text.white,
         borderBottomWidth: 1,
         borderBottomColor: '#f0f0f0',
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
+        ...theme.shadows.sm,
         zIndex: 10,
     },
     categoryMenuContainer: {
-        paddingHorizontal: normalize(12),
-        paddingBottom: normalize(40),
-        paddingTop: normalize(16),
+        paddingHorizontal: theme.spacing.xs,
+        paddingBottom: theme.spacing.xl,
+        paddingTop: theme.spacing.sm,
     },
     categoryCard: {
         flex: 1,
         alignItems: 'center',
-        margin: normalize(3),
+        margin: theme.spacing.xs / 2,
         backgroundColor: semantic.text.white,
-        borderRadius: normalize(16),
-        paddingVertical: normalize(16),
-        paddingHorizontal: normalize(8),
+        borderRadius: theme.borderRadius.md,
+        paddingVertical: theme.spacing.md,
+        paddingHorizontal: theme.spacing.xs,
         borderWidth: 1,
         borderColor: '#f2f2f2',
-        // Premium shadow
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-        minWidth: normalize(100),
+        ...theme.shadows.sm,
+        minWidth: 100,
     },
     imageWrapper: {
-        width: normalize(64),
-        height: normalize(64),
-        borderRadius: normalize(14),
+        width: 64,
+        height: 64,
+        borderRadius: theme.borderRadius.sm,
         backgroundColor: '#f9f9f9',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: normalize(10),
+        marginBottom: theme.spacing.xs,
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: '#eee',
@@ -59,7 +56,7 @@ export const styles = StyleSheet.create({
         resizeMode: 'contain',
     },
     categoryText: {
-        fontSize: normalize(11),
+        fontSize: theme.typography.xs,
         textAlign: 'center',
         color: semantic.text.black,
         fontFamily: FONT.BOLD,

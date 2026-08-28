@@ -1,18 +1,18 @@
 import { StyleSheet, ViewStyle } from "react-native";
 import { palette, semantic } from "../../constants/colors";
-import { normalize } from "../../helpers";
+import { theme } from "../../theme";
 
 const defaultContainer: ViewStyle = {
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'space-between',
-  paddingTop: normalize(5),
-  paddingLeft: normalize(10),
-  paddingBottom: normalize(5),
+  paddingVertical: theme.spacing.sm,
+  paddingHorizontal: theme.spacing.md,
   borderWidth: 1,
-  borderRadius: normalize(10),
-  marginVertical: normalize(5)
-}
+  borderRadius: theme.borderRadius.sm,
+  marginVertical: theme.spacing.xs / 2,
+};
+
 export const _styles = (isDarkMode: boolean, active: boolean) => StyleSheet.create({
   container: {
     ...defaultContainer,
@@ -24,25 +24,25 @@ export const _styles = (isDarkMode: boolean, active: boolean) => StyleSheet.crea
   },
   containerIcon: {
     backgroundColor: isDarkMode ? semantic.fill.f01 : semantic.fill.f04,
-    borderRadius: normalize(16),
-    width: normalize(64),
-    height: normalize(64),
+    borderRadius: theme.borderRadius.sm,
+    width: theme.MIN_TOUCH_TARGET + 8,
+    height: theme.MIN_TOUCH_TARGET + 8,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: normalize(12)
+    marginRight: theme.spacing.sm,
   },
   icon: {
-    width: normalize(32),
-    height: normalize(32),
-    tintColor: isDarkMode ? semantic.background.white.w500 : semantic.text.grey
+    width: theme.spacing.lg,
+    height: theme.spacing.lg,
+    tintColor: isDarkMode ? semantic.background.white.w500 : semantic.text.grey,
   },
   title: {
-    fontSize: normalize(12),
-
+    fontSize: theme.typography.sm,
+    color: isDarkMode ? semantic.text.white : semantic.text.black,
   },
   address: {
-    fontSize: normalize(10),
-    color: semantic.text.grey
+    fontSize: theme.typography.xs,
+    color: semantic.text.grey,
   },
   containerInfo: {
     flex: 1,
@@ -54,7 +54,8 @@ export const _styles = (isDarkMode: boolean, active: boolean) => StyleSheet.crea
     alignItems: 'center',
   },
   price: {
-
-    marginRight: normalize(12)
-  }
-})
+    marginRight: theme.spacing.sm,
+    fontSize: theme.typography.sm,
+    color: isDarkMode ? semantic.text.white : semantic.text.black,
+  },
+});

@@ -32,6 +32,7 @@ import { NavigationProps } from "@/shared/routes/stack.tsx";
 import { MedReminderSchedules } from "@/service/medReminder/interface/MedReminderInterface.tsx";
 import MedReminderService from "@/service/medReminder/MedReminderService.tsx";
 import WrapperNoScrollNoDialogNoSafeArea from "@/shared/component/wrapperNoScrollNoDialogNoSafeArea";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toastss from "@/shared/utils/Toast";
 import { useLoading } from "@/shared/utils/LoadingProvider.tsx";
 import { normalize } from "@/shared/helpers";
@@ -185,6 +186,13 @@ function MainMenu() {
         navigation.navigate(path, params);
     };
 
+    const insets = useSafeAreaInsets();
+    const headerPaddingTop = Platform.select({
+        ios: insets.top > 0 ? insets.top + normalize(10) : normalize(55),
+        android: Math.max(StatusBar.currentHeight ?? 0, insets.top) + normalize(18),
+        default: insets.top + normalize(18),
+    });
+
     const todayDate = new Date().toLocaleDateString('en-US', {
         weekday: 'long',
         month: 'short',
@@ -195,7 +203,7 @@ function MainMenu() {
         <WrapperNoScrollNoDialogNoSafeArea loading={loading}>
             <StatusBar backgroundColor="#F44336" barStyle="light-content" translucent />
 
-            <View style={styles.headerContainer}>
+            <View style={[styles.headerContainer, { paddingTop: headerPaddingTop }]}>
                 <View style={styles.headerTop}>
                     <View>
                         <Typography style={styles.headerSubtitle}>{todayDate}</Typography>

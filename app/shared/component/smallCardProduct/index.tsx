@@ -19,9 +19,10 @@ import Toasts from "@/shared/utils/Toast";
 
 interface ProductList {
     product: ProductListInterface,
+    containerStyle?: object,
 }
 
-function SmallCardProduct({ product }: ProductList) {
+function SmallCardProduct({ product, containerStyle }: ProductList) {
     const { isDarkMode } = useDarkMode()
     const styles = _styles(isDarkMode)
     const navigation = useNavigation<NavigationProps>();
@@ -56,7 +57,7 @@ function SmallCardProduct({ product }: ProductList) {
     }
 
     return (
-        <TouchableOpacity onPress={navigateTo} style={styles.container}>
+        <TouchableOpacity onPress={navigateTo} style={[styles.container, containerStyle]}>
             {product.quantity !== undefined && product.quantity <= 0 && (
                 <View style={styles.outOfStockContainer}>
                     <View style={styles.outOfStockBadge}>
@@ -125,7 +126,7 @@ function SmallCardProduct({ product }: ProductList) {
 
                 {
                     ((Environment.isSuperMarketEnvironment() || Environment.isWholeSalesEnvironment()) && product?.custom_price !== undefined && product?.custom_price.length > 0) ?
-                        <Typography style={{ fontSize: normalize(8), marginTop: 4, color: 'red', fontFamily: FONT.BOLD }}>Buy {product?.custom_price[0].min_qty} {Environment.isWholeSalesEnvironment() ? "cartons" : ""} for {currencyType} {product?.custom_price[0].price_formatted} each.</Typography>
+                        <Typography style={{ fontSize: 6.5, marginTop: 2, color: 'red', fontFamily: FONT.BOLD }}>Buy {product?.custom_price[0].min_qty} {Environment.isWholeSalesEnvironment() ? "cartons" : ""} for {currencyType} {product?.custom_price[0].price_formatted} each.</Typography>
                         :
                         <></>
                 }

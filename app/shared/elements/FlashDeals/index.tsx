@@ -5,14 +5,14 @@ import {
     TouchableOpacity,
     Animated,
 } from 'react-native';
-import styles from './styles';
-import { normalize } from '@/shared/helpers';
+import { _styles } from './styles';
+import { theme } from '@/shared/theme';
 import Typography from '@/shared/component/typography';
 import SectionHeader from '@/shared/component/sectionHeader';
 import { currencyType } from "@/shared/constants/global.ts";
 import { useNavigation } from "@react-navigation/native";
 import { NavigationProps } from "@/shared/routes/stack.tsx";
-import { FONT } from "@/shared/constants/fonts.ts";
+import useDarkMode from '@/shared/hooks/useDarkMode.tsx';
 
 interface Deal {
     id: number;
@@ -20,7 +20,7 @@ interface Deal {
     price: string;
     icon: string;
     seeAll: string;
-    stockProgress?: number; // Added for redesign
+    stockProgress?: number;
 }
 
 interface flashDealProps {
@@ -30,6 +30,8 @@ interface flashDealProps {
 
 export default function FlashDeals({ title, deals }: flashDealProps) {
     const navigation = useNavigation<NavigationProps>();
+    const { isDarkMode } = useDarkMode();
+    const styles = _styles(isDarkMode);
     const pulseAnim = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
@@ -60,7 +62,6 @@ export default function FlashDeals({ title, deals }: flashDealProps) {
     }
 
     const renderDeal = ({ item, index }: { item: Deal, index: number }) => {
-        // Mock stock progress if not provided
         const progress = item.stockProgress ?? (0.3 + (index * 0.15) % 0.6);
         const stockLeft = Math.floor(progress * 20);
 
@@ -90,8 +91,6 @@ export default function FlashDeals({ title, deals }: flashDealProps) {
                         <Typography style={styles.fireIcon}>{item.icon || '🔥'}</Typography>
                     </Animated.View>
                 </View>
-
-                {/* Progress bar removed as requested */}
             </TouchableOpacity>
         );
     };
@@ -108,7 +107,7 @@ export default function FlashDeals({ title, deals }: flashDealProps) {
                 keyExtractor={(_, index) => index.toString()}
                 numColumns={2}
                 scrollEnabled={false}
-                columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: normalize(16) }}
+                columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: theme.spacing.md }}
                 renderItem={renderDeal}
                 showsVerticalScrollIndicator={false}
             />

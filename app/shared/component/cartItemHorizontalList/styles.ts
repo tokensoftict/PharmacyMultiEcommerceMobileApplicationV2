@@ -1,30 +1,32 @@
 import { StyleSheet } from "react-native";
-import { normalize } from "../../helpers";
 import { design, labels, palette, semantic } from "../../constants/colors";
 import { FONT } from "../../constants/fonts";
+import { theme } from "../../theme";
 
+/**
+ * CartItemHorizontalList Styles (Latest Design Refactor)
+ *
+ * Refactored using the centralized theme spacing, shadows, border-radius,
+ * and responsive typography system to look clean, readable, and align perfectly.
+ */
 export const _styles = (isDarkMode: boolean) => StyleSheet.create({
   container: {
-    marginBottom: normalize(16),
+    marginBottom: theme.spacing.sm,
   },
   innerContainer: {
     flexDirection: 'row',
     backgroundColor: isDarkMode ? semantic.fill.f02 : '#FFFFFF',
-    borderRadius: normalize(20),
-    padding: normalize(12),
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.sm,
     borderWidth: 1,
     borderColor: isDarkMode ? semantic.fill.f04 : '#F1F5F9',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: isDarkMode ? 0.3 : 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    ...theme.shadows.sm,
   },
   containerImage: {
-    width: normalize(90),
-    height: normalize(100),
+    width: 80, // Responsive layout bound
+    height: 90,
     backgroundColor: isDarkMode ? semantic.fill.f01 : '#F8FAFC',
-    borderRadius: normalize(16),
+    borderRadius: theme.borderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -36,90 +38,89 @@ export const _styles = (isDarkMode: boolean) => StyleSheet.create({
   },
   containerInfo: {
     flex: 1,
-    marginLeft: normalize(16),
+    marginLeft: theme.spacing.sm,
     justifyContent: 'space-between',
   },
   actions: {
     flex: 1,
   },
   name: {
-    fontSize: normalize(15),
+    fontSize: theme.typography.sm,
     fontFamily: FONT.BOLD,
     color: isDarkMode ? '#FFF' : '#1A1D1E',
-    marginBottom: normalize(6),
+    marginBottom: theme.spacing.xs / 2,
   },
   priceTotalContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: normalize(8),
+    marginBottom: theme.spacing.xs,
   },
   price: {
-    fontSize: normalize(13),
+    fontSize: theme.typography.xs,
     fontFamily: FONT.MEDIUM,
     color: '#64748B',
   },
   totalPrice: {
-    fontSize: normalize(15),
+    fontSize: theme.typography.sm,
     fontFamily: FONT.BOLD,
     color: semantic.alert.danger.d500,
   },
   doorStep: {
-    fontSize: normalize(10),
+    fontSize: theme.typography.xs - 1,
     fontFamily: FONT.MEDIUM,
     color: semantic.alert.danger.d500,
-    marginBottom: normalize(8),
+    marginBottom: theme.spacing.xs,
   },
   otherInfo: {
     flexDirection: 'row',
-    gap: normalize(8),
+    gap: theme.spacing.xs,
   },
   category: {
     color: isDarkMode ? '#60A5FA' : '#0284C7',
     backgroundColor: isDarkMode ? 'rgba(96, 165, 250, 0.1)' : '#F0F9FF',
-    paddingHorizontal: normalize(8),
-    paddingVertical: normalize(4),
-    borderRadius: normalize(6),
-    fontSize: normalize(9),
+    paddingHorizontal: theme.spacing.xs * 1.5,
+    paddingVertical: theme.spacing.xs / 2,
+    borderRadius: theme.borderRadius.xs / 2,
+    fontSize: theme.typography.xs - 2,
     fontFamily: FONT.BOLD,
   },
   expiry: {
     color: isDarkMode ? '#94A3B8' : '#475569',
     backgroundColor: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : '#F1F5F9',
-    paddingHorizontal: normalize(8),
-    paddingVertical: normalize(4),
-    borderRadius: normalize(6),
-    fontSize: normalize(9),
+    paddingHorizontal: theme.spacing.xs * 1.5,
+    paddingVertical: theme.spacing.xs / 2,
+    borderRadius: theme.borderRadius.xs / 2,
+    fontSize: theme.typography.xs - 2,
     fontFamily: FONT.BOLD,
   },
   special: {
-    fontSize: normalize(10),
+    fontSize: theme.typography.xs - 1,
     color: '#94A3B8',
     textDecorationLine: 'line-through',
   },
   specialHolder: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: normalize(6),
+    gap: theme.spacing.xs / 2,
   },
   dependentBadge: {
     backgroundColor: semantic.alert.danger.d500,
-    paddingHorizontal: normalize(8),
-    paddingVertical: normalize(2),
-    borderRadius: normalize(4),
-    marginTop: normalize(4),
+    paddingHorizontal: theme.spacing.xs * 1.5,
+    paddingVertical: theme.spacing.xs / 4,
+    borderRadius: theme.borderRadius.xs / 2,
     alignSelf: 'flex-start',
   },
   dependentBadgeText: {
     color: '#FFF',
-    fontSize: normalize(10),
+    fontSize: theme.typography.xs - 3,
     fontFamily: FONT.BOLD,
   },
   dependentNote: {
-    fontSize: normalize(10),
+    fontSize: theme.typography.xs - 2,
     color: '#94A3B8',
     fontStyle: 'italic',
-    marginTop: normalize(4),
+    marginTop: theme.spacing.xs / 2,
   },
   linkedContainer: {
     backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : '#F8FAFC',

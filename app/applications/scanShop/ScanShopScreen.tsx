@@ -9,7 +9,6 @@ import CartService from '@/service/cart/CartService';
 import Toasts from '@/shared/utils/Toast';
 import HeaderWithIcon from '@/shared/component/headerBack';
 import WrapperNoScroll from '@/shared/component/wrapperNoScroll';
-import SoundPlayer from 'react-native-sound-player';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { store } from '@/redux/store/store';
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,17 +17,7 @@ import { NavigationProps } from '@/shared/routes/stack';
 import { CartInterface, Items } from '@/service/cart/interface/CartInterface';
 import UpdateCartDialog from '@/shared/component/updateCartDialog';
 import useDarkMode from '@/shared/hooks/useDarkMode';
-import { normalize } from '@/shared/helpers';
-import Typography from '@/shared/component/typography';
-import Environment from '@/shared/utils/Environment';
-
-interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  image?: string;
-}
+import { theme } from '@/shared/theme';
 
 const ScanShopScreen = () => {
   const { isDarkMode } = useDarkMode();
@@ -46,7 +35,6 @@ const ScanShopScreen = () => {
   const cartUpdateToken = useSelector((state: any) => state.systemReducer.cartUpdateToken);
 
   const loadCartItems = useCallback(() => {
-    const env = Environment.getEnvironment();
     setIsLoading(true);
     cartService.get().then((response) => {
       setIsLoading(false);
@@ -59,7 +47,6 @@ const ScanShopScreen = () => {
     });
   }, []);
 
-  // Refresh cart when the cart update token changes
   React.useEffect(() => {
     if (cartUpdateToken > 0) {
       loadCartItems();
@@ -86,7 +73,6 @@ const ScanShopScreen = () => {
       const response = await productService.scanProduct(code);
       if (response.data.status === true) {
         const product = response.data.data;
-        // Show confirmation dialog via Redux
         dispatch(action.setProductDialogData(product));
       } else {
         Toasts(response.data.error || 'Product not found');
@@ -106,31 +92,11 @@ const ScanShopScreen = () => {
     setIsUpdateModalVisible(true);
   };
 
-  // No longer blocking based on radius
-  /*
-  if (isWithinRadius === false) {
-    return (
-      <View style={[styles.centered, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
-        <Typography style={styles.errorText}>
-          You must be inside the store to use Scan & Shop.
-        </Typography>
-        <Typography style={styles.subErrorText}>
-          Current Radius: 100 meters
-        </Typography>
-        <ActivityIndicator size="large" color="#D32F2F" style={{ marginTop: 20 }} />
-        <Typography onPress={recheckLocation} style={styles.retryText}>
-          Retry Location
-        </Typography>
-      </View>
-    );
-  }
-  */
-
   return (
     <WrapperNoScroll loading={isLoading} barStyle="light-content">
-      <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 10), }]}>
-        <View style={{ zIndex: 10, backgroundColor: isDarkMode ? '#1A1D1E' : '#FFFFFF' }}>
-          <HeaderWithIcon title="SCAN & SHOP" />
+      <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, theme.spacing.sm) }]}>
+        <View style={[styles.headerContainer, { backgroundColor: isDarkMode ? '#1A1D1E' : '#FFFFFF' }]}>
+          <HeaderWithIcon title="SCAN & SHOP" style={{ marginBottom: 0 }} />
         </View>
 
         <ScannerView
@@ -162,32 +128,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: normalize(40),
+  headerContainer: {
+    zIndex: 10,
   },
   cartSection: {
     flex: 1,
-  },
-  errorText: {
-    fontSize: normalize(18),
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#D32F2F',
-  },
-  subErrorText: {
-    fontSize: normalize(14),
-    textAlign: 'center',
-    color: '#888',
-    marginTop: normalize(10),
-  },
-  retryText: {
-    marginTop: normalize(20),
-    color: '#2196F3',
-    fontSize: normalize(16),
-    textDecorationLine: 'underline',
   },
 });
 

@@ -47,6 +47,7 @@ import QrcodeScreen from "@/shared/page/qrcode";
 import Search from "@/shared/page/search";
 import FoodDeliveryHomeScreen from "@/applications/food_delivery/FoodDeliveryHomeScreen";
 import ScanShopScreen from "@/applications/scanShop/ScanShopScreen";
+import ReferAndEarnScreen from "@/applications/referral/ReferAndEarnScreen";
 
 export type RootStackParamList = {
     wholesales: undefined,
@@ -61,7 +62,12 @@ export type RootStackParamList = {
     resetPassword: undefined,
     security: undefined
     wholesalesHome: undefined,
-    detailProduct: undefined,
+    detailProduct: {
+        productId?: number | string;
+        slug?: string;
+        department?: 'wholesales' | 'retail';
+        bottomNav?: boolean;
+    } | undefined,
     productList: {
         endpoint: string;
         title: string;
@@ -103,6 +109,7 @@ export type RootStackParamList = {
     loginWithOutPassword: undefined,
     food_delivery: undefined,
     scanShop: undefined,
+    referAndEarn: undefined,
 }
 
 export type RouteItem = {
@@ -353,6 +360,11 @@ const RoutesStack: RouteItem[] = [
     {
         path: 'scanShop',
         component: ScanShopScreen,
+        private: true
+    },
+    {
+        path: 'referAndEarn',
+        component: ReferAndEarnScreen,
         private: true
     },
 ];

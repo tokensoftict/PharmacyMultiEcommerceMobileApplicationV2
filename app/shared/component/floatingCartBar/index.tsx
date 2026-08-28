@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     title: {
         color: 'rgba(255,255,255,0.6)',
         fontSize: normalize(10),
-        fontFamily: FONT.REGULAR,
+        fontFamily: FONT.NORMAL,
     },
     total: {
         color: '#FFFFFF',

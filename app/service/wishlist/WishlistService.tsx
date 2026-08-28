@@ -1,5 +1,6 @@
 import AuthSessionService from "../../service/auth/AuthSessionService";
 import EnvironmentRequest, {EnvironmentRequestInterface} from "@/network/internet/EnvironmentRequest.tsx";
+import CampaignEventBus from "@/campaign/CampaignEventBus";
 
 
 export default class WishlistService {
@@ -13,8 +14,16 @@ export default class WishlistService {
     }
 
 
-    add(productId: number|undefined) {
-        return this.request.post("wishlist/add-item", {stock_id : productId});
+    async add(productId: number|undefined) {
+        try {
+            const response = await this.request.post("wishlist/add-item", {stock_id : productId});
+            if (response?.data?.status === true || response?.status === 200) {
+                CampaignEventBus.emit('ADD_TO_WISHLIST', { product_id: productId });
+            }
+            return response;
+        } catch (error) {
+            throw error;
+        }
     }
 
     remove(productId: number) {

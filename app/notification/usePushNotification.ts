@@ -10,6 +10,9 @@ import OtpService from "@/service/auth/OtpService";
 import Environment from "@/shared/utils/Environment";
 import { NativeModules } from 'react-native';
 import * as NavigationService from "@/shared/utils/NavigationService";
+import { CampaignActionHandler } from "@/campaign/CampaignActionHandler";
+import CampaignService from "@/campaign/CampaignService";
+
 
 const locale = NativeModules.SettingsManager?.settings?.AppleLocale ||
     NativeModules.SettingsManager?.settings?.AppleLanguages?.[0];
@@ -127,6 +130,19 @@ export const handleNotification = (notification: any) => {
                 id: "new-arrivals"
             });
             break;
+        case "CAMPAIGN": {
+            const actionType = data.action_type || notificationExtra.action_type || "none";
+            const actionData = typeof data.action_data === "string" ? JSON.parse(data.action_data || "{}") : (data.action_data || {});
+            
+            // Execute campaign action
+            CampaignActionHandler.executeAction(actionType as any, actionData);
+
+            // Log push opened activity
+            if (data.campaign_id) {
+                CampaignService.recordInteraction(Number(data.campaign_id), 'push_opened', 'push');
+            }
+            break;
+        }
         case "OPEN_URL":
             if (notificationExtra.url || data.url) {
                 Linking.openURL(notificationExtra.url || data.url);

@@ -1,70 +1,75 @@
 import { StyleSheet } from "react-native";
-import { normalize } from "../../helpers";
 import { design, palette, semantic } from "../../constants/colors";
 import { FONT } from "@/shared/constants/fonts.ts";
+import { theme } from "@/shared/theme";
 
+/**
+ * CardProductHorizontal Styles (Latest Design Refactor)
+ *
+ * Refactored using the centralized theme spacing, shadows, border-radius,
+ * and responsive typography system to align cleanly.
+ */
 export const _styles = (isDarkMode: boolean) => StyleSheet.create({
   container: {
     flexDirection: 'row',
-    // flex: 1,
   },
   containerImage: {
-    width: normalize(120),
-    height: normalize(170),
+    width: 100, // Normalized responsive aspect constraints
+    height: 140,
     backgroundColor: isDarkMode ? semantic.fill.f01 : semantic.fill.f04,
-    borderRadius: normalize(16)
+    borderRadius: theme.borderRadius.sm,
+    overflow: 'hidden',
   },
   image: {
     width: '100%',
-    height: normalize(170)
+    height: '100%',
+    resizeMode: 'contain',
   },
   name: {
-    fontSize: normalize(18),
-
+    fontSize: theme.typography.md,
+    fontFamily: FONT.BOLD,
     color: isDarkMode ? semantic.text.white : semantic.text.black,
-    maxHeight: normalize(50),
-    height: normalize(50),
+    maxHeight: theme.typography.md * 2.8,
+    height: theme.typography.md * 2.8,
   },
   category: {
     color: isDarkMode ? semantic.text.white : design.text1.color,
     backgroundColor: isDarkMode ? semantic.text.black : design.text1.background,
-    padding: normalize(2),
-    paddingLeft: normalize(5),
-    borderRadius: normalize(5),
-    width: '50%',
-
-    fontSize: normalize(10),
-    marginVertical: normalize(8)
+    paddingVertical: 2,
+    paddingHorizontal: theme.spacing.xs,
+    borderRadius: theme.borderRadius.xs / 2,
+    alignSelf: 'flex-start',
+    fontSize: theme.typography.xs - 2,
+    marginVertical: theme.spacing.xs,
   },
   price: {
-    fontSize: normalize(16),
+    fontSize: theme.typography.sm,
+    fontFamily: FONT.BOLD,
     color: isDarkMode ? semantic.text.white : semantic.text.black,
-
-    marginBottom: normalize(4),
+    marginBottom: theme.spacing.xs / 2,
   },
   special: {
-    fontSize: normalize(12),
+    fontSize: theme.typography.xs,
     color: semantic.alert.danger.d500,
     textDecorationLine: "line-through",
-    marginTop: normalize(5),
+    marginTop: theme.spacing.xs / 2,
   },
   specialHolder: {
     flexDirection: 'row'
   },
   doorStep: {
-    fontSize: normalize(10),
+    fontSize: theme.typography.xs - 2,
     color: isDarkMode ? semantic.text.white : palette.main.p500,
-
   },
   totalPrice: {
-    marginTop: normalize(10),
+    marginTop: theme.spacing.xs,
     color: palette.main.p500,
-    fontSize: normalize(20),
-
+    fontSize: theme.typography.lg,
+    fontFamily: FONT.BOLD,
   },
   containerInfo: {
     flex: 1,
-    marginLeft: normalize(18)
+    marginLeft: theme.spacing.md,
   },
   actions: {
     flexDirection: 'column',
@@ -78,15 +83,15 @@ export const _styles = (isDarkMode: boolean) => StyleSheet.create({
   },
   cant: {
     backgroundColor: palette.main.p500,
-    width: normalize(24),
-    height: normalize(24),
-    borderRadius: 150,
+    width: theme.spacing.lg,
+    height: theme.spacing.lg,
+    borderRadius: theme.borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center'
   },
   cantText: {
     color: semantic.text.white,
-    fontSize: normalize(16),
+    fontSize: theme.typography.sm,
   },
   outOfStockContainer: {
     position: 'absolute',
@@ -98,45 +103,37 @@ export const _styles = (isDarkMode: boolean) => StyleSheet.create({
     zIndex: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: normalize(16),
+    borderRadius: theme.borderRadius.sm,
   },
   outOfStockBadge: {
     backgroundColor: '#D50000',
-    paddingHorizontal: normalize(10),
-    paddingVertical: normalize(5),
-    borderRadius: normalize(6),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.xs / 2,
+    ...theme.shadows.sm,
   },
   outOfStockText: {
     color: '#FFFFFF',
-    fontSize: normalize(12),
+    fontSize: theme.typography.xs,
     fontFamily: FONT.BOLD,
     textTransform: 'uppercase',
   },
   wishlistButton: {
     position: 'absolute',
-    top: normalize(10),
-    right: normalize(10),
+    top: theme.spacing.xs,
+    right: theme.spacing.xs,
     zIndex: 20,
     backgroundColor: isDarkMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.8)',
-    borderRadius: normalize(15),
-    width: normalize(28),
-    height: normalize(28),
+    borderRadius: theme.borderRadius.full,
+    width: theme.spacing.md * 1.5,
+    height: theme.spacing.md * 1.5,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...theme.shadows.sm,
   },
   wishlistIcon: {
-    width: normalize(16),
-    height: normalize(16),
+    width: theme.spacing.sm * 1.5,
+    height: theme.spacing.sm * 1.5,
     tintColor: '#D50000',
   },
-})
+});

@@ -2,6 +2,7 @@ import Request from "../../network/internet/request.tsx";
 import AuthSessionService from "./AuthSessionService.tsx";
 import LoginService from "./LoginService.tsx";
 import {store} from "@/redux/store/store.tsx";
+import CampaignEventBus from "@/campaign/CampaignEventBus";
 
 export default class SignUpService {
 
@@ -14,7 +15,7 @@ export default class SignUpService {
         this.loginService = new LoginService();
     }
 
-    signUp(firstname : string, lastname : string, email :string, password : string, phone : string) {
+    signUp(firstname : string, lastname : string, email :string, password : string, phone : string, referralCode?: string) {
         let parent = this;
         return new Promise(function (resolve : any, reject : any){
             parent.request.post("signup", {
@@ -23,7 +24,9 @@ export default class SignUpService {
                 phone : phone,
                 firstname : firstname,
                 lastname : lastname,
-                deviceKey : store.getState().systemReducer.fireBaseKey
+                deviceKey : store.getState().systemReducer.fireBaseKey,
+                // Only include referral_code if one was provided
+                ...(referralCode ? { referral_code: referralCode } : {}),
             })
                 .then(function (response : any){
                     if(response.data.status === true){
@@ -36,6 +39,7 @@ export default class SignUpService {
                                 message : "Sign up Successful"
                             })
                         } else {
+                            CampaignEventBus.emit('SIGNUP');
                             resolve(parent.loginService.prepareSignupSession(response.data))
                         }
                     }else{

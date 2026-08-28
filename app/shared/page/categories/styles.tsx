@@ -1,77 +1,80 @@
 import { StyleSheet } from "react-native";
-import { normalize } from "../../../shared/helpers";
-import {palette, semantic} from "../../../shared/constants/colors.ts";
+import { palette, semantic } from "../../../shared/constants/colors.ts";
+import { theme } from "@/shared/theme";
+import { FONT } from "@/shared/constants/fonts";
 
+/**
+ * Categories Screen Styles (Latest Design Refactor)
+ *
+ * Padding structure mirrors brands/ so SmallCardProduct card-width
+ * formula (which deducts 44dp total) remains accurate:
+ *   holder paddingHorizontal:     spacing.sm * 2 = 16dp
+ *   categoryBody paddingHorizontal: spacing.sm * 2 = 16dp
+ *   card marginHorizontal (xs/2 per side × 3 cards): 12dp
+ *   Total deduction: 44dp  →  3 cards fit perfectly in one row.
+ */
 export const _styles = (isDarkMode: boolean) => StyleSheet.create({
-    holder : {
-        flexDirection : "column",
-        alignItems : "flex-start",
-        flex: 1,
-        paddingHorizontal:normalize(16),
-        paddingVertical: normalize(8),
-        backgroundColor : '#F8F9FA',
-        alignContent :"center",
-        justifyContent : "center"
+    holder: {
+        flexDirection: "column",
+        alignItems: "stretch",          // was flex-start — caused card to shrink
+        paddingHorizontal: theme.spacing.sm, // was lg (24) — now matches brands (8)
+        paddingVertical: theme.spacing.xs / 2,
+        backgroundColor: isDarkMode ? '#1A1A2E' : '#F8F9FA',
     },
     searchWrapper: {
-        paddingHorizontal: normalize(10),
-        paddingTop: normalize(10),
-        paddingBottom: normalize(10),
+        paddingHorizontal: theme.spacing.sm,
+        paddingTop: theme.spacing.sm,
+        paddingBottom: theme.spacing.sm,
         backgroundColor: '#fff',
-        marginTop: normalize(-15),
-        marginBottom: normalize(10),
+        marginTop: -theme.spacing.sm,
+        marginBottom: theme.spacing.sm,
     },
     categoryHeader: {
         flexDirection: "row",
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: normalize(16),
-        paddingVertical: normalize(12),
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: theme.spacing.sm,
         borderBottomWidth: 1,
         borderBottomColor: '#F5F5F5',
+        height: 48,
     },
     headerRow: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     headerAccent: {
-        width: normalize(4),
-        height: normalize(16),
+        width: theme.spacing.xs,
+        height: theme.spacing.md,
         backgroundColor: '#D50000',
-        borderRadius: normalize(2),
-        marginRight: normalize(8),
+        borderRadius: theme.borderRadius.xs / 2,
+        marginRight: theme.spacing.xs,
     },
     seeAll: {
-        color : semantic.alert.danger.d500,
+        color: semantic.alert.danger.d500,
+        fontSize: theme.typography.xs,
+        fontFamily: FONT.BOLD,
     },
     categoryName: {
-        color : semantic.text.black,
+        color: semantic.text.black,
+        fontSize: theme.typography.sm,
+        fontFamily: FONT.BOLD,
     },
     categoryHolder: {
-        width : '100%',
-        backgroundColor : '#fff',
-        borderRadius: normalize(12),
-        shadowColor: "#000",
-        shadowOpacity: 0.08,
-        shadowRadius: 10,
-        elevation: 3,
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        marginBottom: normalize(16),
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: '#F0F0F0',
+        width: '100%',
+        alignSelf: 'stretch',
+        marginBottom: theme.spacing.xs,
     },
     categoryBody: {
-        width : '100%',
-        paddingHorizontal: normalize(12),
-        paddingVertical : normalize(15),
-        flexDirection : "row",
+        width: '100%',
+        paddingTop: theme.spacing.sm,
+        paddingBottom: theme.spacing.md,
+        flexDirection: "row",
         flexWrap: "wrap",
-        alignContent :"center",
-        justifyContent : "center"
     },
-
+    cardWrapper: {
+        width: '33.33%',              // 3 exact columns — no pixel math needed
+        paddingHorizontal: theme.spacing.xs / 2,
+        paddingBottom: theme.spacing.xs,
+    },
 });

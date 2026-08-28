@@ -84,4 +84,5 @@ export { default as whatsapp } from './whatsapp.png';
 export { default as med_reminder } from './med_reminder.png';
 export { default as icon_wishlist } from './icon_wish.png';
 export { default as icon_wishlist_filled } from './icon_wish_filled.png';
+export { default as share_product } from './share_product.png';
 

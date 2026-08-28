@@ -2,7 +2,7 @@ import AuthSessionService from "../../service/auth/AuthSessionService";
 import EnvironmentRequest, {EnvironmentRequestInterface} from "@/network/internet/EnvironmentRequest.tsx";
 import Environment from "@/shared/utils/Environment.tsx";
 import Toasts from "@/shared/utils/Toast.tsx";
-
+import CampaignEventBus from "@/campaign/CampaignEventBus";
 
 export default class CartService {
 
@@ -16,6 +16,7 @@ export default class CartService {
 
     add(productId: number|undefined , quantity: number, accept_dependent: boolean = false, options: number[] = []) {
         if(Environment.isLogin()) {
+            CampaignEventBus.emit('ADD_TO_CART', { product_id: productId, quantity });
             return this.request.post("cart/add-item", {stock_id : productId, quantity : quantity, accept_dependent : accept_dependent, options: options});
         }
         Toasts('Please login to add item to cart..')
@@ -28,6 +29,7 @@ export default class CartService {
     }
 
     remove(productId: number) {
+        CampaignEventBus.emit('REMOVE_FROM_CART', { product_id: productId });
         return this.request.get("cart/"+productId+"/remove-item");
     }
 

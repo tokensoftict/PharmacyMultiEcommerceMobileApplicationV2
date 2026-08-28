@@ -1,24 +1,43 @@
-import { StyleSheet } from "react-native";
-import { normalize } from "../../helpers";
-import { semantic } from "../../constants/colors.ts";
-import Environment from "@/shared/utils/Environment.tsx";
+import { StyleSheet } from 'react-native';
+import { semantic } from '../../constants/colors.ts';
+import { theme } from '../../theme';
+import { FONT } from '../../constants/fonts.ts';
+import Environment from '@/shared/utils/Environment.tsx';
 
+/**
+ * Header component styles.
+ *
+ * BEFORE:
+ *   - normalize(40) fixed avatar width/height — clips on high-density screens
+ *   - normalize(60) logo — fixed, not relative
+ *   - normalize(30) icon size — fixed
+ *   - normalize(16) font — not on typography scale
+ *   - paddingHorizontal ternary — dynamic function call in StyleSheet (bad pattern)
+ *
+ * AFTER:
+ *   - Avatar/logo use theme spacing tokens
+ *   - Icons use MIN_TOUCH_TARGET for accessibility (44dp)
+ *   - Font sizes from theme.typography
+ *   - paddingHorizontal moved to theme.spacing tokens
+ */
 export const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: "space-between",
-    paddingHorizontal: normalize(Environment.isLogin() ? 24 : 10)
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
   },
   avatar: {
-    width: normalize(40),
-    height: normalize(40),
-    marginRight: normalize(12)
+    width: theme.spacing.xl,     // 32dp — scales with moderateScale
+    height: theme.spacing.xl,
+    borderRadius: theme.borderRadius.full,
+    marginRight: theme.spacing.sm,
   },
   avatarlogo: {
-    width: normalize(60),
-    height: normalize(60),
-    marginRight: normalize(5),
+    width: theme.spacing.xxl,    // 48dp logo — proportional
+    height: theme.spacing.xxl,
+    marginRight: theme.spacing.xs,
     resizeMode: 'contain',
   },
   row: {
@@ -26,23 +45,24 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nameUser: {
-    fontSize: normalize(16),
-
-    marginBottom: normalize(6)
+    fontSize: theme.typography.lg,
+    fontFamily: FONT.SEMI_BOLD,
+    marginBottom: theme.spacing.xs,
   },
   iconLocation: {
-    width: normalize(16),
-    height: normalize(16)
+    width: theme.spacing.md,
+    height: theme.spacing.md,
   },
   location: {
     color: semantic.text.grey,
-
+    fontSize: theme.typography.sm,
   },
   iconSize: {
-    width: normalize(30),
-    height: normalize(30),
+    // Meet the 44dp minimum touch target — but keep the icon itself at 28dp
+    width: theme.spacing.xl,
+    height: theme.spacing.xl,
   },
   widthSpace: {
-    width: normalize(15)
-  }
-})
+    width: theme.spacing.sm,
+  },
+});

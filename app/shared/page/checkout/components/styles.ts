@@ -1,46 +1,45 @@
 import { Dimensions, Platform, StyleSheet } from "react-native";
-import { design, palette, semantic } from "@/shared/constants/colors.ts";
-import { normalize } from "@/shared/helpers";
+import { semantic } from "@/shared/constants/colors.ts";
 import { FONT } from "@/shared/constants/fonts";
+import { theme } from "@/shared/theme";
 
-
+/**
+ * Checkout Stepper Styles (Latest Design Refactor)
+ *
+ * Refactored using centralized theme tokens — no normalize() calls.
+ * _styles is a plain function (not a class), call as _styles(isDarkMode).
+ */
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const PRIMARY_COLOR = '#d32f2f';
-const LIGHT_GRAY = '#f7f7f7';
-const DARK_TEXT = '#222';
 
-export const _styles = (isDarkMode: boolean, width: number) => StyleSheet.create({
+export const _styles = (isDarkMode: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: isDarkMode ? semantic.fill.f01 : '#F8FAFC',
   },
+
+  // ── Step Progress Header ──────────────────────────────────────────────────
   headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     backgroundColor: isDarkMode ? semantic.fill.f02 : '#FFFFFF',
     alignItems: 'center',
-    paddingHorizontal: normalize(16),
-    paddingVertical: normalize(16),
-    borderRadius: normalize(16),
-    margin: normalize(16),
-    marginBottom: normalize(8),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: isDarkMode ? 0.3 : 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    margin: theme.spacing.md,
+    marginBottom: theme.spacing.xs,
+    ...theme.shadows.md,
   },
   stepHeader: {
     flex: 1,
     alignItems: 'center',
-    position: 'relative',
   },
   stepTitle: {
-    fontSize: normalize(10),
+    fontSize: theme.typography.xs,
     fontFamily: FONT.BOLD,
     color: isDarkMode ? '#64748B' : '#94A3B8',
     textAlign: 'center',
-    marginBottom: normalize(6),
+    marginBottom: theme.spacing.xs / 2,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -48,17 +47,20 @@ export const _styles = (isDarkMode: boolean, width: number) => StyleSheet.create
     color: semantic.alert.danger.d500,
   },
   stepLine: {
-    height: normalize(4),
+    height: 4,
     width: '80%',
     backgroundColor: isDarkMode ? '#1E293B' : '#F1F5F9',
-    borderRadius: normalize(2),
+    borderRadius: theme.borderRadius.xs / 2,
   },
   stepLineActive: {
     backgroundColor: semantic.alert.danger.d500,
   },
+
+  // ── Slide Content Area ────────────────────────────────────────────────────
   content: {
     flex: 1,
     backgroundColor: 'transparent',
+    overflow: 'hidden',
   },
   stepsContainer: {
     flexDirection: 'row',
@@ -67,36 +69,36 @@ export const _styles = (isDarkMode: boolean, width: number) => StyleSheet.create
   },
   step: {
     width: SCREEN_WIDTH,
-    paddingHorizontal: normalize(16),
   },
+
+  // ── Navigation Bar ────────────────────────────────────────────────────────
   navigation: {
     flexDirection: 'row',
-    paddingHorizontal: normalize(20),
+    paddingHorizontal: theme.spacing.md,
     backgroundColor: isDarkMode ? semantic.fill.f02 : '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: isDarkMode ? semantic.fill.f04 : '#F1F5F9',
-    // Removed elevation and shadow to avoid Android navigation bar overlap issues
   },
   nav: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: normalize(16),
+    paddingTop: theme.spacing.md,
   },
+
+  // ── Buttons ───────────────────────────────────────────────────────────────
   button: {
     flexDirection: 'row',
     backgroundColor: semantic.alert.danger.d500,
-    paddingVertical: normalize(12),
-    paddingHorizontal: normalize(28),
-    borderRadius: normalize(30), // Pill shape for more attraction
+    paddingVertical: theme.spacing.sm + 2,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.xl,   // pill shape
     alignItems: 'center',
     justifyContent: 'center',
+    gap: theme.spacing.xs / 2,
+    ...theme.shadows.md,
     shadowColor: semantic.alert.danger.d500,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
   },
   buttonDisabled: {
     backgroundColor: isDarkMode ? '#1E293B' : '#E2E8F0',
@@ -105,23 +107,23 @@ export const _styles = (isDarkMode: boolean, width: number) => StyleSheet.create
   },
   buttonPrimaryText: {
     color: '#FFFFFF',
-    fontSize: normalize(14),
+    fontSize: theme.typography.sm,
     fontFamily: FONT.BOLD,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   buttonSecondary: {
     backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-    paddingVertical: normalize(12),
-    paddingHorizontal: normalize(20),
-    borderRadius: normalize(30),
+    paddingVertical: theme.spacing.sm + 2,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.xl,
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 0, // Clean look
+    gap: theme.spacing.xs / 2,
   },
   buttonSecondaryText: {
     color: isDarkMode ? '#94A3B8' : '#64748B',
-    fontSize: normalize(14),
+    fontSize: theme.typography.sm,
     fontFamily: FONT.BOLD,
     textTransform: 'uppercase',
     letterSpacing: 0.5,

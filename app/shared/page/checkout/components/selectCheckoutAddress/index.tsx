@@ -1,19 +1,18 @@
 import React, {useCallback, useEffect, useState} from "react";
-import {ActivityIndicator, ScrollView, TouchableOpacity, View} from "react-native";
-import {location, shoppingBag} from "@/assets/icons";
+import {ActivityIndicator, ScrollView, View} from "react-native";
+import {location} from "@/assets/icons";
 import ListOptionCard, {OptionCardOptions} from "@/shared/component/ListOptionCard";
 import useDarkMode from "@/shared/hooks/useDarkMode.tsx";
 import {useFocusEffect, useNavigation} from "@react-navigation/native";
-import {palette, semantic} from "@/shared/constants/colors.ts";
-import {normalize} from "@/shared/helpers";
+import {semantic} from "@/shared/constants/colors.ts";
 import Toastss from "@/shared/utils/Toast";
 import {useLoading} from "@/shared/utils/LoadingProvider";
 import CheckoutService from "@/service/checkout/CheckoutService";
 import SubHeader from "@/shared/component/subHeader";
-import addressList from "@/shared/page/myaccount/address/addressList";
 import Typography from "@/shared/component/typography";
 import {Button} from "@/shared/component/buttons";
 import {NavigationProps} from "@/shared/routes/stack.tsx";
+import { theme } from "@/shared/theme";
 
 export default function SelectCheckoutAddress({ onValidate }: { onValidate: (validateFn: () => Promise<boolean>) => void })  {
     const [addressSelected, setAddressSelected] = useState<OptionCardOptions>();
@@ -95,18 +94,18 @@ export default function SelectCheckoutAddress({ onValidate }: { onValidate: (val
                     <ActivityIndicator size="large" color={semantic.alert.danger.d500} />
                 </View>
             ) : checkOutAddress.length > 0 ? (
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: normalize(16) }}>
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: theme.spacing.md }}>
                     <ListOptionCard
                         value={addressSelected}
                         onChange={onSelectAddress}
                         options={checkOutAddress}
                     />
-                    <View style={{ height: normalize(140) }} />
+                    <View style={{ height: theme.spacing.xxl * 3 }} />
                 </ScrollView>
             ) : (
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: normalize(40) }}>
-                    <Typography style={{ textAlign: 'center', fontSize: normalize(16), color: '#64748B', marginBottom: normalize(24) }}>
-                        You don’t have any saved addresses yet.
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: theme.spacing.xl }}>
+                    <Typography style={{ textAlign: 'center', fontSize: theme.typography.md, color: '#64748B', marginBottom: theme.spacing.lg }}>
+                        You don't have any saved addresses yet.
                     </Typography>
                     <View style={{ width: '100%' }}>
                         <Button title="+ Add New Address" onPress={() => navigation.navigate('newAddress')} />

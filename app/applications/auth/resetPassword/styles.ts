@@ -1,37 +1,45 @@
 import { StyleSheet } from "react-native";
-import { normalize } from "../../../shared/helpers";
 import { palette } from "../../../shared/constants/colors";
+import { theme } from "@/shared/theme";
+import { FONT } from "@/shared/constants/fonts";
 
-
+/**
+ * ResetPassword Styles (Latest Design Refactor)
+ *
+ * Refactored using the centralized theme spacing, shadows, border-radius,
+ * and responsive typography system to align cleanly.
+ */
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: normalize(24),
+    paddingHorizontal: theme.spacing.lg,
   },
   containerEmail: {
     alignItems: 'center',
-    marginTop: normalize(32),
-    marginBottom: normalize(40)
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
   },
   textEmail: {
-    color: palette.main.p500
+    color: palette.main.p500,
+    fontSize: theme.typography.md,
+    fontFamily: FONT.BOLD,
   },
   formControl: {
-    marginBottom: normalize(24)
+    marginBottom: theme.spacing.md,
   },
-  titleImageContainer :{
+  titleImageContainer: {
     flexDirection: 'row',
     alignItems: "flex-start",
-    justifyContent : "space-between"
+    justifyContent: "space-between",
   },
   form: {
-    marginBottom: normalize(193)
+    marginBottom: theme.spacing.xl,
   },
   containerBtns: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   divider: {
-    width: normalize(24)
-  }
-})
+    width: theme.spacing.md,
+  },
+});

@@ -1,20 +1,13 @@
-import {Dimensions, StyleSheet} from 'react-native';
-import {normalize} from '../../helpers';
+import { Dimensions, StyleSheet } from 'react-native';
 import { palette, semantic } from "../../constants/colors.ts";
+import { theme } from "../../theme";
 
 const modal = (isDarkMode: boolean, height: number) => {
   const objectModal = {
     backgroundColor: isDarkMode ? semantic.background.red.d500 : semantic.background.white.w500,
-    borderTopRightRadius: normalize(16),
-    borderTopLeftRadius: normalize(16),
-    shadowColor: '#000',
-    shadowOffset: {
-      width: normalize(0),
-      height: normalize(2),
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    borderTopRightRadius: theme.borderRadius.md,
+    borderTopLeftRadius: theme.borderRadius.md,
+    ...theme.shadows.md,
     width: '100%',
   };
   if (height) {
@@ -24,8 +17,10 @@ const modal = (isDarkMode: boolean, height: number) => {
   return objectModal;
 };
 
-export const _styles = (isDarkMode: boolean, height: any) =>
-  StyleSheet.create({
+export const _styles = (isDarkMode: boolean, height: any) => {
+  const screenHeight = Dimensions.get('window').height;
+
+  return StyleSheet.create({
     centeredView: {
       flex: 1,
       justifyContent: 'flex-end',
@@ -35,7 +30,7 @@ export const _styles = (isDarkMode: boolean, height: any) =>
     modalOverlay: {
       backgroundColor: 'black',
       opacity: 0.5,
-      height: Dimensions.get('window').height,
+      height: screenHeight,
       position: 'absolute',
       top: 0,
       left: 0,
@@ -44,7 +39,7 @@ export const _styles = (isDarkMode: boolean, height: any) =>
     // @ts-ignore
     modalView: {
       ...modal(isDarkMode, height),
-      maxHeight: Dimensions.get('window').height * 0.9,
-      // height: height || Dimensions.get('window').height * 0.9
+      maxHeight: screenHeight * 0.85, // Safety height constraint below statusbar
     },
   });
+};

@@ -11,15 +11,17 @@ import {
     ScrollView,
     Linking,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import Typography from "@/shared/component/typography"; // Ensure this is installed
-import { normalize } from '@/shared/helpers';
+import Typography from "@/shared/component/typography";
+import { Button, ButtonSecondary } from "@/shared/component/buttons";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { theme } from "@/shared/theme";
 
 const screenHeight = Dimensions.get('window').height;
 
 // @ts-ignore
 export default function CustomerProfileModal({ visible, onClose, customerData, onImpersonate }) {
     const slideAnim = useRef(new Animated.Value(screenHeight)).current;
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         if (visible) {
@@ -46,10 +48,16 @@ export default function CustomerProfileModal({ visible, onClose, customerData, o
     return (
         <Modal transparent visible={visible} animationType="slide">
             <View style={styles.overlay}>
-                <Animated.View style={[styles.modalContainer, { transform: [{ translateY: slideAnim }] }]}>
-                    <View style={styles.header}>
-                        <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-                            <Typography style={{ fontSize: normalize(22), color: '#fff' }}>✕</Typography>
+                <Animated.View style={[
+                    styles.modalContainer, 
+                    { 
+                        transform: [{ translateY: slideAnim }],
+                        paddingBottom: Math.max(insets.bottom, theme.spacing.md),
+                    }
+                ]}>
+                    <View style={[styles.header, { paddingTop: Math.max(insets.top, theme.spacing.lg) }]}>
+                        <TouchableOpacity onPress={onClose} style={[styles.closeBtn, { top: Math.max(insets.top, theme.spacing.md) }]}>
+                            <Typography style={{ fontSize: theme.typography.xl, color: '#fff' }}>✕</Typography>
                         </TouchableOpacity>
 
                         <Image source={{ uri: customerData?.user?.image }} style={styles.avatar} />
@@ -59,7 +67,7 @@ export default function CustomerProfileModal({ visible, onClose, customerData, o
                         <Typography style={styles.customerTag}>{customerData?.customer_type?.name}</Typography>
                     </View>
 
-                    <ScrollView contentContainerStyle={styles.contentContainer}>
+                    <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
                         <View style={styles.card}>
                             <Typography style={styles.cardTitle}>Contact Info</Typography>
                             <Typography style={styles.label}>Email:</Typography>
@@ -83,37 +91,31 @@ export default function CustomerProfileModal({ visible, onClose, customerData, o
 
                         <View style={styles.card}>
                             <Text style={styles.cardTitle}>Documents</Text>
-
-                            <FancyButton
-                                label="Download CAC Document"
-                                onPress={() => handleDownload(customerData?.cac_document)}
-                            />
-                            <FancyButton
-                                label="Download Premises License"
-                                onPress={() => handleDownload(customerData?.premises_licence)}
-                            />
+                            
+                            <View style={{ marginTop: theme.spacing.xs }}>
+                                <Button 
+                                    title="Download CAC Document" 
+                                    onPress={() => handleDownload(customerData?.cac_document)} 
+                                />
+                            </View>
+                            
+                            <View style={{ marginTop: theme.spacing.xs }}>
+                                <Button 
+                                    title="Download Premises License" 
+                                    onPress={() => handleDownload(customerData?.premises_licence)} 
+                                />
+                            </View>
                         </View>
 
-                        <FancyButton
-                            label="Impersonate & Create Order"
-                            gradient={['#43cea2', '#185a9d']}
-                            icon="🛒"
-                            onPress={() => onImpersonate(customerData)}
-                        />
+                        <View style={{ marginTop: theme.spacing.sm }}>
+                            <ButtonSecondary
+                                title="Impersonate & Create Order"
+                                onPress={() => onImpersonate(customerData)}
+                            />
+                        </View>
                     </ScrollView>
                 </Animated.View>
             </View>
         </Modal>
     );
 }
-
-// @ts-ignore
-const FancyButton = ({ label, onPress, gradient = ['#ff416c', '#ff4b2b'], icon = '⬇️' }) => (
-    <TouchableOpacity onPress={onPress} style={{ marginTop: normalize(10) }}>
-        <View style={styles.fancyButtonShadowWrapper}>
-            <LinearGradient colors={gradient} style={styles.fancyButton}>
-                <Text style={styles.fancyButtonText}>{icon} {label}</Text>
-            </LinearGradient>
-        </View>
-    </TouchableOpacity>
-);

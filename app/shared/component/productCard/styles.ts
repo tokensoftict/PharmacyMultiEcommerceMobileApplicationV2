@@ -1,34 +1,30 @@
 import { Platform, StyleSheet } from "react-native";
-import { normalize } from "../../helpers";
 import { labels, palette, semantic } from "../../constants/colors";
 import { FONT } from "@/shared/constants/fonts.ts";
+import { theme } from "@/shared/theme";
 
+/**
+ * ProductCard Styles (Latest Modern Design Refactor)
+ *
+ * Refactored using the centralized theme spacing, shadows, border-radius,
+ * and responsive typography system to scale beautifully on any screen size.
+ */
 export const _styles = (isDarkMode: boolean) => StyleSheet.create({
   container: {
-    width: normalize(165),
+    width: theme.MAX_CONTENT_WIDTH ? (theme.MAX_CONTENT_WIDTH - theme.spacing.lg) / 3 : 165, // Base default width, adapts dynamically if overriden
     backgroundColor: isDarkMode ? semantic.fill.f01 : semantic.fill.f03,
-    borderRadius: normalize(15),
-    padding: normalize(8),
-    margin: normalize(8),
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.sm,
+    margin: theme.spacing.xs, // Adds spacing gap back between cards
     borderWidth: 1,
     borderColor: isDarkMode ? semantic.fill.f02 : '#f0f0f0',
     position: 'relative',
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 3,
-      }
-    }),
+    ...theme.shadows.sm,
   },
   imageContainer: {
     width: '100%',
-    height: normalize(120),
-    borderRadius: normalize(12),
+    aspectRatio: 1.2, // Maintain consistent responsive image ratio
+    borderRadius: theme.borderRadius.sm,
     overflow: 'hidden',
     position: 'relative',
     backgroundColor: isDarkMode ? semantic.fill.f02 : '#f9f9f9',
@@ -42,19 +38,19 @@ export const _styles = (isDarkMode: boolean) => StyleSheet.create({
   },
   badgeContainer: {
     position: 'absolute',
-    top: normalize(8),
-    left: normalize(8),
+    top: theme.spacing.xs,
+    left: theme.spacing.xs,
     flexDirection: 'column',
-    gap: normalize(4),
+    gap: theme.spacing.xs / 2,
   },
   badge: {
-    paddingHorizontal: normalize(6),
-    paddingVertical: normalize(2),
-    borderRadius: normalize(8),
+    paddingHorizontal: theme.spacing.xs * 1.5,
+    paddingVertical: theme.spacing.xs / 2,
+    borderRadius: theme.borderRadius.xs,
   },
   badgeText: {
     color: semantic.text.white,
-    fontSize: normalize(8),
+    fontSize: theme.typography.xs - 4,
     fontFamily: FONT.BOLD,
   },
   expiryBadge: {
@@ -67,56 +63,52 @@ export const _styles = (isDarkMode: boolean) => StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
   },
   info: {
-    marginTop: normalize(8),
-    paddingHorizontal: normalize(4),
+    marginTop: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.xs / 2,
   },
   name: {
     fontFamily: FONT.MEDIUM,
     color: isDarkMode ? semantic.text.white : semantic.text.black,
-    fontSize: normalize(13),
-    height: normalize(35),
-    marginBottom: normalize(4),
+    fontSize: theme.typography.sm,
+    height: theme.typography.sm * 2.8, // Dynamic height reserve for two-line safety
+    marginBottom: theme.spacing.xs,
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: normalize(4),
+    marginTop: theme.spacing.xs,
     flexWrap: 'wrap',
   },
   price: {
-    fontSize: normalize(14),
+    fontSize: theme.typography.body,
     fontFamily: FONT.SEMI_BOLD,
     color: isDarkMode ? semantic.text.white : semantic.text.black,
   },
   oldPrice: {
-    fontSize: normalize(10),
+    fontSize: theme.typography.xs,
     color: semantic.alert.danger.d500,
     textDecorationLine: "line-through",
-    marginLeft: normalize(6),
+    marginLeft: theme.spacing.sm,
   },
   doorStep: {
-    fontSize: normalize(10),
+    fontSize: theme.typography.xs - 0.5,
     color: isDarkMode ? semantic.alert.success.s300 : palette.main.p500,
-    marginTop: normalize(4),
+    marginTop: theme.spacing.xs,
     fontFamily: FONT.MEDIUM,
   },
   addToCart: {
     position: 'absolute',
-    bottom: normalize(8),
-    right: normalize(8),
+    bottom: theme.spacing.sm,
+    right: theme.spacing.sm,
     backgroundColor: '#D50000',
-    width: normalize(30),
-    height: normalize(30),
-    borderRadius: normalize(15),
+    width: theme.MIN_TOUCH_TARGET - 12, // 32dp layout size
+    height: theme.MIN_TOUCH_TARGET - 12,
+    borderRadius: theme.borderRadius.full,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: semantic.text.white,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 4,
+    ...theme.shadows.sm,
   },
   outOfStockContainer: {
     position: 'absolute',
@@ -128,45 +120,37 @@ export const _styles = (isDarkMode: boolean) => StyleSheet.create({
     zIndex: 200,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: normalize(15),
+    borderRadius: theme.borderRadius.md,
   },
   outOfStockBadge: {
     backgroundColor: '#D50000',
-    paddingHorizontal: normalize(12),
-    paddingVertical: normalize(6),
-    borderRadius: normalize(6),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.xs,
+    ...theme.shadows.sm,
   },
   outOfStockText: {
     color: '#FFFFFF',
-    fontSize: normalize(10),
+    fontSize: theme.typography.xs,
     fontFamily: FONT.BOLD,
     textTransform: 'uppercase',
   },
   wishlistButton: {
     position: 'absolute',
-    top: normalize(10),
-    right: normalize(10),
+    top: theme.spacing.xs,
+    right: theme.spacing.xs,
     zIndex: 250,
     backgroundColor: isDarkMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.8)',
-    borderRadius: normalize(15),
-    width: normalize(28),
-    height: normalize(28),
+    borderRadius: theme.borderRadius.full,
+    width: theme.spacing.xl,
+    height: theme.spacing.xl,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...theme.shadows.sm,
   },
   wishlistIcon: {
-    width: normalize(16),
-    height: normalize(16),
+    width: theme.spacing.md,
+    height: theme.spacing.md,
     tintColor: '#D50000',
   },
 });

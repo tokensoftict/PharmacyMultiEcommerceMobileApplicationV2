@@ -60,7 +60,6 @@ const styles = StyleSheet.create({
     height: '25%',
     backgroundColor: '#000',
     overflow: 'hidden',
-    marginTop: normalize(-17),
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,

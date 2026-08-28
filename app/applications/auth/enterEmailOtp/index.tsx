@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
-import Wrapper from "@/shared/component/wrapper";
-import { Image, View } from "react-native";
+import { Image, View, ScrollView } from "react-native";
 import Typography from "@/shared/component/typography";
 import { OtpInput } from "react-native-otp-entry";
 import { Button } from "@/shared/component/buttons";
-import { styles } from './styles';
+import { styles } from '../enterOtp/styles';
 import TitleAuth from "@/shared/component/titleAuth";
-import { normalize } from "@/shared/helpers";
 import { logo } from "@/assets/images";
 import AuthSessionService from "@/service/auth/AuthSessionService";
 import ErrorText from "@/shared/component/ErrorText";
@@ -14,14 +12,21 @@ import OtpService from "@/service/auth/OtpService";
 import Toasts from "@/shared/utils/Toast";
 import useEffectOnce from "@/shared/hooks/useEffectOnce";
 import { palette } from "@/shared/constants/colors.ts";
+import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { theme } from "@/shared/theme";
+import { isTablet, wp } from '@/shared/helpers';
 
 // @ts-ignore
 export default function EnterEmailOtp({ navigation, route }) {
+    const insets = useSafeAreaInsets();
+    const tablet = isTablet();
+
     const [otpError, setOtpError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [otpCode, setOtpCode] = useState("");
-    const [countdown, setCountdown] = useState(120); // 2 mins = 120 secs
+    const [countdown, setCountdown] = useState(120);
 
     const userProfile = (new AuthSessionService()).getAuthSession();
 
@@ -60,7 +65,7 @@ export default function EnterEmailOtp({ navigation, route }) {
 
     function doValidateOTP() {
         if (otpCode.length !== 6) {
-            setOtpError("Please enter the complete otp code that was sent to your mail box!");
+            setOtpError("Please enter the complete OTP code that was sent to your mailbox!");
         } else {
             setOtpError("");
             setIsLoading(true);
@@ -90,13 +95,13 @@ export default function EnterEmailOtp({ navigation, route }) {
         (new OtpService()).requestForEmailOtp(userProfile.data.email).then((response) => {
             setIsLoading(false);
             if (response.data.status === true) {
-                if(response.data.data.hasVerified === true) {
+                if (response.data.data.hasVerified === true) {
                     Toasts("Email Address has already been verified!");
                     new AuthSessionService().completeSession();
                     navigateAndClearStack();
                 } else {
                     Toasts("OTP has been sent to your email address!.");
-                    setCountdown(120); // restart countdown
+                    setCountdown(120);
                 }
             } else {
                 setOtpError(response.data.error);
@@ -107,75 +112,101 @@ export default function EnterEmailOtp({ navigation, route }) {
     }
 
     return (
-        <Wrapper loading={isLoading} titleLoader={loadingMessage}>
-            <View style={styles.container}>
-                <View style={styles.titleImageContainer}>
-                    <TitleAuth title="Enter OTP Code" />
-                    <Image
-                        style={{
-                            width: normalize(100),
-                            height: normalize(60),
-                            marginTop: normalize(10)
-                        }}
-                        source={logo}
-                    />
-                </View>
-
-                <View style={styles.containerEmail}>
-                    <Typography>A 6-digit code has been sent to</Typography>
-                    <Typography style={styles.textEmail}>{userProfile.data.email}</Typography>
-                </View>
-
-                <View style={styles.form}>
-                    <OtpInput
-                        numberOfDigits={6}
-                        focusColor={palette.main.p500}
-                        autoFocus={false}
-                        hideStick={true}
-                        placeholder="******"
-                        blurOnFilled={true}
-                        disabled={false}
-                        type="numeric"
-                        secureTextEntry={false}
-                        focusStickBlinkingDuration={500}
-                        onFilled={(text) => setOtpCode(text)}
-                        textInputProps={{
-                            accessibilityLabel: "Enter OTP Code",
-                        }}
-                    />
-                    <View style={{ height: normalize(10) }} />
-                    {otpError !== '' && <ErrorText>{otpError}</ErrorText>}
-                </View>
-
-                {/* Countdown or Resend */}
-                <View style={{ alignItems: 'center', marginTop: normalize(0) }}>
-                    {countdown > 0 ? (
-                        <Typography style={{ color: palette.main.p100 }}>
-                            You can resend OTP in {formatCountdown(countdown)}
-                        </Typography>
-                    ) : (
-                        <Typography
-                            onPress={requestForOtp}
-                            style={{ color: palette.main.p500 }}
-                        >
-                            Didn’t receive code? Resend OTP
-                        </Typography>
-                    )}
-                </View>
-
-                <View style={styles.containerBtns}>
-                    <View style={styles.divider} />
-                    <View style={{ flex: 1 }}>
-                        <Button
-                            title="Continue"
-                            loadingText={loadingMessage}
-                            loading={isLoading}
-                            disabled={isLoading}
-                            onPress={doValidateOTP}
+        <WrapperNoScroll transparent={true} edges={['top', 'bottom']}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{
+                    flexGrow: 1,
+                    justifyContent: 'center',
+                    paddingBottom: Math.max(insets.bottom + theme.spacing.md, theme.spacing.xl),
+                    paddingTop: Math.max(insets.top + theme.spacing.lg, theme.spacing.xl),
+                }}
+            >
+                <View style={[styles.container, tablet && { maxWidth: 480, alignSelf: 'center', width: '100%' }]}>
+                    <View style={styles.titleImageContainer}>
+                        <TitleAuth title="Enter OTP Code" />
+                        <Image
+                            style={{
+                                width: wp(26),
+                                height: wp(16),
+                                marginTop: theme.spacing.xs,
+                            }}
+                            source={logo}
+                            resizeMode="contain"
                         />
                     </View>
+
+                    <View style={styles.containerEmail}>
+                        <Typography>A 6-digit code has been sent to</Typography>
+                        <Typography style={styles.textEmail}>{userProfile.data.email}</Typography>
+                    </View>
+
+                    <View style={styles.form}>
+                        <OtpInput
+                            numberOfDigits={6}
+                            focusColor={palette.main.p500}
+                            autoFocus={false}
+                            hideStick={true}
+                            placeholder="******"
+                            blurOnFilled={true}
+                            disabled={false}
+                            type="numeric"
+                            secureTextEntry={false}
+                            focusStickBlinkingDuration={500}
+                            onFilled={(text) => setOtpCode(text)}
+                            textInputProps={{
+                                accessibilityLabel: "Enter OTP Code",
+                            }}
+                            theme={{
+                                pinCodeContainerStyle: {
+                                    width: 48,
+                                    height: 48,
+                                    borderRadius: theme.borderRadius.sm,
+                                    backgroundColor: '#F8FAFC',
+                                    borderWidth: 1.5,
+                                    borderColor: '#E2E8F0',
+                                },
+                                pinCodeTextStyle: {
+                                    fontSize: theme.typography.lg - 2,
+                                    color: '#0F172A',
+                                },
+                                focusStickStyle: { backgroundColor: palette.main.p500 }
+                            }}
+                        />
+                        <View style={{ height: theme.spacing.sm }} />
+                        {otpError !== '' && <ErrorText>{otpError}</ErrorText>}
+                    </View>
+
+                    {/* Countdown or Resend */}
+                    <View style={{ alignItems: 'center', marginTop: theme.spacing.sm }}>
+                        {countdown > 0 ? (
+                            <Typography style={{ color: palette.main.p100 }}>
+                                You can resend OTP in {formatCountdown(countdown)}
+                            </Typography>
+                        ) : (
+                            <Typography
+                                onPress={requestForOtp}
+                                style={{ color: palette.main.p500 }}
+                            >
+                                Didn’t receive code? Resend OTP
+                            </Typography>
+                        )}
+                    </View>
+
+                    <View style={styles.containerBtns}>
+                        <View style={{ flex: 1 }}>
+                            <Button
+                                title="Continue"
+                                loadingText={loadingMessage}
+                                loading={isLoading}
+                                disabled={isLoading}
+                                onPress={doValidateOTP}
+                            />
+                        </View>
+                    </View>
                 </View>
-            </View>
-        </Wrapper>
+            </ScrollView>
+        </WrapperNoScroll>
     );
 }

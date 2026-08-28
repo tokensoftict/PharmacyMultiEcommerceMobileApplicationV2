@@ -11,10 +11,9 @@ import {
     StyleSheet,
     Dimensions,
     Pressable,
-    Alert,
-    Keyboard
+    Keyboard,
+    ScrollView
 } from 'react-native';
-import { normalize } from "@/shared/helpers";
 import { currencyType } from "@/shared/constants/global";
 import { design, labels, palette, semantic } from "@/shared/constants/colors";
 import CartService from "@/service/cart/CartService";
@@ -31,8 +30,9 @@ import Environment from "@/shared/utils/Environment";
 import { close as iconClose, shoppingBag, white_shopping_cart } from "@/assets/icons";
 import Icon from "@/shared/component/icon";
 import { FONT } from '@/shared/constants/fonts';
-
 import useDarkMode from "@/shared/hooks/useDarkMode";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { theme } from "@/shared/theme";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -44,6 +44,7 @@ interface ProductList {
 
 const ProductDialog = ({ visible, product, onClose }: ProductList) => {
     const { isDarkMode } = useDarkMode();
+    const insets = useSafeAreaInsets();
     const [buyNowQuantity, setBuyNowQuantity] = useState(1);
     const [buyNowLoading, setBuyNowLoading] = useState(false);
     const [addToCartLoading, setAddToCartLoading] = useState(false);
@@ -103,17 +104,18 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
             setBuyNowLoading(false);
             if (response.data.status === true) {
                 handleClose();
-                setTimeout(navigateTo, 300); // Navigate after animation
+                setTimeout(navigateTo, 300);
             }
         });
     };
 
     const buyNow = () => {
         if (!validateOptions()) return;
-        // @ts-ignore
-        const available = parseInt(product?.max === "0" ? product?.quantity : product?.max);
+        const maxVal = parseInt(product?.max?.toString() || "0", 10);
+        const qtyVal = parseInt(product?.quantity?.toString() || "0", 10);
+        const available = maxVal > 0 ? Math.min(maxVal, qtyVal) : qtyVal;
         if (available >= buyNowQuantity) {
-            handleBuyNow(true); // Mandatory
+            handleBuyNow(true);
         } else {
             Toasts("Insufficient quantity. Available: " + available);
         }
@@ -123,7 +125,6 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
         if (!validateOptions()) return;
         setAddToCartLoading(true);
         cartService.add(product?.id, addToCartQuantity, acceptDependent, selectedOptions).then((response) => {
-            console.log(response);
             if (response.data.status === true) {
                 Toasts('Item added to cart!');
                 store.dispatch(action.notifyCartUpdated());
@@ -134,10 +135,12 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
     };
 
     const addToCart = () => {
-        // @ts-ignore
-        const available = parseInt(product?.quantity);
+        if (!validateOptions()) return;
+        const maxVal = parseInt(product?.max?.toString() || "0", 10);
+        const qtyVal = parseInt(product?.quantity?.toString() || "0", 10);
+        const available = maxVal > 0 ? Math.min(maxVal, qtyVal) : qtyVal;
         if (available >= addToCartQuantity) {
-            handleAddToCart(true); // Mandatory
+            handleAddToCart(true);
         } else {
             Toasts("Insufficient quantity. Available: " + available);
         }
@@ -173,6 +176,10 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
 
     if (!visible) return null;
 
+    // Cart Dialog styling updates: 
+    // We wrap container in a safe area inset spacer at the top (topContainerOffset) to prevent overlapping statusbar when fully scrolled/stretched.
+    const topContainerOffset = Math.max(insets.top, theme.spacing.lg);
+
     return (
         <Modal
             transparent
@@ -193,17 +200,19 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
                             styles.modalContainer,
                             {
                                 transform: [{ translateY: slideAnim }],
-                                backgroundColor: isDarkMode ? semantic.fill.f01 : '#FFF'
+                                backgroundColor: isDarkMode ? semantic.fill.f01 : '#FFF',
+                                paddingBottom: Math.max(insets.bottom, theme.spacing.md),
+                                marginTop: topContainerOffset, // Adds top offset to prevent overlapping status bar
                             }
                         ]}
                     >
                         <View style={styles.indicator} />
 
-                        <TouchableOpacity style={styles.closeBtn} onPress={handleClose} activeOpacity={0.7} hitSlop={{top: 30, bottom: 30, left: 30, right: 30}}>
-                            <Icon icon={iconClose} customStyles={{ tintColor: isDarkMode ? '#FFF' : '#333', width: normalize(32), height: normalize(32) }} />
+                        <TouchableOpacity style={styles.closeBtn} onPress={handleClose} activeOpacity={0.7} hitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}>
+                            <Icon icon={iconClose} customStyles={{ tintColor: isDarkMode ? '#FFF' : '#333', width: theme.spacing.xl, height: theme.spacing.xl }} />
                         </TouchableOpacity>
 
-                        <View style={styles.content}>
+                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
                             <View style={[styles.imageWrapper, { backgroundColor: isDarkMode ? semantic.fill.f02 : '#F8FAFC' }]}>
                                 <Image source={{ uri: product?.image }} style={styles.productImage} />
                             </View>
@@ -329,7 +338,7 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
                                         <ActivityIndicator color={semantic.alert.danger.d500} />
                                     ) : (
                                         <>
-                                            <Icon icon={shoppingBag} customStyles={{ tintColor: semantic.alert.danger.d500, width: normalize(18), height: normalize(18) }} />
+                                            <Icon icon={shoppingBag} customStyles={{ tintColor: semantic.alert.danger.d500, width: theme.spacing.md, height: theme.spacing.md }} />
                                             <Typography style={styles.btnOutlineText}>Buy Now</Typography>
                                         </>
                                     )}
@@ -344,13 +353,13 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
                                         <ActivityIndicator color="#FFF" />
                                     ) : (
                                         <>
-                                            <Icon icon={white_shopping_cart} customStyles={{ tintColor: '#FFF', width: normalize(18), height: normalize(18) }} />
+                                            <Icon icon={white_shopping_cart} customStyles={{ tintColor: '#FFF', width: theme.spacing.md, height: theme.spacing.md }} />
                                             <Typography style={styles.btnPrimaryText}>Add to Cart</Typography>
                                         </>
                                     )}
                                 </TouchableOpacity>
                             </View>
-                        </View>
+                        </ScrollView>
                     </Animated.View>
                 </KeyboardAvoidingView>
             </View>
@@ -371,37 +380,38 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     modalContainer: {
-        borderTopLeftRadius: normalize(32),
-        borderTopRightRadius: normalize(32),
-        paddingBottom: Platform.OS === 'ios' ? normalize(40) : normalize(24),
+        borderTopLeftRadius: theme.borderRadius.lg,
+        borderTopRightRadius: theme.borderRadius.lg,
         width: '100%',
-        minHeight: normalize(450),
+        maxHeight: SCREEN_HEIGHT - 80, // Prevent modal stretching to top edge
+        elevation: 10,
     },
     indicator: {
-        width: normalize(40),
-        height: normalize(4),
+        width: 40,
+        height: 4,
         backgroundColor: '#E2E8F0',
-        borderRadius: normalize(2),
+        borderRadius: theme.borderRadius.xs / 2,
         alignSelf: 'center',
-        marginTop: normalize(12),
+        marginTop: theme.spacing.sm,
     },
     closeBtn: {
         position: 'absolute',
-        top: normalize(20),
-        right: normalize(24),
+        top: theme.spacing.md,
+        right: theme.spacing.lg,
         zIndex: 10,
-        padding: normalize(4),
+        padding: theme.spacing.xs,
     },
     content: {
-        paddingHorizontal: normalize(24),
-        paddingTop: normalize(24),
+        paddingHorizontal: theme.spacing.lg,
+        paddingTop: theme.spacing.md,
+        paddingBottom: theme.spacing.xl,
     },
     imageWrapper: {
         width: '100%',
-        height: normalize(180),
+        height: 180,
         backgroundColor: '#F8FAFC',
-        borderRadius: normalize(24),
-        marginBottom: normalize(20),
+        borderRadius: theme.borderRadius.md,
+        marginBottom: theme.spacing.md,
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
@@ -412,41 +422,41 @@ const styles = StyleSheet.create({
         resizeMode: 'contain',
     },
     mainInfo: {
-        marginBottom: normalize(24),
+        marginBottom: theme.spacing.md,
     },
     productName: {
-        fontSize: normalize(20),
+        fontSize: theme.typography.xl,
         fontFamily: FONT.BOLD,
-        marginBottom: normalize(8),
+        marginBottom: theme.spacing.xs,
     },
     priceRow: {
         flexDirection: 'row',
         alignItems: 'baseline',
-        gap: normalize(8),
-        marginBottom: normalize(12),
+        gap: theme.spacing.xs,
+        marginBottom: theme.spacing.sm,
     },
     totalPrice: {
-        fontSize: normalize(22),
+        fontSize: theme.typography.xxl,
         fontFamily: FONT.BOLD,
         color: semantic.alert.danger.d500,
     },
     oldPrice: {
-        fontSize: normalize(14),
+        fontSize: theme.typography.sm,
         fontFamily: FONT.NORMAL,
         color: '#94A3B8',
         textDecorationLine: 'line-through',
     },
     tagContainer: {
         flexDirection: 'row',
-        gap: normalize(8),
+        gap: theme.spacing.xs,
     },
     tag: {
-        paddingHorizontal: normalize(12),
-        paddingVertical: normalize(6),
-        borderRadius: normalize(100),
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: theme.spacing.xs,
+        borderRadius: theme.borderRadius.full,
     },
     tagText: {
-        fontSize: normalize(12),
+        fontSize: theme.typography.sm,
         fontFamily: FONT.BOLD,
     },
     quantityCard: {
@@ -454,95 +464,97 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: '#F8FAFC',
-        padding: normalize(16),
-        borderRadius: normalize(20),
-        marginBottom: normalize(24),
+        padding: theme.spacing.md,
+        borderRadius: theme.borderRadius.md,
+        marginBottom: theme.spacing.md,
         borderWidth: 1,
         borderColor: '#E2E8F0',
     },
     quantityTitle: {
-        fontSize: normalize(16),
+        fontSize: theme.typography.md,
         fontFamily: FONT.BOLD,
     },
     actions: {
         flexDirection: 'row',
-        gap: normalize(12),
+        alignItems: 'center',
+        gap: theme.spacing.sm,
     },
     btnOutline: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: normalize(14),
-        borderRadius: normalize(16),
+        paddingVertical: theme.spacing.xs,
+        paddingHorizontal: theme.spacing.md,
+        borderRadius: theme.borderRadius.sm,
         borderWidth: 1.5,
-        gap: normalize(8),
+        minHeight: theme.MIN_TOUCH_TARGET,
+        gap: theme.spacing.xs,
     },
     btnOutlineText: {
         color: semantic.alert.danger.d500,
         fontFamily: FONT.BOLD,
-        fontSize: normalize(16),
+        fontSize: theme.typography.body,
     },
     btnPrimary: {
-        flex: 1.2,
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: normalize(14),
-        borderRadius: normalize(16),
+        paddingVertical: theme.spacing.xs,
+        paddingHorizontal: theme.spacing.md,
+        borderRadius: theme.borderRadius.sm,
         backgroundColor: semantic.alert.danger.d500,
-        gap: normalize(8),
-        shadowColor: semantic.alert.danger.d500,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 4,
+        minHeight: theme.MIN_TOUCH_TARGET,
+        gap: theme.spacing.xs,
+        ...theme.shadows.sm,
     },
     btnPrimaryText: {
         color: '#FFF',
-        fontSize: normalize(16),
+        fontSize: theme.typography.body,
+        fontFamily: FONT.BOLD,
     },
     bundleInfo: {
-        marginTop: normalize(16),
-        padding: normalize(12),
+        marginTop: theme.spacing.sm,
+        padding: theme.spacing.sm,
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        borderRadius: normalize(12),
+        borderRadius: theme.borderRadius.sm,
         borderWidth: 1,
         borderColor: 'rgba(59, 130, 246, 0.2)',
     },
     bundleTitle: {
-        fontSize: normalize(14),
+        fontSize: theme.typography.sm,
         fontFamily: FONT.BOLD,
         color: '#2563EB',
-        marginBottom: normalize(4),
+        marginBottom: 2,
     },
     bundleItem: {
-        fontSize: normalize(12),
+        fontSize: theme.typography.xs,
         fontFamily: FONT.MEDIUM,
         color: '#1E40AF',
     },
     optionsContainer: {
-        marginTop: normalize(10),
-        marginBottom: normalize(20),
-        gap: normalize(16),
-        paddingHorizontal: normalize(4),
+        marginTop: theme.spacing.xs,
+        marginBottom: theme.spacing.md,
+        gap: theme.spacing.sm,
+        paddingHorizontal: 2,
     },
     optionGroup: {
-        gap: normalize(10),
+        gap: theme.spacing.xs,
     },
     optionGroupName: {
-        fontSize: normalize(15),
+        fontSize: theme.typography.sm,
         fontFamily: FONT.BOLD,
     },
     optionsList: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: normalize(10),
+        gap: theme.spacing.xs,
     },
     optionChip: {
-        paddingHorizontal: normalize(14),
-        paddingVertical: normalize(6),
-        borderRadius: normalize(10),
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: theme.spacing.xs,
+        borderRadius: theme.borderRadius.sm,
         borderWidth: 1,
     },
     optionChipSelected: {
@@ -550,7 +562,7 @@ const styles = StyleSheet.create({
         backgroundColor: semantic.alert.danger.d500,
     },
     optionChipText: {
-        fontSize: normalize(13),
+        fontSize: theme.typography.xs,
         fontFamily: FONT.MEDIUM,
     },
     optionChipTextSelected: {
@@ -558,9 +570,9 @@ const styles = StyleSheet.create({
         fontFamily: FONT.BOLD,
     },
     optionPriceAdjustment: {
-        fontSize: normalize(10),
+        fontSize: theme.typography.xs - 2,
         fontFamily: FONT.BOLD,
-        marginLeft: normalize(4),
+        marginLeft: 2,
     },
 });
 
