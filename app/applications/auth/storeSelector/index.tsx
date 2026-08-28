@@ -17,9 +17,12 @@ import Animated, {
 import LinearGradient from 'react-native-linear-gradient';
 import Typography from "@/shared/component/typography";
 import AuthSessionService from "@/service/auth/AuthSessionService.tsx";
-import { normalize } from "@/shared/helpers";
 import Environment from "@/shared/utils/Environment.tsx";
-import { palette } from "@/shared/constants/colors.ts";
+import { palette, semantic } from "@/shared/constants/colors.ts";
+import { theme } from "@/shared/theme";
+import useDarkMode from "@/shared/hooks/useDarkMode.tsx";
+import { FONT } from "@/shared/constants/fonts.ts";
+import CampaignEventBus from "@/campaign/CampaignEventBus";
 
 const appImages: Record<string, any> = {
     "wholesales": require("@/assets/images/wholesales.jpg"),
@@ -30,6 +33,7 @@ const appImages: Record<string, any> = {
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 const StoreListItem = ({ store, index, onPress }: { store: any, index: number, onPress: () => void }) => {
+    const { isDarkMode } = useDarkMode();
     const scale = useSharedValue(1);
 
     const animatedStyle = useAnimatedStyle(() => ({
@@ -54,14 +58,18 @@ const StoreListItem = ({ store, index, onPress }: { store: any, index: number, o
                 onPressIn={onPressIn}
                 onPressOut={onPressOut}
                 activeOpacity={0.9}
-                style={[styles.listItem, animatedStyle]}
+                style={[
+                    styles.listItem,
+                    isDarkMode && { backgroundColor: semantic.fill.f02, borderColor: semantic.fill.f04 },
+                    animatedStyle
+                ]}
             >
                 <View style={styles.iconContainer}>
                     <Image source={appImages[store.name]} style={styles.itemImage} resizeMode="cover" />
                     <View style={styles.imageOverlay} />
                 </View>
                 <View style={styles.itemContent}>
-                    <Typography style={styles.storeName}>
+                    <Typography style={[styles.storeName, isDarkMode && { color: '#FFF' }]}>
                         {store.name === "supermarket" ? "Supermarket & Pharmacy" : (store.name === "wholesales" ? "Wholesales & Bulk-sales" : "Sales Representative")}
                     </Typography>
                     <Typography numberOfLines={1} style={styles.storeDesc}>
@@ -79,9 +87,10 @@ const StoreListItem = ({ store, index, onPress }: { store: any, index: number, o
 import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
 
 const StoreSelectionScreen = ({ navigation }: any) => {
+    const { isDarkMode } = useDarkMode();
     const authService = new AuthSessionService();
     const [isLoading, setIsLoading] = useState(false);
-    
+
     let userProfile: any;
     let authSession: any;
     if (Environment.isLogin()) {
@@ -137,6 +146,9 @@ const StoreSelectionScreen = ({ navigation }: any) => {
         new AuthSessionService().setEnvironment(store);
         const targetStore = store === "sales representative" ? 'sales_representative' : store;
 
+        // Trigger APP_OPEN now that store environment is active
+        CampaignEventBus.emit('APP_OPEN');
+
         if (store === "wholesales" && unregistered && !Environment.isLogin()) {
             navigation.navigate("login");
         } else if (store === "wholesales" && unregistered) {
@@ -149,20 +161,20 @@ const StoreSelectionScreen = ({ navigation }: any) => {
     }
 
     return (
-        <WrapperNoScroll transparent={true} edges={[]}>
-            <View style={styles.container}>
+        <WrapperNoScroll transparent={true} edges={['top', 'bottom']}>
+            <View style={[styles.container, isDarkMode && { backgroundColor: semantic.fill.f01 }]}>
                 <LinearGradient
-                    colors={['#FFFFFF', '#FDFDFD', '#F9FAFB']}
+                    colors={isDarkMode ? [semantic.fill.f01, '#1A1D1E'] : ['#FFFFFF', '#FDFDFD', '#F9FAFB']}
                     style={StyleSheet.absoluteFill}
                 />
-                
-                <ScrollView 
+
+                <ScrollView
                     contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                 >
                     <View style={styles.innerContainer}>
                         <View style={styles.header}>
-                            <Animated.View 
+                            <Animated.View
                                 entering={FadeInDown.duration(600)}
                                 style={styles.logoWrapper}
                             >
@@ -172,12 +184,12 @@ const StoreSelectionScreen = ({ navigation }: any) => {
                                     resizeMode="contain"
                                 />
                             </Animated.View>
-                            
-                            <Animated.View 
+
+                            <Animated.View
                                 entering={FadeInDown.delay(100).duration(600)}
                                 style={styles.textWrapper}
                             >
-                                <Typography style={styles.welcomeText}>
+                                <Typography style={[styles.welcomeText, isDarkMode && { color: '#FFF' }]}>
                                     Hi, <Typography style={styles.nameText}>{profileData?.firstname || 'Guest'}</Typography>
                                 </Typography>
                                 <Typography style={styles.subText}>
@@ -185,7 +197,7 @@ const StoreSelectionScreen = ({ navigation }: any) => {
                                 </Typography>
                             </Animated.View>
                         </View>
-    
+
                         <View style={styles.listContainer}>
                             {isLoading ? (
                                 <View style={styles.loaderContainer}>
@@ -208,7 +220,7 @@ const StoreSelectionScreen = ({ navigation }: any) => {
                                 </View>
                             )}
                         </View>
-    
+
                         {!Environment.isLogin() && (
                             <Animated.View
                                 entering={FadeInDown.delay(400)}
@@ -236,17 +248,17 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     innerContainer: {
-        paddingVertical: normalize(40),
-        paddingHorizontal: normalize(24),
+        paddingVertical: theme.spacing.lg,
+        paddingHorizontal: theme.spacing.lg,
     },
     header: {
         alignItems: 'center',
-        marginBottom: normalize(32),
+        marginBottom: theme.spacing.lg,
     },
     logoWrapper: {
-        width: normalize(60),
-        height: normalize(60),
-        marginBottom: normalize(16),
+        width: 60,
+        height: 60,
+        marginBottom: theme.spacing.sm,
     },
     logo: {
         width: '100%',
@@ -256,44 +268,41 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     welcomeText: {
-        fontSize: normalize(22),
+        fontSize: theme.typography.lg,
         color: '#1E293B',
-        fontWeight: Platform.OS === 'ios' ? '600' : undefined,
+        fontFamily: FONT.BOLD,
     },
     nameText: {
-        fontSize: normalize(30),
+        fontSize: theme.typography.xxl,
         color: palette.main.p500,
-        fontWeight: Platform.OS === 'ios' ? '800' : undefined,
+        fontFamily: FONT.BOLD,
     },
     subText: {
-        fontSize: normalize(14),
+        fontSize: theme.typography.sm,
         color: '#64748B',
-        marginTop: normalize(4),
+        marginTop: 4,
+        fontFamily: FONT.SEMI_BOLD,
     },
     listContainer: {
         width: '100%',
     },
     itemWrapper: {
-        marginBottom: normalize(12),
+        marginBottom: theme.spacing.sm,
     },
     listItem: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#FFF',
-        borderRadius: normalize(16),
-        padding: normalize(12),
+        borderRadius: theme.borderRadius.md,
+        padding: theme.spacing.sm,
         borderWidth: 1,
         borderColor: '#F1F5F9',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
+        ...theme.shadows.sm,
     },
     iconContainer: {
-        width: normalize(48),
-        height: normalize(48),
-        borderRadius: normalize(12),
+        width: 48,
+        height: 48,
+        borderRadius: theme.borderRadius.sm,
         overflow: 'hidden',
     },
     itemImage: {
@@ -306,28 +315,28 @@ const styles = StyleSheet.create({
     },
     itemContent: {
         flex: 1,
-        marginLeft: normalize(16),
-        marginRight: normalize(8),
+        marginLeft: theme.spacing.md,
+        marginRight: theme.spacing.xs,
     },
     storeName: {
-        fontSize: normalize(16),
-        fontWeight: Platform.OS === 'ios' ? '700' : undefined,
+        fontSize: theme.typography.sm,
+        fontFamily: FONT.BOLD,
         color: '#1E293B',
     },
     storeDesc: {
-        fontSize: normalize(12),
+        fontSize: theme.typography.xs,
         color: '#94A3B8',
-        marginTop: normalize(2),
+        marginTop: 2,
     },
     arrowContainer: {
-        width: normalize(24),
-        height: normalize(24),
+        width: 24,
+        height: 24,
         alignItems: 'center',
         justifyContent: 'center',
     },
     arrow: {
-        width: normalize(8),
-        height: normalize(8),
+        width: 8,
+        height: 8,
         borderTopWidth: 2,
         borderRightWidth: 2,
         borderColor: '#CBD5E1',
@@ -336,34 +345,34 @@ const styles = StyleSheet.create({
     footer: {
         flexDirection: 'row',
         justifyContent: 'center',
-        marginTop: normalize(24),
+        marginTop: theme.spacing.md,
     },
     footerText: {
-        fontSize: normalize(14),
+        fontSize: theme.typography.sm,
         color: '#64748B',
     },
     signInLink: {
-        fontSize: normalize(14),
+        fontSize: theme.typography.sm,
         color: palette.main.p500,
-        fontWeight: Platform.OS === 'ios' ? '700' : undefined,
-        marginLeft: normalize(6),
+        fontFamily: FONT.BOLD,
+        marginLeft: theme.spacing.xs,
     },
     loaderContainer: {
-        paddingVertical: normalize(40),
+        paddingVertical: theme.spacing.xl,
         alignItems: 'center',
         justifyContent: 'center',
     },
     loadingText: {
-        marginTop: normalize(12),
-        fontSize: normalize(14),
+        marginTop: theme.spacing.sm,
+        fontSize: theme.typography.sm,
         color: '#64748B',
     },
     emptyContainer: {
-        paddingVertical: normalize(40),
+        paddingVertical: theme.spacing.xl,
         alignItems: 'center',
     },
     emptyText: {
-        fontSize: normalize(14),
+        fontSize: theme.typography.sm,
         color: '#64748B',
     },
 });

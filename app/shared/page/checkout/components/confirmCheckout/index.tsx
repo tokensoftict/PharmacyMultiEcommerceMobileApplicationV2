@@ -505,7 +505,7 @@ export default function ConfirmCheckout({ onValidate }: { onValidate: (validateF
                     <TouchableOpacity
                         style={{ marginTop: normalize(20), alignSelf: 'center' }}
                         onPress={() => {
-                            const webUrl = "https://psgdc.store/coupon-terms";
+                            const webUrl = "https://generaldrugcentre.com/coupon-terms";
 
                             Linking.openURL(webUrl);
                         }}
@@ -573,10 +573,10 @@ export default function ConfirmCheckout({ onValidate }: { onValidate: (validateF
 
                     <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: normalize(220) }}>
                         {inventoryErrors.map((err, idx) => (
-                            <View key={idx} style={{ 
-                                backgroundColor: isDarkMode ? semantic.fill.f03 : '#FFF1F2', 
-                                padding: normalize(16), 
-                                borderRadius: normalize(12), 
+                            <View key={idx} style={{
+                                backgroundColor: isDarkMode ? semantic.fill.f03 : '#FFF1F2',
+                                padding: normalize(16),
+                                borderRadius: normalize(12),
                                 marginBottom: normalize(12),
                                 borderLeftWidth: 4,
                                 borderLeftColor: semantic.alert.danger.d500
@@ -589,14 +589,14 @@ export default function ConfirmCheckout({ onValidate }: { onValidate: (validateF
                     </ScrollView>
 
                     <View style={{ flexDirection: 'row', gap: normalize(12), marginTop: normalize(20) }}>
-                        <TouchableOpacity 
-                            style={[styles.removeBtn, { flex: 1, backgroundColor: isDarkMode ? semantic.fill.f04 : '#F1F5F9', borderColor: 'transparent' }]} 
+                        <TouchableOpacity
+                            style={[styles.removeBtn, { flex: 1, backgroundColor: isDarkMode ? semantic.fill.f04 : '#F1F5F9', borderColor: 'transparent' }]}
                             onPress={() => setInventoryErrorDialog(false)}
                         >
                             <Typography style={[styles.removeBtnText, { color: isDarkMode ? '#FFF' : '#64748B' }]}>Close</Typography>
                         </TouchableOpacity>
-                        <TouchableOpacity 
-                            style={[styles.applyBtn, { flex: 1, height: normalize(48) }]} 
+                        <TouchableOpacity
+                            style={[styles.applyBtn, { flex: 1, height: normalize(48) }]}
                             onPress={() => {
                                 setInventoryErrorDialog(false);
                                 setCartReviewDialog(true);

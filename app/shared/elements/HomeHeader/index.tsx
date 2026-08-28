@@ -11,14 +11,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { _styles } from './styles';
-import { normalize } from '@/shared/helpers';
+import { theme } from '@/shared/theme';
+import { design } from '@/shared/constants/colors.ts';
 import AddToCartDialog from '@/shared/component/addToCartDialog';
 import OverlayLoader from '@/shared/component/overlayLoader';
+import AuthSessionService from "@/service/auth/AuthSessionService";
 import useEffectOnce from '@/shared/hooks/useEffectOnce.tsx';
 import { store } from '@/redux/store/store.tsx';
 import Typography from '@/shared/component/typography';
 import Icon from '@/shared/component/icon';
-import { homeNotifications, homeNotification, location, search, shoppingBag, store as storeIcon } from '@/assets/icons';
+import { homeNotifications, homeNotification, switch_icon, location, search, shoppingBag, store as storeIcon, dots } from '@/assets/icons';
 import useDarkMode from '@/shared/hooks/useDarkMode.tsx';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NavigationProps } from '@/shared/routes/stack.tsx';
@@ -30,7 +32,7 @@ import FlashDeals from "@/shared/elements/FlashDeals";
 import ImageSlider from "@/shared/elements/ImageSlider";
 import PromoCarousel from "@/shared/elements/PromoCarousel";
 import HomeSkeleton from './HomeSkeleton';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { qrcode } from '@/assets/icons';
 import Toasts from '@/shared/utils/Toast';
 import * as action from "@/redux/actions";
@@ -55,7 +57,9 @@ export default function HomeHeader({
     const { isDarkMode } = useDarkMode();
     const styles = _styles(isDarkMode);
     const navigation = useNavigation<NavigationProps>();
+    const isFocused = useIsFocused();
     const addToCartProduct = useSelector((state: any) => state.systemReducer.product);
+    const [menuVisible, setMenuVisible] = useState(false);
 
     React.useLayoutEffect(() => {
         const parent = navigation.getParent();
@@ -113,7 +117,7 @@ export default function HomeHeader({
         }
 
         return (
-            <View key={key} style={{ marginBottom: normalize(10) }}>
+            <View key={key} style={{ marginBottom: theme.spacing.sm }}>
                 {component}
             </View>
         );
@@ -121,10 +125,13 @@ export default function HomeHeader({
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar
-                backgroundColor={isDarkMode ? '#000' : '#FFF'}
-                barStyle={isDarkMode ? "light-content" : "dark-content"}
-            />
+            {isFocused && (
+                <StatusBar
+                    backgroundColor="transparent"
+                    barStyle={isDarkMode ? "light-content" : "dark-content"}
+                    translucent
+                />
+            )}
 
             {/* Fancy Static Header */}
             {!loading && (
@@ -135,38 +142,68 @@ export default function HomeHeader({
                             <View>
                                 <Typography style={styles.appName}>PS GDC</Typography>
                                 <View style={styles.storeNameTag}>
-                                    <Typography style={styles.storeNameText}>{storeName}</Typography>
+                                    <Typography numberOfLines={1} ellipsizeMode="tail" style={styles.storeNameText}>{storeName}</Typography>
                                 </View>
                             </View>
                         </View>
                         <View style={styles.actionButtons}>
                             <TouchableOpacity
                                 style={styles.iconBtn}
-                                onPress={() => {
-                                    const auth = store.getState().systemReducer.auth;
-                                    if (auth && auth.loginStatus) {
-                                        navigation.navigate('scanShop');
-                                    } else {
-                                        Toasts('You must be logged in to use Scan & Shop');
-                                        navigation.navigate('login');
-                                    }
-                                }}
-                            >
-                                <Icon
-                                    icon={qrcode}
-                                    height={normalize(20)}
-                                    tintColor={isDarkMode ? '#FFF' : '#D32F2F'}
-                                />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.iconBtn}
                                 onPress={() => navigation.navigate('search')}
                             >
-                                <Icon icon={search} height={normalize(20)} tintColor={isDarkMode ? '#FFF' : '#1A1D1E'} />
+                                <Icon icon={search} height={theme.spacing.lg} tintColor={isDarkMode ? '#FFF' : '#1A1D1E'} />
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('notifications')}>
-                                <Icon icon={homeNotification} height={normalize(20)} tintColor={isDarkMode ? '#FFF' : '#1A1D1E'} />
-                            </TouchableOpacity>
+                            <View style={{ position: 'relative' }}>
+                                <TouchableOpacity
+                                    style={styles.iconBtn}
+                                    onPress={() => setMenuVisible(!menuVisible)}
+                                >
+                                    <Icon icon={dots} height={theme.spacing.lg} tintColor={isDarkMode ? '#FFF' : '#1A1D1E'} />
+                                </TouchableOpacity>
+
+                                {menuVisible && (
+                                    <View style={[styles.menuDropdown, isDarkMode && styles.menuDropdownDark]}>
+                                        <TouchableOpacity
+                                            style={styles.menuItem}
+                                            onPress={() => {
+                                                setMenuVisible(false);
+                                                const auth = store.getState().systemReducer.auth;
+                                                if (auth && auth.loginStatus) {
+                                                    navigation.navigate('scanShop');
+                                                } else {
+                                                    Toasts('You must be logged in to use Scan & Shop');
+                                                    navigation.navigate('login');
+                                                }
+                                            }}
+                                        >
+                                            <Icon icon={qrcode} height={theme.spacing.md} tintColor={isDarkMode ? '#D32F2F' : '#D32F2F'} />
+                                            <Typography style={styles.menuText}>Scan & Shop</Typography>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.menuItem}
+                                            onPress={() => {
+                                                setMenuVisible(false);
+                                                navigation.navigate('notifications');
+                                            }}
+                                        >
+                                            <Icon icon={homeNotification} height={theme.spacing.md} tintColor={isDarkMode ? '#FFF' : '#1A1D1E'} />
+                                            <Typography style={styles.menuText}>Notifications</Typography>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.menuItem}
+                                            onPress={() => {
+                                                setMenuVisible(false);
+                                                new AuthSessionService().removeImpersonateCustomerData();
+                                                new AuthSessionService().setEnvironment("")
+                                                navigation.navigate('storeSelector');
+                                            }}
+                                        >
+                                            <Icon icon={switch_icon} height={theme.spacing.md} tintColor={isDarkMode ? '#FFF' : '#1A1D1E'} />
+                                            <Typography style={styles.menuText}>Switch Store</Typography>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+                            </View>
                         </View>
                     </View>
                 </View>
@@ -189,7 +226,7 @@ export default function HomeHeader({
                     refreshControl={
                         <RefreshControl refreshing={loading ?? false} onRefresh={onRefresh} tintColor="#D32F2F" />
                     }
-                    contentContainerStyle={[styles.scrollContent, { paddingTop: normalize(2) }]}
+                    contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                 />
             )}

@@ -5,16 +5,15 @@ import ListOptionCard, {OptionCardOptions} from "@/shared/component/ListOptionCa
 import useDarkMode from "@/shared/hooks/useDarkMode.tsx";
 import {useFocusEffect} from "@react-navigation/native";
 import {palette, semantic} from "@/shared/constants/colors.ts";
-import {normalize} from "@/shared/helpers";
 import Toastss from "@/shared/utils/Toast.tsx";
 import {useLoading} from "@/shared/utils/LoadingProvider";
-import HeaderWithIcon from "@/shared/component/headerBack";
 import CheckoutService from "@/service/checkout/CheckoutService.tsx";
 import SubHeader from "@/shared/component/subHeader";
 import ButtonSheet from "@/shared/component/buttonSheet";
 import Typography from "@/shared/component/typography";
 import Icon from "@/shared/component/icon";
 import Clipboard from "@react-native-clipboard/clipboard";
+import { theme } from "@/shared/theme";
 
 export default function SelectPaymentOption({ onValidate }: { onValidate: (validateFn: () => Promise<boolean>) => void })  {
   const [paymentSelected, setPaymentSelected] = useState<OptionCardOptions>();
@@ -103,22 +102,22 @@ export default function SelectPaymentOption({ onValidate }: { onValidate: (valid
             <ActivityIndicator size="large" color={semantic.alert.danger.d500} />
           </View>
         ) : (
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: normalize(16) }}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: theme.spacing.md }}>
             <ListOptionCard
               value={paymentSelected}
               onChange={onSelectPayment}
               options={checkOutPayment}
             />
-            <View style={{ height: normalize(140) }} />
+            <View style={{ height: theme.spacing.xxl * 3 }} />
           </ScrollView>
         )}
 
-        <ButtonSheet onClose={() => setShowBankModal(false)} dispatch={showBankModal} height={normalize(450)}>
-          <View style={{ padding: normalize(24) }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: normalize(20) }}>
-              <Typography style={{ fontSize: normalize(18), fontWeight: 'bold' }}>{"Bank Transfer Details"}</Typography>
+        <ButtonSheet onClose={() => setShowBankModal(false)} dispatch={showBankModal} height={theme.spacing.xxl * 9}>
+          <View style={{ padding: theme.spacing.lg }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.md }}>
+              <Typography style={{ fontSize: theme.typography.xl, fontWeight: 'bold' }}>{"Bank Transfer Details"}</Typography>
               <TouchableOpacity onPress={() => setShowBankModal(false)}>
-                <Icon icon={close} height={normalize(24)} tintColor={palette.main.p100} />
+                <Icon icon={close} height={theme.spacing.xl} tintColor={palette.main.p100} />
               </TouchableOpacity>
             </View>
 
@@ -126,42 +125,42 @@ export default function SelectPaymentOption({ onValidate }: { onValidate: (valid
               {selectedBanks.map((bank, index) => (
                 <View key={index} style={{
                   backgroundColor: isDarkMode ? palette.secondary.s800 : '#F1F5F9',
-                  padding: normalize(16),
-                  borderRadius: normalize(12),
-                  marginBottom: normalize(16),
+                  padding: theme.spacing.md,
+                  borderRadius: theme.borderRadius.md,
+                  marginBottom: theme.spacing.md,
                   borderWidth: 1,
                   borderColor: isDarkMode ? palette.secondary.s700 : '#E2E8F0'
                 }}>
-                  <View style={{ marginBottom: normalize(8) }}>
-                    <Typography style={{ fontSize: normalize(12), color: semantic.text.f04, marginBottom: normalize(2) }}>{"Bank Name"}</Typography>
-                    <Typography style={{ fontSize: normalize(16), fontWeight: 'bold' }}>{bank.name}</Typography>
+                  <View style={{ marginBottom: theme.spacing.xs }}>
+                    <Typography style={{ fontSize: theme.typography.xs, color: semantic.text.f04, marginBottom: 2 }}>{"Bank Name"}</Typography>
+                    <Typography style={{ fontSize: theme.typography.md, fontWeight: 'bold' }}>{bank.name}</Typography>
                   </View>
 
-                  <View style={{ marginBottom: normalize(8) }}>
-                    <Typography style={{ fontSize: normalize(12), color: semantic.text.f04, marginBottom: normalize(2) }}>{"Account Name"}</Typography>
-                    <Typography style={{ fontSize: normalize(15) }}>{bank.account_name}</Typography>
+                  <View style={{ marginBottom: theme.spacing.xs }}>
+                    <Typography style={{ fontSize: theme.typography.xs, color: semantic.text.f04, marginBottom: 2 }}>{"Account Name"}</Typography>
+                    <Typography style={{ fontSize: theme.typography.body }}>{bank.account_name}</Typography>
                   </View>
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                     <View style={{ flex: 1 }}>
-                      <Typography style={{ fontSize: normalize(12), color: semantic.text.f04, marginBottom: normalize(2) }}>{"Account Number"}</Typography>
-                      <Typography style={{ fontSize: normalize(18), fontWeight: 'bold', color: palette.main.p100 }}>{bank.account_number}</Typography>
+                      <Typography style={{ fontSize: theme.typography.xs, color: semantic.text.f04, marginBottom: 2 }}>{"Account Number"}</Typography>
+                      <Typography style={{ fontSize: theme.typography.lg, fontWeight: 'bold', color: palette.main.p100 }}>{bank.account_number}</Typography>
                     </View>
                     <TouchableOpacity
                       onPress={() => copyToClipboard(bank.account_number)}
                       style={{
                         backgroundColor: palette.main.p100,
-                        paddingHorizontal: normalize(12),
-                        paddingVertical: normalize(6),
-                        borderRadius: normalize(8),
+                        paddingHorizontal: theme.spacing.sm,
+                        paddingVertical: theme.spacing.xs / 2,
+                        borderRadius: theme.borderRadius.xs,
                       }}
                     >
-                      <Typography style={{ color: '#FFFFFF', fontSize: normalize(12), fontWeight: 'bold' }}>{"COPY"}</Typography>
+                      <Typography style={{ color: '#FFFFFF', fontSize: theme.typography.xs, fontWeight: 'bold' }}>{"COPY"}</Typography>
                     </TouchableOpacity>
                   </View>
                 </View>
               ))}
-              <View style={{ height: normalize(40) }} />
+              <View style={{ height: theme.spacing.xl }} />
             </ScrollView>
           </View>
         </ButtonSheet>

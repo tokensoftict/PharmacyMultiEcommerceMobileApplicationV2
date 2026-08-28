@@ -16,7 +16,7 @@ export const _styles = (disabled: boolean | undefined) =>
       justifyContent: 'center',
     },
     text: {
-      color: disabled ? semantic.text.white : palette.main.p500,
+      color: semantic.text.white,
 
       marginHorizontal: normalize(4),
       fontSize: normalize(14),

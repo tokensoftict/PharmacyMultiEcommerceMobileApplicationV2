@@ -17,7 +17,8 @@ import WrapperNoScroll from '@/shared/component/wrapperNoScroll';
 import Input from "@/shared/component/input";
 import Icon from "@/shared/component/icon";
 import { semantic } from "@/shared/constants/colors.ts";
-import { normalize } from '@/shared/helpers';
+import { theme } from "@/shared/theme";
+import { isTablet } from '@/shared/helpers';
 
 interface Category {
     id: string;
@@ -66,6 +67,7 @@ const BrandListItem = ({ item, onPress }: { item: Category; onPress: (item: Cate
 
 export default function BrandLists() {
     const navigation = useNavigation<NavigationProps>();
+    const tablet = isTablet();
 
     const [searchQuery, setSearchQuery] = useState('');
     const [categories, setCategories] = useState<Category[]>([]);
@@ -105,13 +107,13 @@ export default function BrandLists() {
         <WrapperNoScroll loading={isLoading}>
             <HeaderWithIcon icon={arrowBack} onPress={() => navigation.goBack()} title="TOP BRANDS" />
 
-            <View style={styles.searchWrapper}>
+            <View style={[styles.searchWrapper, tablet && { maxWidth: 480, alignSelf: 'center', width: '100%' }]}>
                 <Input
                     placeholder="Search brands..."
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                     rightIcon={<Icon icon={search} tintColor={semantic.text.grey} />}
-                    style={{ backgroundColor: '#f9f9f9', borderRadius: normalize(12) }}
+                    style={{ backgroundColor: '#f9f9f9', borderRadius: theme.borderRadius.sm }}
                 />
             </View>
 
@@ -121,10 +123,10 @@ export default function BrandLists() {
                 renderItem={({ item }) => (
                     <BrandListItem item={item} onPress={navigateToProductList} />
                 )}
-                numColumns={3}
-                contentContainerStyle={styles.categoryMenuContainer}
+                numColumns={tablet ? 4 : 3}
+                contentContainerStyle={[styles.categoryMenuContainer, tablet && { maxWidth: 800, alignSelf: 'center', width: '100%' }]}
                 showsVerticalScrollIndicator={false}
-                columnWrapperStyle={{ justifyContent: 'center' }}
+                columnWrapperStyle={{ justifyContent: 'flex-start' }}
             />
         </WrapperNoScroll>
     );

@@ -3,23 +3,28 @@ import { styles } from "./style";
 import {
     View,
     FlatList,
-    useWindowDimensions, Image, TouchableOpacity, ScrollView, RefreshControl
+    useWindowDimensions,
+    Image,
+    TouchableOpacity,
+    ScrollView,
+    RefreshControl
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import Clipboard from '@react-native-clipboard/clipboard';
 import * as Animatable from 'react-native-animatable';
 import WrapperNoScrollNoDialogNoSafeArea from "@/shared/component/wrapperNoScrollNoDialogNoSafeArea";
-import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+import { TabView, TabBar } from 'react-native-tab-view';
 import Typography from "@/shared/component/typography";
 import Input from "@/shared/component/input";
-import { normalize } from "@/shared/helpers";
-import { labels, semantic } from "@/shared/constants/colors.ts";
+import { labels } from "@/shared/constants/colors.ts";
 import AuthSessionService from "@/service/auth/AuthSessionService.tsx";
 import DashboardService from "@/service/salesrepresnetative/DashboardService.tsx";
 import { Customer, Dashboard } from "@/service/salesrepresnetative/interface/Dashboard.tsx";
 import { useNavigation } from "@react-navigation/native";
 import Toastss from "@/shared/utils/Toast.tsx";
 import CustomerProfileModal from "@/applications/salesrepresentative/home/customer";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { theme } from "@/shared/theme";
 
 // @ts-ignore
 const CustomersRoute = ({ searchCustomer, setSearchCustomer, filteredCustomers, renderCustomerItem }) => (
@@ -30,13 +35,15 @@ const CustomersRoute = ({ searchCustomer, setSearchCustomer, filteredCustomers, 
             onChangeText={setSearchCustomer}
         />
         <FlatList
-            style={{ marginTop: normalize(20) }}
+            style={{ marginTop: theme.spacing.sm }}
             data={filteredCustomers}
             renderItem={renderCustomerItem}
             keyExtractor={(item) => item.id.toString()}
+            showsVerticalScrollIndicator={false}
         />
     </View>
 );
+
 // @ts-ignore
 const OrdersRoute = ({ searchOrder, setSearchOrder, filteredOrders, renderOrderItem }) => (
     <View style={styles.tabContainer}>
@@ -46,18 +53,18 @@ const OrdersRoute = ({ searchOrder, setSearchOrder, filteredOrders, renderOrderI
             onChangeText={setSearchOrder}
         />
         <FlatList
-            style={{ marginTop: normalize(20) }}
+            style={{ marginTop: theme.spacing.sm }}
             data={filteredOrders}
             renderItem={renderOrderItem}
             keyExtractor={(item) => item.id.toString()}
+            showsVerticalScrollIndicator={false}
         />
     </View>
 );
 
-
-
 export default function SalesRepresentativeHome() {
     const layout = useWindowDimensions();
+    const insets = useSafeAreaInsets();
     const [dashBoardData, setDashBoardData] = useState<Dashboard>({
         customerList: [],
         month: "",
@@ -65,8 +72,7 @@ export default function SalesRepresentativeHome() {
         sumOfDispatchedOrders: 0,
         totalNumberOfCustomers: 0,
         totalNumberOfDispatchedOrders: 0
-
-    })
+    });
     const navigation = useNavigation();
     const [openCustomerDialog, setOpenCustomerDialog] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer>();
@@ -74,35 +80,33 @@ export default function SalesRepresentativeHome() {
     const [searchOrder, setSearchOrder] = useState('');
     const [index, setIndex] = useState(0);
     const [loading, setLoading] = useState(false);
-    const [routes] = useState([{ key: 'customers', title: 'My Customers' }, { key: 'orders', title: 'Recent Orders' }]);
+    const [routes] = useState([
+        { key: 'customers', title: 'My Customers' },
+        { key: 'orders', title: 'Recent Orders' }
+    ]);
     const userProfile = (new AuthSessionService()).getAuthSession();
     const salesRep = userProfile.data?.apps.filter((app: any) => {
         return app.name === 'sales representative';
     })[0].info;
 
     const dashboardService = new DashboardService();
+    
     useEffect(() => {
         loadDashboard();
     }, []);
 
     function loadDashboard() {
-        setLoading(true)
+        setLoading(true);
         dashboardService.dashboard().then(function (response) {
-            console.log(response);
-            setLoading(false)
+            setLoading(false);
             setDashBoardData(response.data.data);
-        }, function (error) { setLoading(false) })
+        }, function (error) { setLoading(false); });
     }
-
-
-
 
     const filteredCustomers = dashBoardData?.customerList.filter((item) =>
         item.business_name.toLowerCase().includes(searchCustomer.toLowerCase()) ||
         item.phone.toLowerCase().includes(searchCustomer.toLowerCase())
-
     );
-
 
     const filteredOrders = dashBoardData?.orderList.filter((item) =>
         item.orderId.toLowerCase().includes(searchOrder.toLowerCase()) ||
@@ -120,10 +124,10 @@ export default function SalesRepresentativeHome() {
         session.setEnvironment("wholesales");
         // @ts-ignore
         navigation.navigate('wholesales');
-    }
+    };
 
-    const renderCustomerItem = ({ item, index }: any) => (
-        <Animatable.View animation="fadeInUp" delay={index * 100} style={styles.gridItem}>
+    const renderCustomerItem = ({ item, index: itemIdx }: any) => (
+        <Animatable.View animation="fadeInUp" delay={itemIdx * 100} style={styles.gridItem}>
             <TouchableOpacity onPress={() => {
                 setSelectedCustomer(item);
                 triggerCustomerDialog(true);
@@ -142,8 +146,8 @@ export default function SalesRepresentativeHome() {
         </Animatable.View>
     );
 
-    const renderOrderItem = ({ item, index }: any) => (
-        <Animatable.View animation="fadeInUp" delay={index * 100} style={styles.gridItem}>
+    const renderOrderItem = ({ item, index: itemIdx }: any) => (
+        <Animatable.View animation="fadeInUp" delay={itemIdx * 100} style={styles.gridItem}>
             <TouchableOpacity onPress={() => {
                 // @ts-ignore
                 navigation.navigate('showOrder', { orderId: item.id })
@@ -160,7 +164,6 @@ export default function SalesRepresentativeHome() {
             </TouchableOpacity>
         </Animatable.View>
     );
-
 
     // @ts-ignore
     const renderScene = ({ route }) => {
@@ -198,14 +201,14 @@ export default function SalesRepresentativeHome() {
                 }
             >
                 <View style={{ flex: 1 }}>
-                    <View style={styles.container}>
+                    <View style={[styles.container, { paddingTop: Math.max(insets.top, theme.spacing.md) }]}>
                         <Image style={styles.avatar} source={{ uri: userProfile?.data?.image }} />
                         <View style={styles.header}>
                             <Typography style={styles.headerText}>{userProfile?.data?.name}</Typography>
                             <Typography style={styles.subHeaderText}>{userProfile?.data?.email}</Typography>
                             <Typography style={styles.subHeaderText}>{userProfile?.data?.phone}</Typography>
-                            <View style={{ flex: 1, flexDirection: 'row' }}>
-                                <Typography style={styles.subHeaderText}>Referral Code : </Typography>
+                            <View style={{ flex: 1, flexDirection: 'row', marginTop: 2 }}>
+                                <Typography style={styles.subHeaderText}>Referral Code: </Typography>
                                 <TouchableOpacity onPress={() => {
                                     Clipboard.setString(salesRep.code);
                                     Toastss("Copied to clipboard!");
@@ -213,9 +216,9 @@ export default function SalesRepresentativeHome() {
                                     <Typography style={styles.code}>{salesRep.code}</Typography>
                                 </TouchableOpacity>
                             </View>
-
                         </View>
                     </View>
+                    
                     <View style={styles.cardRow}>
                         <Card style={styles.card}>
                             <View style={styles.cardContent}>
@@ -230,6 +233,7 @@ export default function SalesRepresentativeHome() {
                             </View>
                         </Card>
                     </View>
+                    
                     <View style={styles.cardRow}>
                         <Card style={styles.cardFull}>
                             <View style={styles.cardContent}>
@@ -238,33 +242,32 @@ export default function SalesRepresentativeHome() {
                             </View>
                         </Card>
                     </View>
-
                 </View>
             </ScrollView>
 
-            <TabView
-                navigationState={{ index, routes }}
-                renderScene={renderScene}
-                onIndexChange={setIndex}
-                initialLayout={{ width: layout.width }}
-                renderTabBar={props =>
-                    <TabBar {...props}
-                        activeColor={labels.type4.textColor}
-                        inactiveColor={'#000'}
-                        indicatorStyle={{ backgroundColor: labels.type4.textColor }}
-                        style={{ backgroundColor: '#FFF' }}
-                    />
-                }
-            />
+            <View style={{ height: layout.height * 0.45 }}>
+                <TabView
+                    navigationState={{ index, routes }}
+                    renderScene={renderScene}
+                    onIndexChange={setIndex}
+                    initialLayout={{ width: layout.width }}
+                    renderTabBar={props =>
+                        <TabBar {...props}
+                            activeColor={labels.type4.textColor}
+                            inactiveColor={'#000'}
+                            indicatorStyle={{ backgroundColor: labels.type4.textColor }}
+                            style={{ backgroundColor: '#FFF' }}
+                        />
+                    }
+                />
+            </View>
+
             <CustomerProfileModal
                 customerData={selectedCustomer}
-                visible={openCustomerDialog} onClose={() => triggerCustomerDialog(false)}
+                visible={openCustomerDialog} 
+                onClose={() => triggerCustomerDialog(false)}
                 onImpersonate={impersonateCustomer}
             />
         </WrapperNoScrollNoDialogNoSafeArea>
     );
-
-
-
-
 }

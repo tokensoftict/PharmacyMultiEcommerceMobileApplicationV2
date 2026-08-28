@@ -8,7 +8,10 @@ import { useNavigation } from "@react-navigation/native";
 import { design } from "@/shared/constants/colors";
 import { NavigationProps } from "@/shared/routes/stack.tsx";
 import AuthSessionService from "@/service/auth/AuthSessionService.tsx";
-import { normalize } from "@/shared/helpers";
+import { StyleProp, ViewStyle } from 'react-native';
+import { normalize } from '@/shared/helpers';
+
+
 
 interface HeaderBackProps {
   title?: string;
@@ -16,8 +19,9 @@ interface HeaderBackProps {
   rightComponent?: React.ReactNode | undefined;
   onPress?: any | undefined;
   transparent?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
-export default function HeaderWithIcon({ title, icon, onPress, rightComponent, transparent }: HeaderBackProps) {
+export default function HeaderWithIcon({ title, icon, onPress, rightComponent, transparent, style }: HeaderBackProps) {
   const navigation = useNavigation<NavigationProps>();
   const stylesIcon = {
     tintColor: transparent ? '#1E293B' : design.text1.color
@@ -35,7 +39,8 @@ export default function HeaderWithIcon({ title, icon, onPress, rightComponent, t
   return (
     <View style={[
       styles.container,
-      transparent && { backgroundColor: 'transparent', borderBottomWidth: 0, marginBottom: 0 }
+      transparent && { backgroundColor: 'transparent', borderBottomWidth: 0, marginBottom: 0 },
+      style
     ]}>
       <View style={styles.headerLeft}>
         <TouchableOpacity onPress={() => goBack()} style={{ padding: normalize(5) }}>

@@ -1,57 +1,54 @@
 import { StyleSheet, ViewStyle } from "react-native";
 import { palette, semantic } from "../../constants/colors";
-import { normalize } from "../../helpers";
 import { FONT } from "../../constants/fonts";
+import { theme } from "../../theme";
 
 const defaultContainer: ViewStyle = {
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: normalize(10),
+  padding: theme.spacing.sm,
   borderWidth: 1,
   backgroundColor: 'white',
-  borderRadius: normalize(5),
-  marginVertical: normalize(2)
-}
+  borderRadius: theme.borderRadius.sm,
+  marginVertical: theme.spacing.xs / 2,
+};
+
 export const _styles = (isDarkMode: boolean, active: boolean) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: normalize(16),
+    padding: theme.spacing.md,
     backgroundColor: isDarkMode ? semantic.fill.f02 : '#FFFFFF',
-    borderRadius: normalize(16),
-    marginVertical: normalize(8),
+    borderRadius: theme.borderRadius.md,
+    marginVertical: theme.spacing.xs,
     borderWidth: 1.5,
     borderColor: active ? semantic.alert.danger.d500 : (isDarkMode ? semantic.fill.f04 : '#F1F5F9'),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: isDarkMode ? 0.3 : 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    ...theme.shadows.sm,
   },
   containerIcon: {
     backgroundColor: isDarkMode ? semantic.fill.f03 : '#F8FAFC',
-    borderRadius: normalize(12),
-    width: normalize(48),
-    height: normalize(48),
+    borderRadius: theme.borderRadius.sm,
+    width: theme.MIN_TOUCH_TARGET, // 44dp
+    height: theme.MIN_TOUCH_TARGET,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: normalize(16),
+    marginRight: theme.spacing.md,
   },
   icon: {
-    width: normalize(24),
-    height: normalize(24),
+    width: theme.spacing.md,
+    height: theme.spacing.md,
     tintColor: active ? semantic.alert.danger.d500 : (isDarkMode ? '#94A3B8' : '#64748B'),
   },
   title: {
-    fontSize: normalize(14),
+    fontSize: theme.typography.sm,
     fontFamily: FONT.BOLD,
     color: isDarkMode ? '#FFF' : '#1A1D1E',
-    marginBottom: normalize(2),
+    marginBottom: 2,
   },
   address: {
-    fontSize: normalize(12),
+    fontSize: theme.typography.xs,
     fontFamily: FONT.MEDIUM,
     color: '#64748B',
   },
@@ -63,10 +60,10 @@ export const _styles = (isDarkMode: boolean, active: boolean) => StyleSheet.crea
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: normalize(12),
+    gap: theme.spacing.sm,
   },
   price: {
-    fontSize: normalize(14),
+    fontSize: theme.typography.sm,
     fontFamily: FONT.BOLD,
     color: semantic.alert.danger.d500,
   },

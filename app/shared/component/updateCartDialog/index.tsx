@@ -11,24 +11,25 @@ import {
     Dimensions,
     Pressable,
     StyleSheet,
-    Keyboard
+    Keyboard,
+    ScrollView
 } from "react-native";
 import Typography from "@/shared/component/typography";
 import { currencyType } from "@/shared/constants/global";
 import Environment from "@/shared/utils/Environment";
-import { normalize } from "@/shared/helpers";
 import Counter from "@/shared/component/counter";
 import { palette, semantic } from "@/shared/constants/colors";
 import CartService from "@/service/cart/CartService";
 import Toasts from "@/shared/utils/Toast";
 import { useGlobal } from "@/shared/helpers/GlobalContext.tsx";
-import { useFocusEffect } from "@react-navigation/native";
 import { close as iconClose, trash, white_shopping_cart } from "@/assets/icons";
 import Icon from "@/shared/component/icon";
 import { FONT } from '@/shared/constants/fonts';
 import useDarkMode from "@/shared/hooks/useDarkMode";
 import { store } from "@/redux/store/store";
 import * as action from "@/redux/actions";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { theme } from "@/shared/theme";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -41,6 +42,7 @@ interface ProductList {
 
 export default function UpdateCartDialog({ product, onClose, visible, onCartUpdated }: ProductList) {
     const { isDarkMode } = useDarkMode();
+    const insets = useSafeAreaInsets();
     const [addToCartLoading, setAddToCartLoading] = useState(false);
     const [addToCartQuantity, setAddToCartQuantity] = useState(product?.cart_quantity);
     const [removeProductLoading, setRemoveProductLoading] = useState(false);
@@ -137,7 +139,10 @@ export default function UpdateCartDialog({ product, onClose, visible, onCartUpda
 
     function updateCart() {
         if (!validateOptions()) return;
-        if (parseInt(product?.quantity) >= addToCartQuantity) {
+        const maxVal = parseInt(product?.max?.toString() || "0", 10);
+        const qtyVal = parseInt(product?.quantity?.toString() || "0", 10);
+        const available = maxVal > 0 ? Math.min(maxVal, qtyVal) : qtyVal;
+        if (available >= addToCartQuantity) {
             setAddToCartLoading(true);
             cartService.add(product?.id, addToCartQuantity, true, selectedOptions).then((response) => {
                 if (response.data.status === true) {
@@ -151,11 +156,13 @@ export default function UpdateCartDialog({ product, onClose, visible, onCartUpda
                 setAddToCartLoading(false);
             });
         } else {
-            Toasts("Insufficient quantity. Available: " + product?.quantity);
+            Toasts("Insufficient quantity. Available: " + available);
         }
     }
 
     if (!visible) return null;
+
+    const topContainerOffset = Math.max(insets.top, theme.spacing.lg);
 
     return (
         <Modal
@@ -177,17 +184,19 @@ export default function UpdateCartDialog({ product, onClose, visible, onCartUpda
                             styles.modalContainer, 
                             { 
                                 transform: [{ translateY: slideAnim }],
-                                backgroundColor: isDarkMode ? semantic.fill.f01 : '#FFF'
+                                backgroundColor: isDarkMode ? semantic.fill.f01 : '#FFF',
+                                paddingBottom: Math.max(insets.bottom, theme.spacing.md),
+                                marginTop: topContainerOffset,
                             }
                         ]}
                     >
                         <View style={styles.indicator} />
                         
                         <TouchableOpacity style={styles.closeBtn} onPress={handleClose} activeOpacity={0.7} hitSlop={{top: 30, bottom: 30, left: 30, right: 30}}>
-                            <Icon icon={iconClose} customStyles={{ tintColor: isDarkMode ? '#FFF' : '#333', width: normalize(32), height: normalize(32) }} />
+                            <Icon icon={iconClose} customStyles={{ tintColor: isDarkMode ? '#FFF' : '#333', width: theme.spacing.xl, height: theme.spacing.xl }} />
                         </TouchableOpacity>
 
-                        <View style={styles.content}>
+                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
                             <View style={[styles.imageWrapper, { backgroundColor: isDarkMode ? semantic.fill.f02 : '#F8FAFC' }]}>
                                 <Image source={{ uri: product?.image }} style={styles.productImage} />
                             </View>
@@ -287,8 +296,8 @@ export default function UpdateCartDialog({ product, onClose, visible, onCartUpda
                             </View>
 
                             {product?.is_dependent && (
-                                <View style={{ marginBottom: normalize(20), paddingHorizontal: normalize(4) }}>
-                                    <Typography style={{ color: semantic.alert.danger.d500, fontSize: normalize(12), fontFamily: FONT.NORMAL }}>
+                                <View style={{ marginBottom: theme.spacing.sm, paddingHorizontal: 2 }}>
+                                    <Typography style={{ color: semantic.alert.danger.d500, fontSize: theme.typography.xs, fontFamily: FONT.NORMAL }}>
                                         * This is a mandatory dependent item. To remove or change its quantity, please update its parent product.
                                     </Typography>
                                 </View>
@@ -304,7 +313,7 @@ export default function UpdateCartDialog({ product, onClose, visible, onCartUpda
                                         <ActivityIndicator color={semantic.alert.danger.d500} />
                                     ) : (
                                         <>
-                                            <Icon icon={trash} customStyles={{ tintColor: product?.is_dependent ? '#CCC' : semantic.alert.danger.d500, width: normalize(18), height: normalize(18) }} />
+                                            <Icon icon={trash} customStyles={{ tintColor: product?.is_dependent ? '#CCC' : semantic.alert.danger.d500, width: theme.spacing.md, height: theme.spacing.md }} />
                                             <Typography style={[styles.btnOutlineText, product?.is_dependent && { color: '#CCC' }]}>Remove</Typography>
                                         </>
                                     )}
@@ -319,13 +328,13 @@ export default function UpdateCartDialog({ product, onClose, visible, onCartUpda
                                         <ActivityIndicator color="#FFF" />
                                     ) : (
                                         <>
-                                            <Icon icon={white_shopping_cart} customStyles={{ tintColor: '#FFF', width: normalize(18), height: normalize(18) }} />
+                                            <Icon icon={white_shopping_cart} customStyles={{ tintColor: '#FFF', width: theme.spacing.md, height: theme.spacing.md }} />
                                             <Typography style={styles.btnPrimaryText}>Update Cart</Typography>
                                         </>
                                     )}
                                 </TouchableOpacity>
                             </View>
-                        </View>
+                        </ScrollView>
                     </Animated.View>
                 </KeyboardAvoidingView>
             </View>
@@ -346,36 +355,38 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     modalContainer: {
-        borderTopLeftRadius: normalize(32),
-        borderTopRightRadius: normalize(32),
-        paddingBottom: Platform.OS === 'ios' ? normalize(40) : normalize(24),
+        borderTopLeftRadius: theme.borderRadius.lg,
+        borderTopRightRadius: theme.borderRadius.lg,
         width: '100%',
-        minHeight: normalize(450),
+        maxHeight: SCREEN_HEIGHT - 80,
+        elevation: 10,
     },
     indicator: {
-        width: normalize(40),
-        height: normalize(4),
+        width: 40,
+        height: 4,
         backgroundColor: '#E2E8F0',
-        borderRadius: normalize(2),
+        borderRadius: theme.borderRadius.xs / 2,
         alignSelf: 'center',
-        marginTop: normalize(12),
+        marginTop: theme.spacing.sm,
     },
     closeBtn: {
         position: 'absolute',
-        top: normalize(20),
-        right: normalize(24),
+        top: theme.spacing.md,
+        right: theme.spacing.lg,
         zIndex: 10,
-        padding: normalize(4),
+        padding: theme.spacing.xs,
     },
     content: {
-        paddingHorizontal: normalize(24),
-        paddingTop: normalize(24),
+        paddingHorizontal: theme.spacing.lg,
+        paddingTop: theme.spacing.md,
+        paddingBottom: theme.spacing.xl,
     },
     imageWrapper: {
         width: '100%',
-        height: normalize(180),
-        borderRadius: normalize(24),
-        marginBottom: normalize(20),
+        height: 180,
+        backgroundColor: '#F8FAFC',
+        borderRadius: theme.borderRadius.md,
+        marginBottom: theme.spacing.md,
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
@@ -386,117 +397,115 @@ const styles = StyleSheet.create({
         resizeMode: 'contain',
     },
     mainInfo: {
-        marginBottom: normalize(24),
+        marginBottom: theme.spacing.md,
     },
     productName: {
-        fontSize: normalize(20),
+        fontSize: theme.typography.xl,
         fontFamily: FONT.BOLD,
-        marginBottom: normalize(8),
+        marginBottom: theme.spacing.xs,
     },
     priceRow: {
         flexDirection: 'row',
         alignItems: 'baseline',
-        gap: normalize(8),
-        marginBottom: normalize(12),
+        gap: theme.spacing.xs,
+        marginBottom: theme.spacing.sm,
     },
     totalPrice: {
-        fontSize: normalize(22),
+        fontSize: theme.typography.xxl,
         fontFamily: FONT.BOLD,
         color: semantic.alert.danger.d500,
     },
     oldPrice: {
-        fontSize: normalize(14),
+        fontSize: theme.typography.sm,
         fontFamily: FONT.NORMAL,
         color: '#94A3B8',
         textDecorationLine: 'line-through',
     },
     tagContainer: {
         flexDirection: 'row',
-        gap: normalize(8),
+        gap: theme.spacing.xs,
     },
     tag: {
-        paddingHorizontal: normalize(12),
-        paddingVertical: normalize(6),
-        borderRadius: normalize(100),
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: theme.spacing.xs,
+        borderRadius: theme.borderRadius.full,
     },
     tagText: {
-        fontSize: normalize(12),
+        fontSize: theme.typography.sm,
         fontFamily: FONT.BOLD,
     },
     quantityCard: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: normalize(16),
-        borderRadius: normalize(20),
-        marginBottom: normalize(24),
+        backgroundColor: '#F8FAFC',
+        padding: theme.spacing.md,
+        borderRadius: theme.borderRadius.md,
+        marginBottom: theme.spacing.md,
         borderWidth: 1,
+        borderColor: '#E2E8F0',
     },
     quantityTitle: {
-        fontSize: normalize(16),
+        fontSize: theme.typography.md,
         fontFamily: FONT.BOLD,
     },
     actions: {
         flexDirection: 'row',
-        gap: normalize(12),
+        gap: theme.spacing.sm,
     },
     btnOutline: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: normalize(14),
-        borderRadius: normalize(16),
+        paddingVertical: theme.spacing.sm,
+        borderRadius: theme.borderRadius.sm,
         borderWidth: 1.5,
-        gap: normalize(8),
+        gap: theme.spacing.xs,
     },
     btnOutlineText: {
         color: semantic.alert.danger.d500,
         fontFamily: FONT.BOLD,
-        fontSize: normalize(16),
+        fontSize: theme.typography.body,
     },
     btnPrimary: {
         flex: 1.2,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: normalize(14),
-        borderRadius: normalize(16),
+        paddingVertical: theme.spacing.sm,
+        borderRadius: theme.borderRadius.sm,
         backgroundColor: semantic.alert.danger.d500,
-        gap: normalize(8),
-        shadowColor: semantic.alert.danger.d500,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 4,
+        gap: theme.spacing.xs,
+        ...theme.shadows.sm,
     },
     btnPrimaryText: {
         color: '#FFF',
+        fontSize: theme.typography.body,
         fontFamily: FONT.BOLD,
-        fontSize: normalize(16),
     },
     optionsContainer: {
-        marginTop: normalize(10),
-        marginBottom: normalize(20),
-        gap: normalize(16),
-        paddingHorizontal: normalize(4),
+        marginTop: theme.spacing.xs,
+        marginBottom: theme.spacing.md,
+        gap: theme.spacing.sm,
+        paddingHorizontal: 2,
     },
     optionGroup: {
-        gap: normalize(10),
+        gap: theme.spacing.xs,
     },
     optionGroupName: {
-        fontSize: normalize(15),
+        fontSize: theme.typography.sm,
         fontFamily: FONT.BOLD,
     },
     optionsList: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: normalize(10),
+        gap: theme.spacing.xs,
     },
     optionChip: {
-        paddingHorizontal: normalize(14),
-        paddingVertical: normalize(6),
-        borderRadius: normalize(10),
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: theme.spacing.xs,
+        borderRadius: theme.borderRadius.sm,
         borderWidth: 1,
     },
     optionChipSelected: {
@@ -504,7 +513,7 @@ const styles = StyleSheet.create({
         backgroundColor: semantic.alert.danger.d500,
     },
     optionChipText: {
-        fontSize: normalize(13),
+        fontSize: theme.typography.xs,
         fontFamily: FONT.MEDIUM,
     },
     optionChipTextSelected: {
@@ -512,8 +521,8 @@ const styles = StyleSheet.create({
         fontFamily: FONT.BOLD,
     },
     optionPriceAdjustment: {
-        fontSize: normalize(10),
+        fontSize: theme.typography.xs - 2,
         fontFamily: FONT.BOLD,
-        marginLeft: normalize(4),
+        marginLeft: 2,
     },
 });

@@ -16,6 +16,7 @@ import { icon_wishlist, icon_wishlist_filled } from "@/assets/icons";
 import WishlistService from "@/service/wishlist/WishlistService";
 import { semantic } from "@/shared/constants/colors.ts";
 import Toasts from "@/shared/utils/Toast";
+import { theme } from "@/shared/theme";
 
 interface ProductList {
     product: ProductListInterface | undefined,
@@ -116,7 +117,7 @@ function CardProductHorizontal({ product }: ProductList) {
 
                     {
                         ((Environment.isSuperMarketEnvironment() || Environment.isWholeSalesEnvironment()) && product?.custom_price !== undefined && product?.custom_price.length > 0) ?
-                            <Typography style={styles.doorStep}>Buy {product?.custom_price[0].min_qty} {Environment.isWholeSalesEnvironment() ? "cartons" : ""} for {currencyType} {product?.custom_price[0].price_formatted} each</Typography>
+                            <Typography style={{ fontSize: theme.typography.xs - 2, marginTop: theme.spacing.xs / 2, color: 'red', fontFamily: FONT.BOLD }}>Buy {product?.custom_price[0].min_qty} {Environment.isWholeSalesEnvironment() ? "cartons" : ""} for {currencyType}{product?.custom_price[0].price_formatted} each.</Typography>
                             :
                             <></>
                     }

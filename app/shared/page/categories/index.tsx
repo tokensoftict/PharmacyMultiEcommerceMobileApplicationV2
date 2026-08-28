@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import {ActivityIndicator, Animated, Platform, ScrollView, View} from "react-native";
+import {ActivityIndicator, Animated, Platform, View} from "react-native";
 import Typography from "@/shared/component/typography";
 import { _styles } from './styles';
 import useDarkMode from "@/shared/hooks/useDarkMode.tsx";
@@ -17,7 +17,9 @@ import Icon from "@/shared/component/icon";
 import { search } from "@/assets/icons";
 import { palette, semantic } from "@/shared/constants/colors.ts";
 import _ from "lodash";
-import {normalize} from "@/shared/helpers";
+import { theme } from "@/shared/theme";
+import { isTablet } from '@/shared/helpers';
+import CampaignEventBus from "@/campaign/CampaignEventBus";
 
 const FlatList = Animated.FlatList;
 
@@ -25,6 +27,7 @@ const FlatList = Animated.FlatList;
     const { isDarkMode } = useDarkMode();
     const styles = _styles(isDarkMode);
     const navigation = useNavigation<NavigationProps>();
+    const tablet = isTablet();
 
     const [lastPage, setLastPage] = useState(3);
     const [pageNumber, setPageNumber] = useState(1);
@@ -32,6 +35,10 @@ const FlatList = Animated.FlatList;
     const [searchQuery, setSearchQuery] = useState('');
     const [isCategoryLoading, setIsCategoryLoading] = useState(false);
     const navigateTo = (endpoint: string, title: string, id: number) => {
+        CampaignEventBus.emit('CATEGORY_VIEWED', {
+            category_id: id,
+            category_name: title,
+        });
         // @ts-ignore
         navigation.navigate('productList', {
             endpoint: endpoint,
@@ -95,7 +102,9 @@ const FlatList = Animated.FlatList;
                 <View style={styles.categoryBody}>
                     {stocks.map((stock) => (
                         // @ts-ignore
-                        <SmallCardProduct key={stock.id} product={stock} />
+                        <View key={stock.id} style={styles.cardWrapper}>
+                            <SmallCardProduct product={stock} containerStyle={{ width: '100%' }} />
+                        </View>
                     ))}
                 </View>
             </View>
@@ -107,7 +116,7 @@ const FlatList = Animated.FlatList;
             <View style={{ flex: 1 }}>
                 <HeaderWithIcon onPress={() => loadCategory(searchQuery)} title="CATEGORIES" />
 
-                <View style={styles.searchWrapper}>
+                <View style={[styles.searchWrapper, tablet && { maxWidth: 480, alignSelf: 'center', width: '100%' }]}>
                     <Input
                         placeholder="Search Categories..."
                         value={searchQuery}
@@ -137,6 +146,7 @@ const FlatList = Animated.FlatList;
                     onEndReachedThreshold={0.5}
                     data={categoryResponseList}
                     keyExtractor={(item) => item.id.toString()}
+                    contentContainerStyle={tablet && { maxWidth: 800, alignSelf: 'center', width: '100%' }}
                     renderItem={({ item }) => (
                         <View key={item.id + item.name} style={styles.holder}>
                             {categoryItem(item.id, item.name, item.stocks)}
@@ -144,21 +154,21 @@ const FlatList = Animated.FlatList;
                     )}
                     ListHeaderComponent={
                         (isCategoryLoading && categoryResponseList.length == 0) ? (
-                            <View style={{ paddingVertical: normalize(20) }}>
+                            <View style={{ paddingVertical: theme.spacing.lg }}>
                                 <ActivityIndicator size="large" color={palette.main.p500} />
                             </View>
                         ) : null
                     }
                     ListFooterComponent={
                         (isCategoryLoading && categoryResponseList.length > 0) ? (
-                            <View style={{ paddingVertical: Platform.OS == 'ios' ? normalize(20) :  normalize(60) }}>
+                            <View style={{ paddingVertical: Platform.OS == 'ios' ? theme.spacing.lg : theme.spacing.xl }}>
                                 <ActivityIndicator size="large" color={palette.main.p500} />
                             </View>
                         ) : null
                     }
                     ListEmptyComponent={
                         !isCategoryLoading ? (
-                            <View style={{ padding: normalize(20), alignItems: 'center' }}>
+                            <View style={{ padding: theme.spacing.lg, alignItems: 'center' }}>
                                 <Typography>No category found</Typography>
                             </View>
                         ) : null

@@ -7,6 +7,7 @@ import Radio from "../radio";
 import { normalize } from '@/shared/helpers';
 import { activeOpacity, currencyType } from "../../constants/global";
 import FormatCurrency from "@/shared/utils/FormatCurrency.tsx";
+import { theme } from "@/shared/theme";
 
 export interface ListOptions {
   id: string;
@@ -67,13 +68,13 @@ export function Option({ option, callback }: OptionProps) {
         </View>
       </View>
       <View style={styles.row}>
-        <View style={{ flexDirection: 'column', alignItems: 'flex-end', marginRight: normalize(8) }}>
+        <View style={{ flexDirection: 'column', alignItems: 'flex-end', marginRight: theme.spacing.sm }}>
           {option?.original_price && (
             <Typography style={{
-              fontSize: normalize(12),
+              fontSize: theme.typography.xs,
               color: '#64748B',
               textDecorationLine: 'line-through',
-              marginBottom: normalize(2)
+              marginBottom: 2
             }}>
               {currencyType}{FormatCurrency(option?.original_price) || ''}
             </Typography>

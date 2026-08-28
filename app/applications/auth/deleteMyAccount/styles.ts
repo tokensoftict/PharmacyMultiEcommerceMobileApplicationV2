@@ -1,90 +1,96 @@
 import { StyleSheet } from "react-native";
-import { normalize } from "../../../shared/helpers";
 import { labels, palette, semantic } from "../../../shared/constants/colors.ts";
 import { FONT } from "@/shared/constants/fonts.ts";
+import { theme } from "@/shared/theme";
 
-
+/**
+ * DeleteMyAccount Styles (Latest Design Refactor)
+ *
+ * Refactored using the centralized theme spacing, shadows, border-radius,
+ * and responsive typography system to align cleanly.
+ */
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: normalize(24),
+    padding: theme.spacing.lg,
     justifyContent: 'center',
   },
   logoWrapper: {
-    marginBottom: normalize(20),
+    marginBottom: theme.spacing.md,
     alignItems: 'center',
   },
   formControl: {
-    marginTop: normalize(24)
+    marginTop: theme.spacing.md,
   },
   logo: {
-    width: normalize(150),
-    height: normalize(150),
+    width: 120,
+    height: 120,
     alignSelf: 'center',
+    marginBottom: theme.spacing.md,
   },
   title: {
-    fontSize: normalize(28),
-
-    marginBottom: normalize(20),
+    fontSize: theme.typography.display,
+    marginBottom: theme.spacing.sm,
     color: '#D9534F',
     textAlign: 'center',
-    fontFamily: FONT.NORMAL,
+    fontFamily: FONT.BOLD,
   },
   warning: {
-    fontSize: normalize(16),
+    fontSize: theme.typography.sm,
     color: '#333',
-    marginBottom: normalize(24),
+    marginBottom: theme.spacing.md,
     textAlign: 'center',
     fontFamily: FONT.NORMAL,
+    lineHeight: 22,
   },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: normalize(32),
+    marginBottom: theme.spacing.lg,
   },
   label: {
-    marginLeft: normalize(10),
-    fontSize: normalize(16),
+    marginLeft: theme.spacing.xs,
+    fontSize: theme.typography.sm,
     color: '#444',
   },
   button: {
     backgroundColor: '#D9534F',
-    paddingVertical: normalize(14),
-    borderRadius: normalize(10),
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.full,
     alignItems: 'center',
-    elevation: normalize(2),
-    marginBottom: normalize(18),
+    ...theme.shadows.sm,
+    shadowColor: '#D9534F',
+    marginBottom: theme.spacing.sm,
   },
   button2: {
-    backgroundColor: 'green',
-    paddingVertical: normalize(14),
-    borderRadius: normalize(10),
+    backgroundColor: '#2ecc71',
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.full,
     alignItems: 'center',
-    elevation: normalize(2),
-    marginBottom: normalize(18),
-  }
-  ,
+    ...theme.shadows.sm,
+    shadowColor: '#2ecc71',
+    marginBottom: theme.spacing.sm,
+  },
   buttonText: {
     color: '#fff',
-    fontSize: normalize(18),
-
+    fontSize: theme.typography.body,
+    fontFamily: FONT.BOLD,
   },
   addToCartButton: {
     flex: 1,
     flexDirection: 'row',
     backgroundColor: labels.type4.background,
-    padding: normalize(15),
-    borderRadius: normalize(5),
+    padding: theme.spacing.sm,
+    borderRadius: theme.borderRadius.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: normalize(5),
   },
   buttonText2: {
     color: labels.type4.textColor,
-
-    fontSize: normalize(14),
+    fontSize: theme.typography.sm,
+    fontFamily: FONT.BOLD,
     flex: 1,
     textAlign: 'center',
-  }
-})
+  },
+});

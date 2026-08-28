@@ -2,52 +2,37 @@ import useDarkMode from "@/shared/hooks/useDarkMode.tsx";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NavigationProps } from "@/shared/routes/stack.tsx";
 import React, { useCallback, useState } from "react";
-import { Alert, Image, ScrollView, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, View } from "react-native";
 import WishlistItemHorizontalList from "@/shared/component/wishlistItemHorizontalList";
 import { WishlistInterface } from "@/service/wishlist/interface/WishlistInterface.tsx";
 import Toasts from "@/shared/utils/Toast.tsx";
 import WishlistService from "@/service/wishlist/WishlistService.tsx";
-import CartService from "@/service/cart/CartService.tsx";
-import { normalize } from "@/shared/helpers";
 import HeaderWithIcon from "@/shared/component/headerBack";
-import { emptyCart } from "@/assets/icons";
 import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
 import List from "@/shared/component/list";
 import { semantic } from "@/shared/constants/colors.ts";
 import Typography from "@/shared/component/typography";
 import { Button } from "@/shared/component/buttons";
 import { FONT } from "@/shared/constants/fonts";
-
+import { theme } from "@/shared/theme";
 
 export default function Wishlist() {
     const { isDarkMode } = useDarkMode()
-    const { navigate } = useNavigation<NavigationProps>()
-    const [selectedProductToRemove, setSelectedProductToRemove] = useState({})
-    const [openDeleteItem, setOpenDeleteItem] = useState(false)
-    const [cartErrorList, setCartErrorList] = useState("Your wishlist is empty for now 💫 Start adding items you love!")
-
+    const [cartErrorList] = useState("Your wishlist is empty for now 💫 Start adding items you love!")
     const [isLoading, setIsLoading] = useState(false);
     const [wishlistItemList, setWishlistItemList] = useState<WishlistInterface>();
-
     const navigation = useNavigation<NavigationProps>();
-
-    function toggleOpenDeleteItem() {
-        setOpenDeleteItem(!openDeleteItem);
-    }
 
     useFocusEffect(
         useCallback(() => {
-            // This will run whenever the screen comes into focus
             loadWishItems();
         }, [])
     );
-
 
     function removeFromWishlist(product: any) {
         Alert.alert('PS GDC', 'Are you sure you want to remove ' + product.name + " from your wishlist?", [
             {
                 text: 'Cancel',
-                onPress: () => { },
                 style: 'cancel',
             },
             {
@@ -61,31 +46,6 @@ export default function Wishlist() {
             },
         ]);
     }
-
-
-    function clearWishlistItems() {
-        Alert.alert('PS GDC', 'Are you sure you want to clear all wishlist item(s)?', [
-            {
-                text: 'Cancel',
-                onPress: () => { },
-                style: 'cancel',
-            },
-            {
-                text: 'Yes', onPress: () => {
-                    setIsLoading(true);
-                    (new WishlistService()).clear().then((response) => {
-                        setIsLoading(false);
-                        loadWishItems();
-                        Toasts('Wishlist cleared successfully');
-                    }).catch(() => {
-                        setIsLoading(false);
-                        Toasts('Failed to clear wishlist');
-                    })
-                }
-            },
-        ]);
-    }
-
 
     function loadWishItems() {
         setIsLoading(true);
@@ -103,12 +63,10 @@ export default function Wishlist() {
     }
 
     function renderItem(item: any, key: number) {
-        return <View style={{ marginBottom: normalize(20), flex: 1 }} key={key}>
+        return <View style={{ marginBottom: 0, flex: 1 }} key={key}>
             <WishlistItemHorizontalList product={item} onRemoveItem={removeFromWishlist} />
         </View>
     }
-
-
 
     return (
         <View style={{ flex: 1 }}>
@@ -123,9 +81,9 @@ export default function Wishlist() {
                             {
                                 (wishlistItemList?.data ?? []).length > 0 ?
                                     <>
-                                        <View style={{ flex: 1, paddingHorizontal: normalize(10), backgroundColor: semantic.background.white.w111 }}>
+                                        <View style={{ flex: 1, paddingHorizontal: theme.spacing.xs, backgroundColor: semantic.background.white.w111 }}>
                                             <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-                                                <View style={{ height: normalize(10) }} />
+                                                <View style={{ height: theme.spacing.xs }} />
                                                 <List
                                                     between
                                                     data={wishlistItemList?.data ?? []}
@@ -138,54 +96,50 @@ export default function Wishlist() {
                                     :
                                     <View style={{
                                         flex: 1,
-                                        paddingHorizontal: normalize(24),
+                                        paddingHorizontal: theme.spacing.lg,
                                         justifyContent: 'center',
                                         alignItems: 'center',
                                         backgroundColor: isDarkMode ? semantic.fill.f01 : '#FFFFFF',
                                     }}>
                                         <View style={{
-                                            width: normalize(150),
-                                            height: normalize(150),
+                                            width: 120,
+                                            height: 120,
                                             backgroundColor: isDarkMode ? semantic.fill.f02 : '#F5F5F5',
-                                            borderRadius: normalize(75),
+                                            borderRadius: theme.borderRadius.full,
                                             justifyContent: 'center',
                                             alignItems: 'center',
-                                            marginBottom: normalize(24),
+                                            marginBottom: theme.spacing.md,
                                         }}>
-                                            <Typography style={{ fontSize: normalize(60) }}>💝</Typography>
+                                            <Typography style={{ fontSize: 48 }}>💝</Typography>
                                         </View>
                                         <Typography style={{
                                             textAlign: 'center',
-                                            fontSize: normalize(20),
+                                            fontSize: theme.typography.xxl,
                                             fontFamily: FONT.BOLD,
                                             color: isDarkMode ? semantic.text.white : '#1A1D1E',
-                                            marginBottom: normalize(12)
+                                            marginBottom: theme.spacing.xs
                                         }}>
                                             Your wishlist is empty
                                         </Typography>
                                         <Typography style={{
                                             textAlign: 'center',
-                                            fontSize: normalize(14),
+                                            fontSize: theme.typography.sm,
                                             color: '#9E9E9E',
                                             fontFamily: FONT.MEDIUM,
-                                            lineHeight: normalize(20),
-                                            marginBottom: normalize(32),
-                                            paddingHorizontal: normalize(20)
+                                            lineHeight: theme.typography.sm * 1.5,
+                                            marginBottom: theme.spacing.xl,
+                                            paddingHorizontal: theme.spacing.md
                                         }}>
                                             {cartErrorList}
                                         </Typography>
-                                        <View style={{ width: '100%', paddingHorizontal: normalize(40) }}>
+                                        <View style={{ width: '100%', paddingHorizontal: theme.spacing.xxl }}>
                                             <Button title="Start Exploring" onPress={() => navigation.goBack()} />
                                         </View>
                                     </View>
-
                             }
-
                         </>
                 }
             </WrapperNoScroll>
         </View>
     );
-
-
 }

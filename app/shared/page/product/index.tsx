@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, TouchableOpacity, View, Alert, Platform } from "react-native";
+import React, { useState, useRef, useEffect } from 'react';
+import { ActivityIndicator, Image, ScrollView, TouchableOpacity, View, Alert, Platform, Animated } from "react-native";
 import { _styles } from './styles'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Header from "./components/header";
 import useDarkMode from "@/shared/hooks/useDarkMode";
 import Typography from "@/shared/component/typography";
 import Icon from "@/shared/component/icon";
-import { star, shoppingBag, white_shopping_cart, icon_wishlist, icon_wishlist_filled } from "@/assets/icons";
+import { star, shoppingBag, white_shopping_cart, icon_wishlist, icon_wishlist_filled, share_product } from "@/assets/icons";
 import Counter from "@/shared/component/counter";
 import { currencyType } from "@/shared/constants/global.ts";
 import { Button, ButtonOutline } from "@/shared/component/buttons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { NavigationProps } from "@/shared/routes/stack";
+import { NavigationProps, RouteProps } from "@/shared/routes/stack";
 import useEffectOnce from "@/shared/hooks/useEffectOnce";
 import ProductService from "@/service/product/show/ProductService";
 import { ProductInformationInterface, Data } from "@/service/product/show/interface/ProductInformationInterface";
@@ -25,10 +25,12 @@ import { normalize } from "@/shared/helpers";
 import { FONT } from '@/shared/constants/fonts';
 import WishlistService from "@/service/wishlist/WishlistService";
 import { semantic } from "@/shared/constants/colors";
+import { shareProduct } from "@/shared/utils/ProductShareHelper";
+import CampaignEventBus from "@/campaign/CampaignEventBus";
 
 export default function DetailProduct() {
     const navigation = useNavigation<NavigationProps>();
-    const route = useRoute();
+    const route = useRoute<RouteProps<'detailProduct'>>();
     const { isDarkMode } = useDarkMode()
     const styles = _styles(isDarkMode)
     const insets = useSafeAreaInsets();
@@ -44,28 +46,91 @@ export default function DetailProduct() {
     const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
     const cartService = new CartService();
 
+    // ── Stacked Button Animations & Transitions ─────────────────────────
+    const shareScale = useRef(new Animated.Value(1)).current;
+    const wishlistScale = useRef(new Animated.Value(1)).current;
+    const stackSlideAnim = useRef(new Animated.Value(24)).current;
+    const stackFadeAnim = useRef(new Animated.Value(0)).current;
+
+    const animateButtonIn = (anim: Animated.Value) => {
+        Animated.spring(anim, {
+            toValue: 0.88,
+            useNativeDriver: true,
+            speed: 50,
+            bounciness: 4,
+        }).start();
+    };
+
+    const animateButtonOut = (anim: Animated.Value) => {
+        Animated.spring(anim, {
+            toValue: 1,
+            friction: 4,
+            tension: 60,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    useEffect(() => {
+        if (productInformation) {
+            Animated.parallel([
+                Animated.timing(stackFadeAnim, {
+                    toValue: 1,
+                    duration: 350,
+                    useNativeDriver: true,
+                }),
+                Animated.spring(stackSlideAnim, {
+                    toValue: 0,
+                    friction: 6,
+                    tension: 50,
+                    useNativeDriver: true,
+                }),
+            ]).start();
+        }
+    }, [productInformation]);
+
     useEffectOnce(function () {
-        // @ts-ignore
-        const productId = route.params?.productId;
-        // @ts-ignore
-        const bottomNav = route.params?.bottomNav
+        const productId = route.params?.productId || route.params?.slug;
+        const department = route.params?.department;
+        const bottomNav = route.params?.bottomNav;
         if (bottomNav) {
             setBottomNavHeight(60);
         }
         if (!productId) {
-            Toasts('Unknown error occurred!');
+            Toasts('Product not found!');
             navigation.goBack();
+            return;
         }
-        setIsLoading(true)
-        productService.getProduct(productId).then((response) => {
+        setIsLoading(true);
+        productService.getProduct(productId, department).then((response) => {
             setIsLoading(false);
-            setProductInformation(response.data);
+            if (response?.data?.data) {
+                setProductInformation(response.data);
+                CampaignEventBus.emit('PRODUCT_VIEWED', {
+                    product_id: response.data.data.id,
+                    product_name: response.data.data.name,
+                });
+            } else {
+                Toasts('Product is currently unavailable.');
+                navigation.goBack();
+            }
         }, (error) => {
             setIsLoading(false);
-            Toasts('Unknown error occurred!')
+            Toasts('Product not found or currently unavailable.');
             navigation.goBack();
         });
     }, []);
+
+    function handleShare() {
+        if (!productInformation?.data) return;
+        const currentDept = route.params?.department || (Environment.isWholeSalesEnvironment() ? 'wholesales' : 'retail');
+        shareProduct({
+            name: productInformation.data.name,
+            seo: productInformation.data.seo,
+            slug: route.params?.slug,
+            department: currentDept,
+            price: productInformation.data.special || productInformation.data.price,
+        });
+    }
 
     function navigateTo() {
         // @ts-ignore
@@ -122,17 +187,6 @@ export default function DetailProduct() {
         });
     }
 
-    function buyNow() {
-        if (!validateOptions()) return;
-        const availableQty = productInformation?.data.max === 0 ? productInformation?.data.quantity : productInformation?.data.max;
-        const available = parseInt(availableQty?.toString() || "0");
-        if (available >= buyNowQuantity) {
-            handleBuyNow(true); // Dependents are mandatory
-        } else {
-            Toasts("Insufficient quantity, Total available quantity is " + available);
-        }
-    }
-
     function handleAddToCart(acceptDependent: boolean = false) {
         setAddToCartLoading(true);
         cartService.add(productInformation?.data.id, addToCartQuantity, acceptDependent, selectedOptions).then((response) => {
@@ -148,14 +202,27 @@ export default function DetailProduct() {
         });
     }
 
+    function buyNow() {
+        if (!validateOptions()) return;
+        const maxVal = parseInt(productInformation?.data?.max?.toString() || "0", 10);
+        const qtyVal = parseInt(productInformation?.data?.quantity?.toString() || "0", 10);
+        const available = maxVal > 0 ? Math.min(maxVal, qtyVal) : qtyVal;
+        if (available >= buyNowQuantity) {
+            handleBuyNow(true); // Dependents are mandatory
+        } else {
+            Toasts("Insufficient quantity. Total available quantity to order is " + available);
+        }
+    }
+
     function addToCart() {
         if (!validateOptions()) return;
-        const availableQty = productInformation?.data.max === 0 ? productInformation?.data.quantity : productInformation?.data.max;
-        const available = parseInt(availableQty?.toString() || "0");
+        const maxVal = parseInt(productInformation?.data?.max?.toString() || "0", 10);
+        const qtyVal = parseInt(productInformation?.data?.quantity?.toString() || "0", 10);
+        const available = maxVal > 0 ? Math.min(maxVal, qtyVal) : qtyVal;
         if (available >= addToCartQuantity) {
             handleAddToCart(true); // Dependents are mandatory
         } else {
-            Toasts("Insufficient quantity, Total available quantity to order is " + available);
+            Toasts("Insufficient quantity. Total available quantity to order is " + available);
         }
     }
 
@@ -192,7 +259,9 @@ export default function DetailProduct() {
 
     return (
         <WrapperNoScroll loading={isLoading}>
-            <HeaderWithIcon title={productInformation?.data.name} />
+            <HeaderWithIcon
+                title={productInformation?.data.name}
+            />
 
             <View style={{ flex: 1 }}>
                 <ScrollView
@@ -209,26 +278,65 @@ export default function DetailProduct() {
                             </View>
                         )}
 
-                        <TouchableOpacity
+                        <Animated.View
                             style={[
-                                styles.wishlistButton,
-
+                                styles.imageActionButtons,
+                                {
+                                    opacity: stackFadeAnim,
+                                    transform: [{ translateY: stackSlideAnim }],
+                                },
                             ]}
-                            onPress={toggleWishlist}
-                            disabled={wishlistLoading}
                         >
-                            {wishlistLoading ? (
-                                <ActivityIndicator size="small" color="#D50000" />
-                            ) : (
-                                <Icon
-                                    customStyles={[
-                                        styles.wishlistIconDetailed,
-                                        { tintColor: productInformation?.data.is_wishlisted ? "#D50000" : '#9E9E9E' }
-                                    ]}
-                                    icon={productInformation?.data.is_wishlisted ? icon_wishlist_filled : icon_wishlist}
-                                />
-                            )}
-                        </TouchableOpacity>
+                            {/* 1. Favourite / Wishlist Button (Top) */}
+                            <Animated.View style={{ transform: [{ scale: wishlistScale }] }}>
+                                <TouchableOpacity
+                                    activeOpacity={0.85}
+                                    style={styles.actionRoundButton}
+                                    onPress={toggleWishlist}
+                                    onPressIn={() => animateButtonIn(wishlistScale)}
+                                    onPressOut={() => animateButtonOut(wishlistScale)}
+                                    disabled={wishlistLoading}
+                                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                    accessibilityLabel="Add to Wishlist"
+                                    accessibilityRole="button"
+                                >
+                                    {wishlistLoading ? (
+                                        <ActivityIndicator size="small" color="#D50000" />
+                                    ) : (
+                                        <Icon
+                                            customStyles={[
+                                                styles.wishlistIconDetailed,
+                                                { tintColor: productInformation?.data.is_wishlisted ? "#D50000" : '#9E9E9E' }
+                                            ]}
+                                            icon={productInformation?.data.is_wishlisted ? icon_wishlist_filled : icon_wishlist}
+                                        />
+                                    )}
+                                </TouchableOpacity>
+                            </Animated.View>
+
+                            {/* 2. Share Button (Under Favourite Button) */}
+                            <Animated.View style={{ transform: [{ scale: shareScale }] }}>
+                                <TouchableOpacity
+                                    activeOpacity={0.85}
+                                    style={styles.actionRoundButton}
+                                    onPress={handleShare}
+                                    onPressIn={() => animateButtonIn(shareScale)}
+                                    onPressOut={() => animateButtonOut(shareScale)}
+                                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                    accessibilityLabel="Share Product"
+                                    accessibilityRole="button"
+                                >
+                                    <Icon
+                                        customStyles={[
+                                            styles.wishlistIconDetailed,
+                                            { tintColor: semantic.alert.danger.d500 }
+                                        ]}
+                                        tintColor={semantic.alert.danger.d500}
+                                        icon={share_product}
+                                    />
+                                </TouchableOpacity>
+                            </Animated.View>
+                        </Animated.View>
 
                         <Image
                             resizeMode="contain"
@@ -394,7 +502,7 @@ export default function DetailProduct() {
                                         loading={buyNowLoading}
                                         disabled={buyNowLoading}
                                         onPress={buyNow}
-                                        leftIcon={<Icon customStyles={{ tintColor: 'red' }} icon={shoppingBag} />}
+                                        leftIcon={<Icon customStyles={{ width: normalize(18), height: normalize(18), tintColor: semantic.alert.danger.d500 }} icon={shoppingBag} />}
                                         title="Buy Now"
                                     />
                                 </View>
@@ -403,7 +511,7 @@ export default function DetailProduct() {
                                         loading={addToCartLoading}
                                         disabled={addToCartLoading}
                                         onPress={addToCart}
-                                        leftIcon={<Icon customStyles={{ tintColor: 'white' }} icon={white_shopping_cart} />}
+                                        leftIcon={<Icon customStyles={{ width: normalize(18), height: normalize(18), tintColor: semantic.text.white }} icon={white_shopping_cart} />}
                                         title="Add To Cart"
                                     />
                                 </View>

@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, Image, StyleSheet, Dimensions, TouchableOpacity, Platform } from "react-native";
+import { View, Image, StyleSheet, Dimensions, TouchableOpacity, Platform, ScrollView } from "react-native";
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
 import { OtpInput } from "react-native-otp-entry";
 import { Button } from "@/shared/component/buttons";
 import Typography from "@/shared/component/typography";
-import { normalize } from "@/shared/helpers";
 import { logo } from "@/assets/images";
 import AuthSessionService from "@/service/auth/AuthSessionService";
 import ErrorText from "@/shared/component/ErrorText";
@@ -15,11 +14,16 @@ import { palette } from "@/shared/constants/colors.ts";
 import LoginService from "@/service/auth/LoginService.tsx";
 import { CommonActions } from "@react-navigation/native";
 import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
-
-const { width } = Dimensions.get('window');
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { theme } from "@/shared/theme";
+import { FONT } from "@/shared/constants/fonts.ts";
+import { isTablet, wp } from '@/shared/helpers';
 
 // @ts-ignore
 export default function ValidateAuthCode({ navigation, route }) {
+    const insets = useSafeAreaInsets();
+    const tablet = isTablet();
+    
     const [otpError, setOtpError] = useState("");
     const [email, setEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +54,7 @@ export default function ValidateAuthCode({ navigation, route }) {
 
     function doValidateOTP() {
         if (otpCode.length !== 4) {
-            setOtpError("Please enter the complete otp code that was sent to " + email);
+            setOtpError("Please enter the complete OTP code that was sent to " + email);
         } else {
             setOtpError("");
             setIsLoading(true);
@@ -107,7 +111,6 @@ export default function ValidateAuthCode({ navigation, route }) {
                     setOtpError(error.message);
                 }
             });
-
         }
     }
 
@@ -117,7 +120,7 @@ export default function ValidateAuthCode({ navigation, route }) {
             setIsLoading(false);
             if (response.data.status === true) {
                 Toasts("OTP has been sent to " + email);
-                setCountdown(120); // restart countdown
+                setCountdown(120);
             } else {
                 setOtpError(response.data.error);
             }
@@ -127,7 +130,7 @@ export default function ValidateAuthCode({ navigation, route }) {
     }
 
     return (
-        <WrapperNoScroll transparent={true} edges={[]}>
+        <WrapperNoScroll transparent={true} edges={['top', 'bottom']}>
             <View style={styles.container}>
                 <LinearGradient
                     colors={['#f8fafc', '#f1f5f9', '#e2e8f0']}
@@ -137,89 +140,100 @@ export default function ValidateAuthCode({ navigation, route }) {
                 {/* Decorative Background Elements */}
                 <Animated.View 
                     entering={FadeInDown.delay(100).duration(1000)}
-                    style={[styles.circle, { top: -normalize(50), right: -normalize(30), backgroundColor: '#F0F9FF' }]} 
+                    style={[styles.circle, { top: -wp(13), right: -wp(8), backgroundColor: '#F0F9FF' }]} 
                 />
                 <Animated.View 
                     entering={FadeInDown.delay(300).duration(1000)}
-                    style={[styles.circle, { bottom: normalize(100), left: -normalize(60), backgroundColor: '#E0E7FF', width: normalize(200), height: normalize(200) }]} 
+                    style={[styles.circle, { bottom: wp(25), left: -wp(16), backgroundColor: '#E0E7FF', width: wp(53), height: wp(53) }]} 
                 />
 
-                <View style={styles.content}>
-                    <Animated.View 
-                        entering={FadeInUp.duration(800)}
-                        style={styles.header}
-                    >
-                        <View style={styles.logoContainer}>
-                            <Image source={logo} style={styles.logo} resizeMode="contain" />
-                        </View>
-                        <Typography style={styles.title}>Enter Code</Typography>
-                        <Typography style={styles.subText}>A 4-digit code was sent to {email}</Typography>
-                    </Animated.View>
-
-                    <Animated.View 
-                        entering={FadeInDown.delay(200).duration(800)}
-                        style={styles.card}
-                    >
-                        <View style={styles.form}>
-                            <OtpInput
-                                numberOfDigits={4}
-                                focusColor={palette.main.p500}
-                                autoFocus={true}
-                                hideStick={true}
-                                placeholder="****"
-                                blurOnFilled={true}
-                                disabled={false}
-                                type="numeric"
-                                secureTextEntry={false}
-                                focusStickBlinkingDuration={500}
-                                onFilled={(text) => setOtpCode(text)}
-                                textInputProps={{
-                                    accessibilityLabel: "Enter OTP Code",
-                                }}
-                                theme={{
-                                    pinCodeContainerStyle: styles.otpContainer,
-                                    pinCodeTextStyle: styles.otpText,
-                                    focusStickStyle: { backgroundColor: palette.main.p500 }
-                                }}
-                            />
-
-                            <View style={{ height: normalize(24) }} />
-                            {otpError !== '' && <ErrorText textAlign="center">{otpError}</ErrorText>}
-
-                            <Button
-                                loading={isLoading}
-                                disabled={isLoading}
-                                onPress={doValidateOTP}
-                                title="Verify & Continue"
-                            />
-
-                            {/* Countdown or Resend */}
-                            <View style={styles.resendContainer}>
-                                {countdown > 0 ? (
-                                    <Typography style={styles.resendLabel}>
-                                        Resend code in {formatCountdown(countdown)}
-                                    </Typography>
-                                ) : (
-                                    <TouchableOpacity onPress={requestForOtp}>
-                                        <Typography style={styles.resendLink}>
-                                            Didn’t receive code? Resend
-                                        </Typography>
-                                    </TouchableOpacity>
-                                )}
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={{
+                        flexGrow: 1,
+                        justifyContent: 'center',
+                        paddingTop: Math.max(insets.top + theme.spacing.lg, theme.spacing.xl),
+                        paddingBottom: Math.max(insets.bottom + theme.spacing.md, theme.spacing.xl),
+                    }}
+                >
+                    <View style={[styles.content, tablet && { maxWidth: 480, alignSelf: 'center', width: '100%' }]}>
+                        <Animated.View 
+                            entering={FadeInUp.duration(800)}
+                            style={styles.header}
+                        >
+                            <View style={[styles.logoContainer, tablet && styles.logoContainerTablet]}>
+                                <Image source={logo} style={styles.logo} resizeMode="contain" />
                             </View>
-                        </View>
-                    </Animated.View>
+                            <Typography style={styles.title}>Enter Code</Typography>
+                            <Typography style={styles.subText}>A 4-digit code was sent to {email}</Typography>
+                        </Animated.View>
 
-                    <Animated.View 
-                        entering={FadeInDown.delay(400).duration(800)}
-                        style={styles.footer}
-                    >
-                        <Typography style={styles.footerLabel}>Entered wrong details?</Typography>
-                        <TouchableOpacity onPress={() => navigation.goBack()}>
-                            <Typography style={styles.linkText}>Go Back</Typography>
-                        </TouchableOpacity>
-                    </Animated.View>
-                </View>
+                        <Animated.View 
+                            entering={FadeInDown.delay(200).duration(800)}
+                            style={styles.card}
+                        >
+                            <View>
+                                <OtpInput
+                                    numberOfDigits={4}
+                                    focusColor={palette.main.p500}
+                                    autoFocus={true}
+                                    hideStick={true}
+                                    placeholder="****"
+                                    blurOnFilled={true}
+                                    disabled={false}
+                                    type="numeric"
+                                    secureTextEntry={false}
+                                    focusStickBlinkingDuration={500}
+                                    onFilled={(text) => setOtpCode(text)}
+                                    textInputProps={{
+                                        accessibilityLabel: "Enter OTP Code",
+                                    }}
+                                    theme={{
+                                        pinCodeContainerStyle: styles.otpContainer,
+                                        pinCodeTextStyle: styles.otpText,
+                                        focusStickStyle: { backgroundColor: palette.main.p500 }
+                                    }}
+                                />
+
+                                <View style={{ height: theme.spacing.sm }} />
+                                {otpError !== '' && <ErrorText textAlign="center">{otpError}</ErrorText>}
+
+                                <Button
+                                    loading={isLoading}
+                                    disabled={isLoading}
+                                    onPress={doValidateOTP}
+                                    title="Verify & Continue"
+                                />
+
+                                {/* Countdown or Resend */}
+                                <View style={styles.resendContainer}>
+                                    {countdown > 0 ? (
+                                        <Typography style={styles.resendLabel}>
+                                            Resend code in {formatCountdown(countdown)}
+                                        </Typography>
+                                    ) : (
+                                        <TouchableOpacity onPress={requestForOtp}>
+                                            <Typography style={styles.resendLink}>
+                                                Didn’t receive code? Resend
+                                            </Typography>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                            </View>
+                        </Animated.View>
+
+                        <Animated.View 
+                            entering={FadeInDown.delay(400).duration(800)}
+                            style={styles.footer}
+                        >
+                            <Typography style={styles.footerLabel}>Entered wrong details?</Typography>
+                            <TouchableOpacity onPress={() => navigation.goBack()}>
+                                <Typography style={styles.linkText}>Go Back</Typography>
+                            </TouchableOpacity>
+                        </Animated.View>
+                    </View>
+                </ScrollView>
             </View>
         </WrapperNoScroll>
     );
@@ -231,95 +245,93 @@ const styles = StyleSheet.create({
     },
     circle: {
         position: 'absolute',
-        width: normalize(250),
-        height: normalize(250),
-        borderRadius: normalize(125),
+        width: wp(66),
+        height: wp(66),
+        borderRadius: wp(33),
         opacity: 0.6,
     },
     content: {
         flex: 1,
-        paddingHorizontal: normalize(24),
+        paddingHorizontal: theme.spacing.lg,
         justifyContent: 'center',
     },
     header: {
         alignItems: 'center',
-        marginBottom: normalize(40),
+        marginBottom: theme.spacing.xl,
     },
     logoContainer: {
-        width: normalize(100),
-        height: normalize(60),
-        marginBottom: normalize(16),
+        width: wp(26),
+        height: wp(16),
+        marginBottom: theme.spacing.md,
+    },
+    logoContainerTablet: {
+        width: wp(15),
+        height: wp(9),
     },
     logo: {
         width: '100%',
         height: '100%',
     },
     title: {
-        fontSize: normalize(28),
+        fontSize: theme.typography.display,
         fontWeight: Platform.OS === 'ios' ? '800' : undefined,
+        fontFamily: FONT.EXTRA_BOLD,
         color: '#0F172A',
         textAlign: 'center',
     },
     subText: {
-        fontSize: normalize(15),
+        fontSize: theme.typography.md,
         color: '#64748B',
-        marginTop: normalize(8),
+        marginTop: theme.spacing.xs,
         textAlign: 'center',
-        lineHeight: normalize(22),
+        lineHeight: 22,
     },
     card: {
         backgroundColor: '#FFFFFF',
-        borderRadius: normalize(24),
-        padding: normalize(24),
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.1,
-        shadowRadius: 20,
-        elevation: 5,
-    },
-    form: {
-        width: '100%',
+        borderRadius: theme.borderRadius.xl,
+        padding: theme.spacing.lg,
+        ...theme.shadows.md,
     },
     otpContainer: {
-        width: normalize(56),
-        height: normalize(56),
-        borderRadius: normalize(12),
+        width: 56,
+        height: 56,
+        borderRadius: theme.borderRadius.sm,
         backgroundColor: '#F8FAFC',
         borderWidth: 1.5,
         borderColor: '#E2E8F0',
     },
     otpText: {
-        fontSize: normalize(20),
-        fontWeight: Platform.OS === 'ios' ? '700' : undefined,
+        fontSize: theme.typography.lg,
+        fontFamily: FONT.BOLD,
         color: '#0F172A',
     },
     resendContainer: {
         alignItems: 'center',
-        marginTop: normalize(24),
+        marginTop: theme.spacing.md,
     },
     resendLabel: {
-        fontSize: normalize(14),
+        fontSize: theme.typography.sm,
         color: '#94A3B8',
     },
     resendLink: {
-        fontSize: normalize(14),
+        fontSize: theme.typography.sm,
         color: palette.main.p500,
-        fontWeight: Platform.OS === 'ios' ? '700' : undefined,
+        fontFamily: FONT.BOLD,
     },
     footer: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: normalize(40),
+        marginTop: theme.spacing.xl,
     },
     footerLabel: {
-        fontSize: normalize(15),
+        fontSize: theme.typography.md,
         color: '#64748B',
     },
     linkText: {
-        fontSize: normalize(15),
+        fontSize: theme.typography.md,
         color: palette.main.p500,
-        fontWeight: Platform.OS === 'ios' ? '700' : undefined,
-        marginLeft: normalize(6),
+        fontFamily: FONT.BOLD,
+        marginLeft: theme.spacing.xs,
     }
 });

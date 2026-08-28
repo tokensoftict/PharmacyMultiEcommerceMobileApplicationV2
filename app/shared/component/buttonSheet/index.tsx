@@ -1,8 +1,9 @@
 import React from 'react';
-import {View, Modal, TouchableOpacity} from 'react-native';
-import {_styles} from './styles';
+import { View, Modal, TouchableOpacity } from 'react-native';
+import { _styles } from './styles';
 import useDarkMode from "../../hooks/useDarkMode";
-import {GestureResponderEvent} from 'react-native/Libraries/Types/CoreEventTypes';
+import { GestureResponderEvent } from 'react-native/Libraries/Types/CoreEventTypes';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ButtonSheetProps {
   dispatch: boolean;
@@ -18,7 +19,8 @@ export default function ButtonSheet({
   bottom = 0,
   onClose,
 }: ButtonSheetProps) {
-  const {isDarkMode} = useDarkMode();
+  const { isDarkMode } = useDarkMode();
+  const insets = useSafeAreaInsets();
   const styles = _styles(isDarkMode, height);
 
   return (
@@ -30,7 +32,11 @@ export default function ButtonSheet({
             onPress={onClose}
             style={styles.modalOverlay}
           />
-          <View style={styles.modalView}>{children}</View>
+          <View style={[
+            styles.modalView
+          ]}>
+            {children}
+          </View>
         </View>
       </Modal>
     </View>

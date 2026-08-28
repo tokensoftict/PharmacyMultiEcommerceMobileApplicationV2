@@ -53,7 +53,9 @@ export interface doorStepDelivery {
     name : string,
     amount : string,
     deliveryDate : string,
-    amount_formatted : string
+    amount_formatted : string,
+    original_amount_formatted?: string,
+    is_free?: boolean
 }
 
 export interface Data {

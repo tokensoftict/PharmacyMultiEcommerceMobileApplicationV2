@@ -11,6 +11,7 @@ import { Items } from "@/service/cart/interface/CartInterface";
 import Environment from "@/shared/utils/Environment";
 import { FONT } from "@/shared/constants/fonts";
 import { semantic } from "@/shared/constants/colors";
+import { theme } from "@/shared/theme";
 
 interface ProductList {
     product: Items | undefined,
@@ -52,10 +53,10 @@ function CartItemHorizontalList({ product, onPress, error }: ProductList) {
                         </View>
 
                         {product?.selected_options && product.selected_options.length > 0 && (
-                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: normalize(6), marginBottom: normalize(8) }}>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.xs, marginBottom: theme.spacing.xs }}>
                                 {product.selected_options.map((option, idx) => (
-                                    <View key={idx} style={{ backgroundColor: semantic.alert.danger.d100, paddingHorizontal: normalize(8), paddingVertical: normalize(2), borderRadius: normalize(4) }}>
-                                        <Typography style={{ fontSize: normalize(10), fontFamily: FONT.BOLD, color: semantic.alert.danger.d500 }}>
+                                    <View key={idx} style={{ backgroundColor: semantic.alert.danger.d100, paddingHorizontal: theme.spacing.sm, paddingVertical: 2, borderRadius: theme.borderRadius.xs / 2 }}>
+                                        <Typography style={{ fontSize: theme.typography.xs - 1, fontFamily: FONT.BOLD, color: semantic.alert.danger.d500 }}>
                                             {option.group_name && `${option.group_name}: `}{option.name} {option.price > 0 ? `(${option.price_prefix}${currencyType}${option.price})` : ''}
                                         </Typography>
                                     </View>
@@ -85,7 +86,7 @@ function CartItemHorizontalList({ product, onPress, error }: ProductList) {
                         </View>
 
                         {error && (
-                            <Typography style={{ color: semantic.alert.danger.d500, fontFamily: FONT.BOLD, fontSize: normalize(12), marginTop: normalize(4) }}>
+                            <Typography style={{ color: semantic.alert.danger.d500, fontFamily: FONT.BOLD, fontSize: theme.typography.sm, marginTop: theme.spacing.xs / 2 }}>
                                 {error}
                             </Typography>
                         )}

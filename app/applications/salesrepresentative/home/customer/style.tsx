@@ -1,7 +1,15 @@
 import { StyleSheet } from "react-native";
-import { normalize } from "@/shared/helpers";
+import { theme } from "@/shared/theme";
+import { FONT } from "@/shared/constants/fonts";
+
 const primaryColor = '#d32f2f';
 
+/**
+ * CustomerProfileModal Styles (Latest Design Refactor)
+ *
+ * Refactored using the centralized theme spacing, shadows, border-radius,
+ * and responsive typography system to align cleanly.
+ */
 export const styles = StyleSheet.create({
     overlay: {
         flex: 1,
@@ -10,91 +18,92 @@ export const styles = StyleSheet.create({
     },
     modalContainer: {
         backgroundColor: '#fefefe',
-        borderTopLeftRadius: normalize(24),
-        borderTopRightRadius: normalize(24),
-        paddingBottom: normalize(20),
+        borderTopLeftRadius: theme.borderRadius.lg,
+        borderTopRightRadius: theme.borderRadius.lg,
+        paddingBottom: theme.spacing.md,
         maxHeight: '90%',
     },
     header: {
         backgroundColor: primaryColor,
-        paddingTop: normalize(40),
-        paddingBottom: normalize(20),
+        paddingTop: theme.spacing.xl,
+        paddingBottom: theme.spacing.md,
         alignItems: 'center',
-        borderTopLeftRadius: normalize(24),
-        borderTopRightRadius: normalize(24),
+        borderTopLeftRadius: theme.borderRadius.lg,
+        borderTopRightRadius: theme.borderRadius.lg,
     },
     closeBtn: {
         position: 'absolute',
-        right: normalize(16),
-        top: normalize(40),
-        zIndex: normalize(10),
+        right: theme.spacing.md,
+        top: theme.spacing.md,
+        zIndex: 10,
+        padding: theme.spacing.xs,
     },
     avatar: {
-        width: normalize(80),
-        height: normalize(80),
-        borderRadius: normalize(40),
+        width: 80,
+        height: 80,
+        borderRadius: theme.borderRadius.full,
         borderColor: '#fff',
-        borderWidth: normalize(2),
-        marginBottom: normalize(8),
+        borderWidth: 2,
+        marginBottom: theme.spacing.xs,
     },
     customerName: {
-        fontSize: normalize(20),
-
+        fontSize: theme.typography.lg,
+        fontFamily: FONT.BOLD,
         color: '#fff',
     },
     customerTag: {
-        fontSize: normalize(14),
+        fontSize: theme.typography.sm,
         color: '#f1f1f1',
     },
     contentContainer: {
-        padding: normalize(16),
+        padding: theme.spacing.md,
     },
     card: {
         backgroundColor: '#fff',
-        borderRadius: normalize(16),
-        padding: normalize(16),
-        marginBottom: normalize(16),
-        shadowColor: '#000',
-        shadowOpacity: 0.08,
-        shadowOffset: { width: normalize(0), height: normalize(3) },
-        shadowRadius: normalize(6),
-        elevation: normalize(4),
+        borderRadius: theme.borderRadius.md,
+        padding: theme.spacing.md,
+        marginBottom: theme.spacing.md,
+        borderColor: '#E2E8F0',
+        borderWidth: 1,
+        ...theme.shadows.sm,
     },
     cardTitle: {
-        fontSize: normalize(16),
-
-        marginBottom: normalize(10),
+        fontSize: theme.typography.sm,
+        fontFamily: FONT.BOLD,
+        marginBottom: theme.spacing.xs,
         color: primaryColor,
     },
     label: {
         color: '#666',
-        marginTop: normalize(10),
+        marginTop: theme.spacing.xs,
+        fontSize: theme.typography.xs,
     },
     value: {
-        fontSize: normalize(15),
+        fontSize: theme.typography.sm,
+        fontFamily: FONT.MEDIUM,
         color: '#333',
     },
     fancyButtonWrapper: {
-        marginTop: normalize(10),
+        marginTop: theme.spacing.xs,
     },
     fancyButtonText: {
         color: '#fff',
-
-        fontSize: normalize(16),
+        fontSize: theme.typography.sm,
+        fontFamily: FONT.BOLD,
+        textAlign: 'center',
     },
     fancyButtonShadowWrapper: {
-        borderRadius: normalize(50),
-        backgroundColor: '#ff4b2b',
-        shadowColor: '#000',
-        shadowOpacity: 0.2,
-        shadowOffset: { width: normalize(0), height: normalize(4) },
-        shadowRadius: normalize(8),
-        elevation: normalize(6), //
+        borderRadius: theme.borderRadius.full,
+        overflow: 'hidden',
+        ...theme.shadows.sm,
     },
     fancyButton: {
-        paddingVertical: normalize(14),
-        borderRadius: normalize(50),
+        paddingVertical: theme.spacing.sm,
+        paddingHorizontal: theme.spacing.md,
+        borderRadius: theme.borderRadius.full,
         alignItems: 'center',
         justifyContent: 'center',
+        flexDirection: 'row',
+        minHeight: 48,
     },
 });

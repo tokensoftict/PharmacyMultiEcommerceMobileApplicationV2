@@ -8,7 +8,6 @@ import { useNavigation } from "@react-navigation/native";
 import { NavigationProps } from "@/shared/routes/stack";
 import { IconButton } from "react-native-paper";
 import { trash } from "@/assets/icons";
-import { normalize } from "@/shared/helpers";
 import { Items } from "@/service/wishlist/interface/WishlistInterface";
 import Environment from "@/shared/utils/Environment.tsx";
 

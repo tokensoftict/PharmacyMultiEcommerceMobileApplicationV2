@@ -1,10 +1,11 @@
 import React, { useRef, useState } from 'react';
 import { View, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
-import Animated, { FadeInUp, FadeInDown, useAnimatedStyle, withSpring, interpolateColor } from 'react-native-reanimated';
+import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
 import { styles } from "./style";
 import LottieView from "lottie-react-native";
 import LinearGradient from 'react-native-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import animations
 import animationWelcome from '@/assets/welcome.json';
@@ -16,7 +17,7 @@ import bestPrice from '@/assets/bestprice.json';
 import AuthSessionService from "@/service/auth/AuthSessionService.tsx";
 import Typography from '@/shared/component/typography';
 import { palette } from '@/shared/constants/colors.ts';
-import { normalize } from '@/shared/helpers';
+import { theme } from '@/shared/theme';
 
 const { width, height } = Dimensions.get('window');
 
@@ -76,6 +77,7 @@ const PaginationIndicator = ({ current, total }: { current: number, total: numbe
 export default function IntroSlider({ navigation }: any) {
     const carouselRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const insets = useSafeAreaInsets();
 
     const handleNext = () => {
         if (currentIndex === slides.length - 1) {
@@ -93,8 +95,11 @@ export default function IntroSlider({ navigation }: any) {
         navigation.replace('storeSelector');
     };
 
+    // Responsive dimensions accounting for safe area insets at top and bottom
+    const availableHeightForCarousel = height - insets.top - insets.bottom - 200;
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingTop: insets.top }]}>
             <LinearGradient
                 colors={['#F8FAFC', '#F1F5F9', '#E2E8F0']}
                 style={StyleSheet.absoluteFill}
@@ -104,16 +109,19 @@ export default function IntroSlider({ navigation }: any) {
             <View style={[styles.circle, styles.circle1]} />
             <View style={[styles.circle, styles.circle2]} />
 
-            <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
+            <TouchableOpacity
+                onPress={handleSkip}
+                style={[styles.skipButton, { top: Math.max(insets.top, theme.spacing.md) }]}
+            >
                 <Typography style={styles.skipText}>Skip</Typography>
             </TouchableOpacity>
 
-            <View style={styles.carouselWrapper}>
+            <View style={[styles.carouselWrapper, { marginTop: theme.spacing.lg }]}>
                 <Carousel
                     ref={carouselRef}
                     loop={false}
                     width={width}
-                    height={height * 0.75}
+                    height={availableHeightForCarousel}
                     autoPlay={false}
                     scrollAnimationDuration={800}
                     data={slides}
@@ -128,7 +136,7 @@ export default function IntroSlider({ navigation }: any) {
                                     style={styles.lottie}
                                 />
                             </Animated.View>
-                            
+
                             <View style={styles.contentContainer}>
                                 <Animated.Text
                                     key={`title-${currentIndex}-${index}`}
@@ -150,12 +158,12 @@ export default function IntroSlider({ navigation }: any) {
                 />
             </View>
 
-            <View style={styles.footer}>
+            <View style={[styles.footer, { bottom: Math.max(insets.bottom, 24) + theme.spacing.md }]}>
                 <PaginationIndicator current={currentIndex} total={slides.length} />
-                
+
                 <Animated.View entering={FadeInDown.duration(800).delay(400)} style={styles.buttonWrapper}>
-                    <TouchableOpacity 
-                        onPress={handleNext} 
+                    <TouchableOpacity
+                        onPress={handleNext}
                         style={styles.mainButton}
                         activeOpacity={0.8}
                     >

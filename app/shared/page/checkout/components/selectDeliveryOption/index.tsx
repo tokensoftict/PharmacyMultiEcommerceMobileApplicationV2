@@ -1,20 +1,19 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, ScrollView, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { location, truck, truckInTracking } from "@/assets/icons";
 import ListOptionCard, { OptionCardOptions } from "@/shared/component/ListOptionCard";
 import useDarkMode from "@/shared/hooks/useDarkMode.tsx";
 import { useFocusEffect } from "@react-navigation/native";
-import { palette, semantic } from "@/shared/constants/colors.ts";
-import { normalize } from "@/shared/helpers";
+import { semantic } from "@/shared/constants/colors.ts";
 import Toastss from "@/shared/utils/Toast";
 import { useLoading } from "@/shared/utils/LoadingProvider";
 import PickUpAtStore from "@/shared/page/checkout/components/selectDeliveryOption/option/pickUpAtStore.tsx";
 import Dwi from "@/shared/page/checkout/components/selectDeliveryOption/option/dwi.tsx";
 import Doi from "@/shared/page/checkout/components/selectDeliveryOption/option/doi.tsx";
-import HeaderWithIcon from "@/shared/component/headerBack";
 import CheckoutService from "@/service/checkout/CheckoutService.tsx";
 import Dsd from "@/shared/page/checkout/components/selectDeliveryOption/option/dsd.tsx";
 import SubHeader from "@/shared/component/subHeader";
+import { theme } from "@/shared/theme";
 
 export default function SelectDeliveryOption({ onValidate }: { onValidate: (validateFn: () => Promise<boolean>) => void }) {
   const [deliverySelected, setDeliverySelected] = useState<OptionCardOptions>();
@@ -113,13 +112,13 @@ export default function SelectDeliveryOption({ onValidate }: { onValidate: (vali
           </View>
           :
           <View style={{ flex: 1 }}>
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: normalize(16) }}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: theme.spacing.md }}>
               <ListOptionCard
                 value={deliverySelected}
                 onChange={onSelectDelivery}
                 options={checkOutDelivery}
               />
-              <View style={{ height: normalize(140) }} />
+              <View style={{ height: theme.spacing.xxl * 3 }} />
                   {
                     deliverySelected?.code === "Pickup" ? <PickUpAtStore key={`pickup-${clickCount}`} callback={callBackFromDialogs} deliveryMethod={deliverySelected.id} extra={deliverySelected.extra} showDialog={deliverySelected?.code === "Pickup"} /> : <></>
                   }

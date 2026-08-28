@@ -1,4 +1,4 @@
-import { Dimensions, Platform, StyleSheet } from "react-native";
+import { Dimensions, Platform, StyleSheet, StatusBar } from "react-native";
 import { normalize } from "@/shared/helpers";
 const { width } = Dimensions.get("window");
 
@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     },
     // Modern Header
     headerContainer: {
-        paddingTop: Platform.OS === 'ios' ? normalize(55) : normalize(15),
+        paddingTop: Platform.OS === 'ios' ? normalize(55) : (StatusBar.currentHeight ?? 0) + normalize(18),
         paddingHorizontal: normalize(20),
         backgroundColor: "#F44336", // Consistent Red theme
         borderBottomLeftRadius: normalize(32),

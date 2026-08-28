@@ -4,9 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import HeaderWithIcon from "@/shared/component/headerBack";
 import { emptyCart, shoppingBag } from "@/assets/icons";
-import List from "@/shared/component/list";
-import { Button, ButtonOutline } from "@/shared/component/buttons";
-import { normalize } from "@/shared/helpers";
+import { Button } from "@/shared/component/buttons";
 import Typography from "@/shared/component/typography";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NavigationProps } from "@/shared/routes/stack";
@@ -17,22 +15,21 @@ import Toasts from "@/shared/utils/Toast.tsx";
 import CartItemHorizontalList from "@/shared/component/cartItemHorizontalList";
 import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
 import { currencyType } from "@/shared/constants/global";
-import { semantic } from "@/shared/constants/colors";
-import Environment from "@/shared/utils/Environment.tsx";
 import UpdateCartDialog from "@/shared/component/updateCartDialog";
 import { useGlobal } from "@/shared/helpers/GlobalContext.tsx";
+import { theme } from "@/shared/theme";
+import { isTablet } from '@/shared/helpers';
 
-
-
-import { _styles } from './styles'
+import { _styles } from './styles';
 
 function Cart() {
     const insets = useSafeAreaInsets();
+    const tablet = isTablet();
 
-    const { navigate } = useNavigation<NavigationProps>()
+    const { navigate } = useNavigation<NavigationProps>();
     const { isDarkMode } = useDarkMode();
     const styles = _styles(isDarkMode);
-    const [cartErrorList, setCartErrorList] = useState("Your Shopping Cart is empty!")
+    const [cartErrorList, setCartErrorList] = useState("Your Shopping Cart is empty!");
     const [isLoading, setIsLoading] = useState(false);
     const [cartItemList, setCartItemList] = useState<CartInterface>();
     const [openCartModal, setOpenCartModal] = useState(false);
@@ -48,10 +45,10 @@ function Cart() {
 
     function loadCartItems() {
         setIsLoading(true);
-        (new CartService()).get().then((response) => {
+        new CartService().get().then((response) => {
             setIsLoading(false);
             if (response.data.status === true) {
-                setCartItemList(response.data)
+                setCartItemList(response.data);
                 setCartCount(response.data.data?.meta?.noItems || 0);
                 setCartTotal(response.data.data?.meta?.totalItemsInCarts_formatted || "0.00");
             } else {
@@ -62,20 +59,20 @@ function Cart() {
         }, (error) => {
             setIsLoading(false);
             Toasts('There was an error while loading cart');
-        })
+        });
     }
 
     const cartDialogOpen = (status: boolean) => {
         setOpenCartModal(status);
-    }
+    };
 
     const onItemClick = (item: any) => {
         cartDialogOpen(true);
         setCartItemSelected(item);
-    }
+    };
 
     function renderItem(item: any, key: number) {
-        return <CartItemHorizontalList key={key} product={item} onPress={onItemClick} />
+        return <CartItemHorizontalList key={key} product={item} onPress={onItemClick} />;
     }
 
     function clearCartItems() {
@@ -88,10 +85,10 @@ function Cart() {
                 text: 'Yes',
                 onPress: () => {
                     setIsLoading(true);
-                    (new CartService()).clear().then(() => {
+                    new CartService().clear().then(() => {
                         setIsLoading(false);
                         loadCartItems();
-                    })
+                    });
                 }
             },
         ]);
@@ -108,18 +105,19 @@ function Cart() {
                             <View style={{ flex: 1 }}>
                                 <ScrollView
                                     showsVerticalScrollIndicator={false}
-                                    contentContainerStyle={styles.listContainer}
+                                    contentContainerStyle={[styles.listContainer, tablet && { maxWidth: 600, alignSelf: 'center', width: '100%' }]}
                                 >
-                                    <View style={{ height: normalize(16) }} />
+                                    <View style={{ height: theme.spacing.sm }} />
                                     {cartItemList?.data.items.map((item, index) => renderItem(item, index))}
                                 </ScrollView>
 
                                 <View style={[
                                     styles.summaryCard,
+                                    tablet && { maxWidth: 600, alignSelf: 'center', width: '100%', borderTopLeftRadius: theme.borderRadius.md, borderTopRightRadius: theme.borderRadius.md },
                                     {
                                         paddingBottom: Platform.OS === 'ios'
-                                            ? Math.max(insets.bottom, normalize(20)) + normalize(cartItemList?.data.meta?.doorStepDelivery ? -10 : 65)
-                                            : insets.bottom + normalize(cartItemList?.data.meta?.doorStepDelivery ? -25 : 65),
+                                            ? Math.max(insets.bottom, theme.spacing.md) + (cartItemList?.data.meta?.doorStepDelivery ? -10 : 65)
+                                            : insets.bottom + (cartItemList?.data.meta?.doorStepDelivery ? -25 : 65),
                                     }
                                 ]}>
 
@@ -141,10 +139,10 @@ function Cart() {
                                                 <View style={{ alignItems: 'flex-end' }}>
                                                     {cartItemList?.data.meta?.doorStepDelivery.is_free && (
                                                         <Typography style={{
-                                                            fontSize: normalize(12),
+                                                            fontSize: theme.typography.xs - 2,
                                                             color: '#64748B',
                                                             textDecorationLine: 'line-through',
-                                                            marginBottom: normalize(2)
+                                                            marginBottom: 2
                                                         }}>
                                                             {currencyType} {cartItemList?.data.meta?.doorStepDelivery.original_amount_formatted}
                                                         </Typography>
@@ -194,7 +192,7 @@ function Cart() {
                                 <Typography style={styles.emptySubtitle}>
                                     Looks like you haven't added anything to your cart yet.
                                 </Typography>
-                                <View style={{ marginTop: normalize(32), width: '100%' }}>
+                                <View style={{ marginTop: theme.spacing.lg, width: '100%' }}>
                                     <Button title="START SHOPPING" onPress={() => navigate('homeTab' as any)} />
                                 </View>
                             </View>
@@ -209,7 +207,7 @@ function Cart() {
                 onClose={cartDialogOpen}
             />
         </View>
-    )
+    );
 }
 
 export default React.memo(Cart);

@@ -48,4 +48,5 @@ export interface Data {
     dependent_products: any[];
     stock_option_values: any[];
     is_wishlisted: boolean;
+    seo?: string;
 }

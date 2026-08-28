@@ -1,9 +1,8 @@
 import { Platform, StyleSheet, Dimensions } from "react-native";
-import { FONT } from "@/shared/constants/fonts.ts";
-import { normalize } from "@/shared/helpers";
 import { palette } from "@/shared/constants/colors.ts";
+import { theme } from "@/shared/theme";
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
     container: {
@@ -32,33 +31,31 @@ export const styles = StyleSheet.create({
     },
     skipButton: {
         position: 'absolute',
-        top: Platform.OS === 'ios' ? normalize(60) : normalize(40),
-        right: normalize(20),
+        right: theme.spacing.md,
         zIndex: 10,
-        padding: normalize(8),
+        padding: theme.spacing.xs,
     },
     skipText: {
         color: '#64748B',
-        fontSize: normalize(15),
+        fontSize: theme.typography.sm,
         fontWeight: Platform.OS === 'ios' ? '700' : undefined,
         textTransform: 'uppercase',
     },
     carouselWrapper: {
         flex: 1,
-        marginTop: normalize(40),
     },
     slide: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        paddingHorizontal: normalize(24),
+        paddingHorizontal: theme.spacing.lg,
     },
     lottieWrapper: {
         width: width * 0.8,
         height: width * 0.8,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: normalize(20),
+        marginBottom: theme.spacing.md,
     },
     lottie: {
         width: '100%',
@@ -66,60 +63,54 @@ export const styles = StyleSheet.create({
     },
     contentContainer: {
         alignItems: 'center',
-        marginTop: normalize(10),
+        marginTop: theme.spacing.xs,
     },
     title: {
-        fontSize: normalize(24),
+        fontSize: theme.typography.xl,
         color: '#1E293B',
         textAlign: 'center',
-        marginBottom: normalize(16),
+        marginBottom: theme.spacing.sm,
         fontWeight: '900',
-        lineHeight: normalize(32),
         textTransform: 'uppercase',
     },
     description: {
-        fontSize: normalize(15),
+        fontSize: theme.typography.sm,
         color: '#64748B',
         textAlign: 'center',
-        lineHeight: normalize(22),
-        paddingHorizontal: normalize(10),
+        paddingHorizontal: theme.spacing.xs,
         fontWeight: '500',
     },
     footer: {
         position: 'absolute',
-        bottom: Platform.OS === 'ios' ? normalize(50) : normalize(30),
         width: '100%',
         alignItems: 'center',
     },
     paginationContainer: {
         flexDirection: 'row',
-        marginBottom: normalize(40),
+        marginBottom: theme.spacing.lg,
     },
     paginationDot: {
-        width: normalize(8),
-        height: normalize(8),
-        borderRadius: normalize(4),
+        width: 8,
+        height: 8,
+        borderRadius: 4,
         backgroundColor: '#CBD5E1',
-        marginHorizontal: normalize(4),
+        marginHorizontal: 4,
     },
     paginationDotActive: {
-        width: normalize(24),
+        width: 24,
         backgroundColor: palette.main.p500,
     },
     buttonWrapper: {
         width: '100%',
-        paddingHorizontal: normalize(32),
+        paddingHorizontal: theme.spacing.xl,
     },
     mainButton: {
         width: '100%',
-        height: normalize(56),
-        borderRadius: normalize(28),
+        height: 50,
+        borderRadius: theme.borderRadius.full,
         overflow: 'hidden',
-        elevation: 8,
+        ...theme.shadows.md,
         shadowColor: palette.main.p500,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
     },
     gradientButton: {
         width: '100%',
@@ -129,7 +120,7 @@ export const styles = StyleSheet.create({
     },
     buttonText: {
         color: '#FFFFFF',
-        fontSize: normalize(16),
+        fontSize: theme.typography.md,
         fontWeight: '800',
         letterSpacing: 1,
     }
