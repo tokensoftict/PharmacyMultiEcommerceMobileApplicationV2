@@ -1,15 +1,14 @@
 import React, { useState } from "react";
-import { View, TouchableOpacity, Animated, Image } from "react-native";
-import { pick, types } from "@react-native-documents/picker";
+import { View, TouchableOpacity, Animated } from "react-native";
+import { pick } from "@react-native-documents/picker";
 import Typography from "@/shared/component/typography";
 import Icon from "@/shared/component/icon";
 import { upload_file } from "@/assets/icons";
 import { normalize } from "@/shared/helpers";
-import Input from "@/shared/component/input";
+import { semantic, palette } from "@/shared/constants/colors";
 
 const FilePicker = ({ onFileSelected, label }: any) => {
-    const [fileName, setFileName] = useState(null);
-    const [fileType, setFileType] = useState(null);
+    const [fileName, setFileName] = useState<string | null>(null);
     const [scale] = useState(new Animated.Value(1));
 
     const handlePickFile = async () => {
@@ -19,18 +18,15 @@ const FilePicker = ({ onFileSelected, label }: any) => {
             })
             // @ts-ignore
             setFileName(result.name);
-            // @ts-ignore
-            setFileType(result.type);
             onFileSelected(result);
         } catch (err) {
             // see error handling
         }
     };
 
-    // Animated button press effect
     const handlePressIn = () => {
         Animated.spring(scale, {
-            toValue: 0.95,
+            toValue: 0.97,
             useNativeDriver: true,
         }).start();
     };
@@ -42,50 +38,88 @@ const FilePicker = ({ onFileSelected, label }: any) => {
         }).start();
     };
 
-    // @ts-ignore
-
     return (
-        <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-between" }}>
-            <Input
-                label={label}
-                editable={false}
-                placeholder={label}
-                value={fileName ?? ""}
-            />
-            <View style={{ flex: 1, padding: normalize(15) }}>
-                {/* Upload Button */}
-                <Animated.View style={{
-                    transform: [{ scale }],
-                    position: "absolute",
-                    right: normalize(40),
-                    top: normalize(40),
-                }}>
-                    <TouchableOpacity
-                        onPress={handlePickFile}
-                        onPressIn={handlePressIn}
-                        onPressOut={handlePressOut}
+        <Animated.View style={{ transform: [{ scale }] }}>
+            <TouchableOpacity
+                onPress={handlePickFile}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
+                activeOpacity={0.85}
+                style={{
+                    borderWidth: 1.5,
+                    borderColor: fileName ? palette.main.p500 : semantic.text.borderColor,
+                    borderStyle: "dashed",
+                    borderRadius: normalize(12),
+                    backgroundColor: fileName ? '#FFF5F5' : semantic.fill.f04,
+                    paddingVertical: normalize(16),
+                    paddingHorizontal: normalize(16),
+                    flexDirection: "row",
+                    alignItems: "center",
+                }}
+            >
+                {/* Icon container */}
+                <View
+                    style={{
+                        width: normalize(44),
+                        height: normalize(44),
+                        borderRadius: normalize(12),
+                        backgroundColor: fileName ? palette.main.p500 : '#E8E8E8',
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <Icon
+                        icon={upload_file}
+                        height={22}
+                        width={22}
+                        tintColor={fileName ? "#fff" : semantic.text.grey}
+                    />
+                </View>
+
+                {/* Text content */}
+                <View style={{ flex: 1, marginLeft: normalize(14) }}>
+                    <Typography
                         style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            backgroundColor: "#ff4757",
-                            padding: normalize(10),
-                            shadowColor: "#ff6b81",
-                            shadowOffset: { width: normalize(0), height: normalize(5) },
-                            shadowOpacity: 0.5,
-                            shadowRadius: normalize(10),
-                            elevation: 5,
-                            borderRadius: 5,
+                            fontSize: normalize(13),
+                            fontWeight: "600",
+                            color: semantic.text.black,
+                            marginBottom: normalize(2),
                         }}
                     >
-                        <Icon icon={upload_file} height={20} width={20} tintColor={"#fff"} />
-                        <Typography style={{ color: "#fff", fontSize: normalize(12) }}>
-                            Select File
-                        </Typography>
-                    </TouchableOpacity>
-                </Animated.View>
-            </View>
-        </View>
+                        {label}
+                    </Typography>
+                    <Typography
+                        numberOfLines={1}
+                        style={{
+                            fontSize: normalize(11),
+                            color: fileName ? palette.main.p500 : semantic.text.grey,
+                        }}
+                    >
+                        {fileName ? fileName : "Tap to select a file"}
+                    </Typography>
+                </View>
 
+                {/* Action indicator */}
+                <View
+                    style={{
+                        paddingHorizontal: normalize(12),
+                        paddingVertical: normalize(6),
+                        borderRadius: normalize(8),
+                        backgroundColor: fileName ? palette.main.p500 : '#E8E8E8',
+                    }}
+                >
+                    <Typography
+                        style={{
+                            fontSize: normalize(11),
+                            fontWeight: "600",
+                            color: fileName ? "#fff" : semantic.text.grey,
+                        }}
+                    >
+                        {fileName ? "Change" : "Browse"}
+                    </Typography>
+                </View>
+            </TouchableOpacity>
+        </Animated.View>
     );
 };
 

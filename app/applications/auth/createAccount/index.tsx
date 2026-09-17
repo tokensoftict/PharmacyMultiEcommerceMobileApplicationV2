@@ -4,13 +4,13 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
+  ScrollView, Platform,
 } from 'react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
 import Input from '@/shared/component/input';
 import Icon from '@/shared/component/icon';
-import { eyeFilled, eyeOff, lock, mail, phone, user } from '@/assets/icons';
+import { eyeFilled, eyeOff, lock, mail, phone, share_product, user } from '@/assets/icons';
 import { Button } from '@/shared/component/buttons';
 import Typography from '@/shared/component/typography';
 import { logo } from '@/assets/images';
@@ -202,6 +202,28 @@ export default function CreateAccount() {
             <Typography style={styles.subText}>Fill in your information to join us</Typography>
           </Animated.View>
 
+          {/* ---- Referral banner (shown when user arrives via referral link) ---- */}
+          {pendingReferralCode && (
+            <Animated.View entering={FadeInDown.delay(150).duration(600)} style={styles.referralBanner}>
+              <LinearGradient
+                colors={['#0F172A', '#1E293B']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.referralBannerGradient}
+              >
+                <View style={styles.referralBannerGradientIosFixed}>
+                  <View style={styles.referralBannerIconWrap}>
+                    <Icon icon={share_product} customStyles={{ width: 16, height: 16, tintColor: '#FFFFFF' }} />
+                  </View>
+                  <View style={styles.referralBannerTextWrap}>
+                    <Typography style={styles.referralBannerTitle}>You've been referred! 🎉</Typography>
+                    <Typography style={styles.referralBannerCode}>{pendingReferralCode}</Typography>
+                  </View>
+                </View>
+              </LinearGradient>
+            </Animated.View>
+          )}
+
           {/* ---- Form card ---- */}
           <Animated.View
             entering={FadeInDown.delay(200).duration(800)}
@@ -317,6 +339,53 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xs,
     textAlign: 'center',
   },
+
+  // ── Referral Banner ──────────────────────────────────────────────────────
+  referralBanner: {
+    marginBottom: theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    overflow: 'hidden',
+  },
+  referralBannerGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Platform.OS === 'ios' ? undefined : theme.spacing.sm + 2,
+    paddingHorizontal: Platform.OS === 'ios' ? undefined : theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+  },
+
+  referralBannerGradientIosFixed: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Platform.OS === 'ios' ? theme.spacing.sm + 2 : undefined,
+    paddingHorizontal: Platform.OS === 'ios' ? theme.spacing.md : undefined,
+  },
+
+  referralBannerIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: theme.spacing.sm,
+  },
+  referralBannerTextWrap: {
+    flex: 1,
+  },
+  referralBannerTitle: {
+    fontSize: theme.typography.sm,
+    fontFamily: FONT.BOLD,
+    color: '#FFFFFF',
+  },
+  referralBannerCode: {
+    fontSize: theme.typography.xs,
+    fontFamily: FONT.EXTRA_BOLD,
+    color: palette.main.p500,
+    letterSpacing: 1.5,
+    marginTop: 2,
+  },
+
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: theme.borderRadius.xl,

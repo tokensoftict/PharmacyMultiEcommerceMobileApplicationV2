@@ -5,7 +5,6 @@ import {
     Image,
     TouchableOpacity,
     ScrollView,
-    Platform,
     ActivityIndicator,
 } from 'react-native';
 import Animated, {
@@ -17,12 +16,15 @@ import Animated, {
 import LinearGradient from 'react-native-linear-gradient';
 import Typography from "@/shared/component/typography";
 import AuthSessionService from "@/service/auth/AuthSessionService.tsx";
+import LoginService from "@/service/auth/LoginService.tsx";
 import Environment from "@/shared/utils/Environment.tsx";
 import { palette, semantic } from "@/shared/constants/colors.ts";
 import { theme } from "@/shared/theme";
 import useDarkMode from "@/shared/hooks/useDarkMode.tsx";
 import { FONT } from "@/shared/constants/fonts.ts";
 import CampaignEventBus from "@/campaign/CampaignEventBus";
+import { CommonActions } from "@react-navigation/native";
+import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
 
 const appImages: Record<string, any> = {
     "wholesales": require("@/assets/images/wholesales.jpg"),
@@ -83,8 +85,6 @@ const StoreListItem = ({ store, index, onPress }: { store: any, index: number, o
         </Animated.View>
     );
 };
-
-import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
 
 const StoreSelectionScreen = ({ navigation }: any) => {
     const { isDarkMode } = useDarkMode();
@@ -160,6 +160,24 @@ const StoreSelectionScreen = ({ navigation }: any) => {
         }
     }
 
+    const handleLogout = async () => {
+        setIsLoading(true);
+        try {
+            await new LoginService().logout();
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'login' }],
+                })
+            );
+            navigation.replace("login");
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <WrapperNoScroll transparent={true} edges={['top', 'bottom']}>
             <View style={[styles.container, isDarkMode && { backgroundColor: semantic.fill.f01 }]}>
@@ -221,7 +239,16 @@ const StoreSelectionScreen = ({ navigation }: any) => {
                             )}
                         </View>
 
-                        {!Environment.isLogin() && (
+                        {Environment.isLogin() ? (
+                            <Animated.View
+                                entering={FadeInDown.delay(400)}
+                                style={styles.footer}
+                            >
+                                <TouchableOpacity onPress={handleLogout}>
+                                    <Typography style={styles.logoutLink}>Log Out</Typography>
+                                </TouchableOpacity>
+                            </Animated.View>
+                        ) : (
                             <Animated.View
                                 entering={FadeInDown.delay(400)}
                                 style={styles.footer}
@@ -356,6 +383,11 @@ const styles = StyleSheet.create({
         color: palette.main.p500,
         fontFamily: FONT.BOLD,
         marginLeft: theme.spacing.xs,
+    },
+    logoutLink: {
+        fontSize: theme.typography.sm,
+        color: palette.main.p500,
+        fontFamily: FONT.BOLD,
     },
     loaderContainer: {
         paddingVertical: theme.spacing.xl,

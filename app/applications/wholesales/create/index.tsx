@@ -23,8 +23,84 @@ import { CommonActions } from "@react-navigation/native";
 import Header from "@/shared/component/header";
 import HeaderWithIcon from "@/shared/component/headerBack";
 import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
-import { semantic } from "@/shared/constants/colors.ts";
+import { palette, semantic } from "@/shared/constants/colors.ts";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const FancySelectorTile = ({
+    label,
+    placeholder,
+    value,
+    icon,
+    onPress,
+    error,
+}: {
+    label: string;
+    placeholder: string;
+    value?: string;
+    icon: any;
+    onPress: () => void;
+    error?: string;
+}) => {
+    return (
+        <View style={styles.formControl}>
+            <Typography style={{ fontSize: normalize(12), color: '#64748B', marginBottom: normalize(6), fontWeight: '600' }}>
+                {label}
+            </Typography>
+            <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={onPress}
+                style={{
+                    borderWidth: 1.5,
+                    borderColor: value ? palette.main.p500 : semantic.text.borderColor,
+                    borderRadius: normalize(12),
+                    backgroundColor: value ? '#FFF5F5' : semantic.fill.f04,
+                    paddingVertical: normalize(14),
+                    paddingHorizontal: normalize(14),
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                }}
+            >
+                <View style={{
+                    width: normalize(38),
+                    height: normalize(38),
+                    borderRadius: normalize(10),
+                    backgroundColor: value ? palette.main.p500 : '#E8E8E8',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: normalize(12),
+                }}>
+                    <Icon icon={icon} height={20} width={20} tintColor={value ? '#FFF' : semantic.text.grey} />
+                </View>
+
+                <View style={{ flex: 1, marginRight: normalize(8) }}>
+                    <Typography
+                        numberOfLines={1}
+                        style={{
+                            fontSize: normalize(13),
+                            fontWeight: value ? '700' : '400',
+                            color: value ? semantic.text.black : semantic.text.grey,
+                        }}
+                    >
+                        {value ? value : placeholder}
+                    </Typography>
+                </View>
+
+                <View style={{
+                    paddingHorizontal: normalize(12),
+                    paddingVertical: normalize(6),
+                    borderRadius: normalize(8),
+                    backgroundColor: value ? palette.main.p500 : '#E8E8E8',
+                }}>
+                    <Typography style={{ fontSize: normalize(11), fontWeight: '600', color: value ? '#FFF' : semantic.text.grey }}>
+                        {value ? 'Change' : 'Select'}
+                    </Typography>
+                </View>
+            </TouchableOpacity>
+            {error !== '' && error !== undefined ? <ErrorText>{error}</ErrorText> : null}
+        </View>
+    );
+};
 
 // @ts-ignore
 export default function CreateWholesales({ navigation }) {
@@ -59,8 +135,21 @@ export default function CreateWholesales({ navigation }) {
     const [selectedStateError, setSelectedStateError] = useState<string>();
     const [selectedTownError, setSelectedTownError] = useState<string>();
 
+    const [customerTypes, setCustomerTypes] = useState<nameOrId[]>();
+    const [isCustomerTypeLoading, setIsCustomerTypeLoading] = useState(false);
+    const [customerType, setCustomerType] = useState<nameOrId>();
+    const [openCustomerTypeDialog, setOpenCustomerTypeDialog] = useState(false);
+    const [selectedCustomerTypeError, setSelectedCustomerTypeError] = useState<string>();
+
     const [businessCertificate, setBusinessCertificate] = useState(undefined);
     const [premisesLicense, setPremisesLicense] = useState(undefined);
+
+    function triggerCustomerTypeDialog(status: boolean) {
+        if (status) {
+            fetchCustomerTypes();
+        }
+        setOpenCustomerTypeDialog(status);
+    }
 
     function triggerStateDialog(status: boolean) {
         if (status) {
@@ -78,6 +167,18 @@ export default function CreateWholesales({ navigation }) {
             fetchTown();
         }
         setOpenTownDialog(status);
+    }
+
+    function fetchCustomerTypes() {
+        if (customerTypes?.length === 0 || customerTypes?.length === undefined) {
+            setIsCustomerTypeLoading(true);
+            (new AddressService()).listCustomerTypes().then((response) => {
+                if (response.data.status === true) {
+                    setCustomerTypes(response.data.data);
+                    setIsCustomerTypeLoading(false);
+                }
+            })
+        }
     }
 
     function fetchStates() {
@@ -123,6 +224,7 @@ export default function CreateWholesales({ navigation }) {
         setBusiness_address_1Error("");
         setSelectedStateError("");
         setSelectedTownError("");
+        setSelectedCustomerTypeError("");
 
         if (business_name === "") {
             setBusiness_nameError("Business name field is required");
@@ -132,6 +234,8 @@ export default function CreateWholesales({ navigation }) {
             setBusiness_emailError("Business email field is required");
         } else if (business_address_1 === "") {
             setBusiness_address_1Error("Business address field is required");
+        } else if (customerType?.id === undefined) {
+            setSelectedCustomerTypeError('Store type field is required');
         } else if (state?.id === undefined) {
             setSelectedStateError('State field is required');
         }
@@ -144,6 +248,7 @@ export default function CreateWholesales({ navigation }) {
             data.append("business_email_address", business_email);
             data.append("address_1", business_address_1);
             data.append("address_2", business_address_2);
+            data.append("customer_type_id", customerType?.id);
             data.append("country_id", "160");
             data.append("state_id", state?.id);
             data.append("town_id", town?.id);
@@ -279,43 +384,32 @@ export default function CreateWholesales({ navigation }) {
                             {business_address_2Error !== '' ? <ErrorText>{business_address_2Error}</ErrorText> : ''}
                         </View>
 
-                        <View style={{ marginBottom: normalize(0) }}>
-                            <Input
-                                label="State"
-                                placeholder="State"
-                                editable={false}
-                                value={state?.name}
-                                rightIcon={<Icon onPress={() => { triggerStateDialog(true) }} icon={location} />}
-                            />
-                            <View style={{ alignItems: "flex-end", marginTop: normalize(5) }}>
-                                <TouchableOpacity
-                                    style={{ borderRadius: 5 }}
-                                    onPress={() => { triggerStateDialog(true) }}
-                                >
-                                    <Typography style={{ color: "red" }}>Select States</Typography>
-                                </TouchableOpacity>
-                            </View>
-                            {selectedStateError !== '' ? <ErrorText>{selectedStateError}</ErrorText> : ''}
-                        </View>
+                        <FancySelectorTile
+                            label="Store Type"
+                            placeholder="Tap to select Store Type"
+                            value={customerType?.name}
+                            icon={store}
+                            onPress={() => triggerCustomerTypeDialog(true)}
+                            error={selectedCustomerTypeError}
+                        />
 
-                        <View style={styles.formControl}>
-                            <Input
-                                label="Town"
-                                placeholder="Town"
-                                value={town?.name}
-                                editable={false}
-                                rightIcon={<Icon icon={location} onPress={() => { triggerTownDialog(true) }} />}
-                            />
-                            <View style={{ alignItems: "flex-end", marginTop: normalize(5) }}>
-                                <TouchableOpacity
-                                    style={{ borderRadius: 5 }}
-                                    onPress={() => { triggerTownDialog(true) }}
-                                >
-                                    <Typography style={{ color: "red" }}>Select Town</Typography>
-                                </TouchableOpacity>
-                            </View>
-                            {selectedTownError !== '' ? <ErrorText>{selectedTownError}</ErrorText> : ''}
-                        </View>
+                        <FancySelectorTile
+                            label="State"
+                            placeholder="Tap to select State"
+                            value={state?.name}
+                            icon={location}
+                            onPress={() => triggerStateDialog(true)}
+                            error={selectedStateError}
+                        />
+
+                        <FancySelectorTile
+                            label="Town"
+                            placeholder="Tap to select Town"
+                            value={town?.name}
+                            icon={location}
+                            onPress={() => triggerTownDialog(true)}
+                            error={selectedTownError}
+                        />
                         <Button title="Create Store" loadingText="Creating store Please wait..." loading={isLoading} disabled={isLoading} onPress={createStore} />
                         {
                             Platform.OS === 'ios' ?
@@ -325,6 +419,34 @@ export default function CreateWholesales({ navigation }) {
                     </View>
                 </View>
             </ScrollView>
+            <ButtonSheet onClose={() => triggerCustomerTypeDialog(false)} dispatch={openCustomerTypeDialog} height={normalize(500)}>
+                {
+                    isCustomerTypeLoading
+                        ?
+                        <OverlayLoader loading={true} title={""} height={normalize(500)} />
+                        :
+                        <View style={{ padding: normalize(24) }}>
+                            <TouchableOpacity onPress={() => triggerCustomerTypeDialog(false)} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <Typography style={{ width: '100%', fontSize: normalize(18), marginBottom: normalize(10), textAlign: 'center' }}>{"Select Store Type"}</Typography>
+                            </TouchableOpacity>
+                            <FlatList
+                                style={{ height: normalize(420) }}
+                                data={customerTypes}
+                                renderItem={({ item, index }) =>
+                                    <TouchableOpacity onPress={function () {
+                                        setCustomerType(item);
+                                        setOpenCustomerTypeDialog(false);
+                                    }}>
+                                        <Typography style={styles.item}>{item.name}</Typography>
+                                    </TouchableOpacity>
+                                }
+                            />
+                            <View style={{ height: normalize(24) }}></View>
+                        </View>
+
+                }
+
+            </ButtonSheet>
             <ButtonSheet onClose={() => triggerStateDialog(false)} dispatch={openStateDialog} height={normalize(500)}>
                 {
                     isStateLoading

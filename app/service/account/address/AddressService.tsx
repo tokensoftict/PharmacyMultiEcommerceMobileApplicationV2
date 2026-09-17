@@ -24,6 +24,10 @@ export default class AddressService {
         return this.request.get(`general/${lga_id}/towns`);
     }
 
+    listCustomerTypes() {
+        return this.request.get(`general/customer_types`);
+    }
+
     /**. Address Crud Operation State here  **/
 
     listAddresses() {
