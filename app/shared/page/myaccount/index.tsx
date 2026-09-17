@@ -1,5 +1,4 @@
 import {
-    add_circle,
     brand,
     categories,
     edit,
@@ -20,9 +19,13 @@ import {
     contact_support,
     share_product,
 } from '@/assets/icons';
-import { CommonActions, useFocusEffect, useNavigation } from "@react-navigation/native";
-import { NavigationProps } from "@/shared/routes/stack.tsx";
-import React, { useEffect, useState } from "react";
+import {
+    CommonActions,
+    useFocusEffect,
+    useNavigation,
+} from '@react-navigation/native';
+import {NavigationProps} from '@/shared/routes/stack.tsx';
+import React, {useEffect, useState} from 'react';
 import {
     View,
     Image,
@@ -31,59 +34,74 @@ import {
     ScrollView,
     Switch,
     Clipboard,
-} from "react-native";
-import { useGlobal } from "@/shared/helpers/GlobalContext.tsx";
-import { styles } from './styles';
-import Icon from "@/shared/component/icon";
-import Typography from "@/shared/component/typography";
-import { normalize } from "@/shared/helpers";
-import AuthSessionService from "@/service/auth/AuthSessionService";
-import Section from "@/shared/component/section";
-import Environment from "@/shared/utils/Environment.tsx";
-import LoginService from "@/service/auth/LoginService.tsx";
-import { useLoading } from "@/shared/utils/LoadingProvider.tsx";
-import { semantic, palette } from "@/shared/constants/colors.ts";
-import StoreDialog from "@/shared/page/myaccount/contactus";
-import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
-import HeaderWithIcon from "@/shared/component/headerBack";
-import { cancelAllScheduledNotifications } from "@/shared/utils/ScheduleNotification.tsx";
-import { currencyType } from '@/shared/constants/global';
+} from 'react-native';
+import {useGlobal} from '@/shared/helpers/GlobalContext.tsx';
+import {styles} from './styles';
+import Icon from '@/shared/component/icon';
+import Typography from '@/shared/component/typography';
+import {normalize} from '@/shared/helpers';
+import AuthSessionService from '@/service/auth/AuthSessionService';
+import Section from '@/shared/component/section';
+import Environment from '@/shared/utils/Environment.tsx';
+import LoginService from '@/service/auth/LoginService.tsx';
+import {useLoading} from '@/shared/utils/LoadingProvider.tsx';
+import {semantic, palette} from '@/shared/constants/colors.ts';
+import StoreDialog from '@/shared/page/myaccount/contactus';
+import WrapperNoScroll from '@/shared/component/wrapperNoScroll';
+import HeaderWithIcon from '@/shared/component/headerBack';
+import {cancelAllScheduledNotifications} from '@/shared/utils/ScheduleNotification.tsx';
+import {currencyType} from '@/shared/constants/global';
 import LinearGradient from 'react-native-linear-gradient';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
-import { FONT } from '@/shared/constants/fonts';
-import { theme } from '@/shared/theme';
+import Animated, {FadeInDown, FadeInUp} from 'react-native-reanimated';
+import {FONT} from '@/shared/constants/fonts';
+import {theme} from '@/shared/theme';
 import ReferralApiService from '@/service/referral/ReferralApiService';
 
+// ─── Quick Action Pill ────────────────────────────────────────────────────────
 
-// ─── Quick Action Pill (horizontal scroll row) ───────────────────────────────
-
-const QuickAction = ({ icon, label, subLabel, onPress, accent }: any) => (
-    <TouchableOpacity style={styles.quickPill} activeOpacity={0.75} onPress={onPress}>
-        <View style={[styles.quickIconWrap, { backgroundColor: (accent ?? palette.main.p500) + '22' }]}>
-            <Icon icon={icon} customStyles={{ width: 22, height: 22 }} />
+const QuickAction = ({icon, label, subLabel, onPress, accent}: any) => (
+    <TouchableOpacity
+        style={styles.quickPill}
+        activeOpacity={0.75}
+        onPress={onPress}>
+        <View
+            style={[
+                styles.quickIconWrap,
+                {backgroundColor: (accent ?? palette.main.p500) + '18'},
+            ]}>
+            <Icon
+                icon={icon}
+                customStyles={{
+                    width: 22,
+                    height: 22,
+                    tintColor: accent ?? palette.main.p500,
+                }}
+            />
         </View>
         <Typography style={styles.quickLabel}>{label}</Typography>
-        {subLabel ? <Typography style={styles.quickSub}>{subLabel}</Typography> : null}
+        {subLabel ? (
+            <Typography style={styles.quickSub}>{subLabel}</Typography>
+        ) : null}
     </TouchableOpacity>
 );
 
-
 // ─── Referral Banner Card ────────────────────────────────────────────────────
 
-function ReferralBannerCard({ onViewDetails }: { onViewDetails: () => void }) {
+function ReferralBannerCard({onViewDetails}: {onViewDetails: () => void}) {
     const [referralCode, setReferralCode] = useState<string | null>(null);
-    const [referralUrl, setReferralUrl] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     const isRetail = Environment.isSuperMarketEnvironment();
 
     useEffect(() => {
         const svc = new ReferralApiService();
-        svc.getReferralCode()
+        svc
+            .getReferralCode()
             .then(d => {
                 setReferralCode(d.referral_code);
-                setReferralUrl(d.referral_url);
             })
-            .catch(() => {/* silently ignore */});
+            .catch(() => {
+                /* silently ignore */
+            });
     }, []);
 
     const handleCopy = () => {
@@ -99,91 +117,118 @@ function ReferralBannerCard({ onViewDetails }: { onViewDetails: () => void }) {
     };
 
     return (
-        <Animated.View entering={FadeInDown.delay(120).duration(600)} style={styles.referralCard}>
+        <View style={styles.referralCard}>
             <LinearGradient
-                colors={['#1E3A5F', '#0F2744']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.referralGradient}
-            >
-                {/* Decorative circle */}
+                colors={['#0F172A', '#1E293B']}
+                start={{x: 0, y: 0}}
+                end={{x: 1, y: 1}}
+                style={styles.referralGradient}>
+                {/* Decorative background glow */}
                 <View style={styles.referralDecorCircle} />
-
-                <View style={styles.referralTop}>
-                    <View style={styles.referralIconBg}>
-                        <Icon icon={share_product} width={20} height={20} tintColor="#FFFFFF" />
+                <View style={styles.forIosFixed}>
+                    {/* Top Header Row */}
+                    <View style={styles.referralHeaderRow}>
+                        <View style={styles.referralIconWrap}>
+                            <Icon
+                                icon={share_product}
+                                customStyles={{width: 18, height: 18, tintColor: '#FFFFFF'}}
+                            />
+                        </View>
+                        <View style={styles.referralTextContainer}>
+                            <Typography style={styles.referralTitleText}>
+                                Refer & Earn
+                            </Typography>
+                            <Typography style={styles.referralSubText} numberOfLines={1}>
+                                {isRetail
+                                    ? 'Earn Retail points when friends sign up'
+                                    : 'Earn Wholesale points after store approval'}
+                            </Typography>
+                        </View>
+                        <TouchableOpacity
+                            onPress={onViewDetails}
+                            style={styles.referralDetailsPill}
+                            activeOpacity={0.8}>
+                            <Typography style={styles.referralDetailsPillText}>
+                                Details ›
+                            </Typography>
+                        </TouchableOpacity>
                     </View>
-                    <View style={{ flex: 1, marginLeft: 10 }}>
-                        <Typography style={styles.referralTitle}>Refer & Earn</Typography>
-                        <Typography style={styles.referralSub}>
-                            {isRetail
-                                ? 'Earn Retail points when friends sign up'
-                                : 'Earn Wholesale points after their store is approved'}
-                        </Typography>
-                    </View>
-                    <TouchableOpacity onPress={onViewDetails} style={styles.referralDetailBtn} activeOpacity={0.8}>
-                        <Typography style={styles.referralDetailBtnText}>Details</Typography>
-                    </TouchableOpacity>
-                </View>
 
-                {/* Code row */}
-                <View style={styles.referralCodeRow}>
-                    <View style={styles.referralCodeBox}>
-                        <Typography style={styles.referralCodeText}>
-                            {referralCode ?? '— — —'}
-                        </Typography>
+                    {/* Full-width Code Box */}
+                    <View style={[styles.referralCodeBox, copied && styles.referralCodeBoxCopied,]}>
+                        <View style={styles.referralCodeInfo}>
+                            <Typography style={styles.referralCodeLabel}>
+                                YOUR REFERRAL CODE
+                            </Typography>
+                            <Typography
+                                style={styles.referralCodeVal}
+                                numberOfLines={1}
+                                adjustsFontSizeToFit
+                                minimumFontScale={0.7}>
+                                {referralCode ?? '— — —'}
+                            </Typography>
+                        </View>
+
+                        <TouchableOpacity
+                            style={[styles.copyChip, copied && styles.copyChipSuccess]}
+                            onPress={handleCopy}
+                            activeOpacity={0.8}>
+                            <Icon
+                                icon={qrcode}
+                                customStyles={{width: 12, height: 12, tintColor: '#FFFFFF'}}
+                            />
+                            <Typography style={styles.copyChipText}>
+                                {copied ? 'Copied!' : 'Copy Code'}
+                            </Typography>
+                        </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity
-                        style={[styles.referralActionBtn, copied && styles.referralActionBtnCopied]}
-                        onPress={handleCopy}
-                        activeOpacity={0.8}
-                    >
-                        <Icon
-                            icon={qrcode}
-                            width={14}
-                            height={14}
-                            tintColor={copied ? '#fff' : '#93C5FD'}
+                    {/* Full-width Share Button */}
+                    <TouchableOpacity style={styles.referralShareBtn} onPress={handleShare} activeOpacity={0.85}>
+                        <Icon icon={share_product} customStyles={{width: 16, height: 16, tintColor: '#FFFFFF'}}
                         />
-                        <Typography style={[styles.referralActionText, copied && { color: '#fff' }]}>
-                            {copied ? 'Copied!' : 'Copy'}
-                        </Typography>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.referralActionBtn, styles.referralShareBtn]}
-                        onPress={handleShare}
-                        activeOpacity={0.8}
-                    >
-                        <Icon icon={share_product} width={14} height={14} tintColor="#fff" />
-                        <Typography style={[styles.referralActionText, { color: '#fff' }]}>
-                            Share
+                        <Typography style={styles.referralShareBtnText}>
+                            Share Referral Link
                         </Typography>
                     </TouchableOpacity>
                 </View>
             </LinearGradient>
-        </Animated.View>
+        </View>
     );
 }
-
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
 function MyAccount() {
-    const { navigate } = useNavigation<NavigationProps>();
+    const {navigate} = useNavigation<NavigationProps>();
     const authService = new AuthSessionService();
     const [userProfile, setUserProfile] = useState(authService.getAuthSession);
-    const { showLoading, hideLoading } = useLoading();
+    const {showLoading, hideLoading} = useLoading();
     const [showContactUs, setShowContactUs] = useState<boolean>(false);
 
     const isRetail = Environment.isSuperMarketEnvironment();
-    const memberGroup = isRetail ? userProfile?.data?.retailMemberGroup : userProfile?.data?.memberGroup;
-    const loyaltyPoints = (isRetail ? userProfile?.data?.retailLoyaltyPoints : userProfile?.data?.loyaltyPoints) ?? 0;
-    const nextTierPointsFormatted = isRetail ? userProfile?.data?.retailNextTierPoints_formatted : userProfile?.data?.nextTierPoints_formatted;
-    const progress = (isRetail ? userProfile?.data?.retailProgress : userProfile?.data?.progress) ?? 0;
-    const nextMemberGroup = (isRetail ? userProfile?.data?.nextRetailMemberGroup : userProfile?.data?.nextMemberGroup) ?? "N/A";
+    const memberGroup = isRetail
+        ? userProfile?.data?.retailMemberGroup
+        : userProfile?.data?.memberGroup;
+    const loyaltyPoints =
+        (isRetail
+            ? userProfile?.data?.retailLoyaltyPoints
+            : userProfile?.data?.loyaltyPoints) ?? 0;
+    const nextTierPointsFormatted = isRetail
+        ? userProfile?.data?.retailNextTierPoints_formatted
+        : userProfile?.data?.nextTierPoints_formatted;
+    const progress =
+        (isRetail
+            ? userProfile?.data?.retailProgress
+            : userProfile?.data?.progress) ?? 0;
+    const nextMemberGroup =
+        (isRetail
+            ? userProfile?.data?.nextRetailMemberGroup
+            : userProfile?.data?.nextMemberGroup) ?? 'N/A';
 
-    const hasGradient = !!(memberGroup?.card_gradient_start && memberGroup?.card_gradient_end);
+    const hasGradient = !!(
+        memberGroup?.card_gradient_start && memberGroup?.card_gradient_end
+    );
     const cardColors = hasGradient
         ? [memberGroup!.card_gradient_start!, memberGroup!.card_gradient_end!]
         : ['#FFFFFF', '#FFFFFF'];
@@ -201,8 +246,10 @@ function MyAccount() {
     const openContactUsModal = (status: boolean) => setShowContactUs(status);
 
     const {
-        isWholesalesFloatingCartEnabled, setWholesalesFloatingCartEnabled,
-        isSupermarketFloatingCartEnabled, setSupermarketFloatingCartEnabled
+        isWholesalesFloatingCartEnabled,
+        setWholesalesFloatingCartEnabled,
+        isSupermarketFloatingCartEnabled,
+        setSupermarketFloatingCartEnabled,
     } = useGlobal();
 
     function getAccountMenu(section: string) {
@@ -278,12 +325,12 @@ function MyAccount() {
                         <Switch
                             value={isFloatingCartEnabled}
                             onValueChange={toggleFloatingCart}
-                            trackColor={{ false: "#E2E8F0", true: palette.main.p500 }}
-                            thumbColor={"#FFFFFF"}
+                            trackColor={{false: '#E2E8F0', true: palette.main.p500}}
+                            thumbColor={'#FFFFFF'}
                             ios_backgroundColor="#E2E8F0"
                             style={{
-                                transform: [{ scaleX: 0.65 }, { scaleY: 0.65 }],
-                                marginRight: normalize(-8)
+                                transform: [{scaleX: 0.65}, {scaleY: 0.65}],
+                                marginRight: normalize(-8),
                             }}
                         />
                     ),
@@ -304,8 +351,8 @@ function MyAccount() {
                     leftIcon: <Icon icon={switch_icon} />,
                     onPress: () => {
                         new AuthSessionService().removeImpersonateCustomerData();
-                        new AuthSessionService().setEnvironment("")
-                        navigate('storeSelector')
+                        new AuthSessionService().setEnvironment('');
+                        navigate('storeSelector');
                     },
                 },
                 {
@@ -320,48 +367,60 @@ function MyAccount() {
                     leftIcon: <Icon icon={contact_support} />,
                     onPress: () => openContactUsModal(true),
                 },
-            ]
-        }
+            ],
+        };
 
         if (Environment?.isWholeSalesEnvironment()) {
-            menuItems.general.splice(2, 1)
+            menuItems.general.splice(2, 1);
             menuItems.general.push({
                 name: 'Categories',
                 leftIcon: <Icon icon={categories} tintColor={semantic.text.grey} />,
                 onPress: () => navigate('categories'),
-            })
+            });
         }
 
         if (userProfile?.data?.apps?.length === 1) {
-            menuItems.applicationSettings = menuItems.applicationSettings.filter(i => i.name !== 'Switch Store');
+            menuItems.applicationSettings = menuItems.applicationSettings.filter(
+                i => i.name !== 'Switch Store',
+            );
         }
 
-        if (userProfile?.data?.apps?.length > 1 && userProfile?.data?.apps[1].info.status === false) {
-            menuItems.mystore.splice(0, 1)
+        if (
+            userProfile?.data?.apps?.length > 1 &&
+            userProfile?.data?.apps[1].info.status === false
+        ) {
+            menuItems.mystore.splice(0, 1);
             if (userProfile?.data?.apps[1].info.status === false) {
                 menuItems.mystore[0] = {
                     name: 'My Store Profile',
                     leftIcon: <Icon icon={storeprofile} />,
                     onPress: () => navigate('storePendingApproval'),
-                }
+                };
             }
         } else {
-            menuItems.mystore.splice(1, 1)
+            menuItems.mystore.splice(1, 1);
         }
 
-        if (Environment.isSuperMarketEnvironment() && userProfile?.data?.apps?.[1]?.info?.status === true) {
-            menuItems.mystore.splice(0, 1)
+        if (
+            Environment.isSuperMarketEnvironment() &&
+            userProfile?.data?.apps?.[1]?.info?.status === true
+        ) {
+            menuItems.mystore.splice(0, 1);
         }
 
         if (Environment.isSuperMarketEnvironment()) {
-            if (userProfile?.data?.apps?.length > 1 && userProfile?.data?.apps[1].info.status === false && userProfile?.data?.apps[1].info.unregistered === false) {
+            if (
+                userProfile?.data?.apps?.length > 1 &&
+                userProfile?.data?.apps[1].info.status === false &&
+                userProfile?.data?.apps[1].info.unregistered === false
+            ) {
                 menuItems.mystore.splice(0, 1);
             }
             menuItems.general.push({
                 name: 'Brands',
                 leftIcon: <Icon icon={brand} tintColor={semantic.text.grey} />,
                 onPress: () => navigate('brands'),
-            })
+            });
         }
 
         if (Environment.isWholeSalesEnvironment()) {
@@ -370,7 +429,7 @@ function MyAccount() {
                 name: 'My Store Profile',
                 leftIcon: <Icon icon={storeprofile} />,
                 onPress: () => navigate('storeProfile'),
-            }
+            };
         }
 
         if (Environment?.isSalesRepresentativeEnvironment()) {
@@ -380,25 +439,26 @@ function MyAccount() {
         }
 
         // @ts-ignore
-        return menuItems[section] || []
+        return menuItems[section] || [];
     }
 
     const handleLogout = () => {
         Alert.alert('Logout', 'Are you sure you want to exit?', [
-            { text: 'Cancel', style: 'cancel' },
+            {text: 'Cancel', style: 'cancel'},
             {
-                text: 'Yes, Logout', onPress: () => {
-                    showLoading("Signing out...");
-                    new LoginService().logout().then((res) => {
+                text: 'Yes, Logout',
+                onPress: () => {
+                    showLoading('Signing out...');
+                    new LoginService().logout().then(res => {
                         hideLoading();
                         if (res) {
                             cancelAllScheduledNotifications();
-                            CommonActions.reset({ index: 0, routes: [{ name: 'login' }] });
+                            CommonActions.reset({index: 0, routes: [{name: 'login'}]});
                             navigate('login');
                         }
                     });
-                }
-            }
+                },
+            },
         ]);
     };
 
@@ -407,70 +467,125 @@ function MyAccount() {
             <HeaderWithIcon
                 title="MY ACCOUNT"
                 rightComponent={
-                    <TouchableOpacity onPress={() => navigate('notifications')} style={{ marginRight: normalize(10) }}>
-                        <Icon icon={homeNotification} tintColor="#fff" height={normalize(24)} />
+                    <TouchableOpacity
+                        onPress={() => navigate('notifications')}
+                        style={{marginRight: normalize(10)}}>
+                        <Icon
+                            icon={homeNotification}
+                            tintColor="#fff"
+                            height={normalize(24)}
+                        />
                     </TouchableOpacity>
                 }
             />
-            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-
+            <ScrollView
+                style={styles.container}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}>
                 {/* ── Profile Card ─────────────────────────────────────── */}
-                <Animated.View entering={FadeInUp.duration(500)} style={styles.profileCardContainer}>
+                <Animated.View
+                    entering={FadeInUp.duration(500)}
+                    style={styles.profileCardContainer}>
                     <LinearGradient
                         colors={cardColors}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.profileCardGradient}
-                    >
-                        <View style={styles.profileMain}>
-                            <View style={styles.imageContainer}>
-                                <Image
-                                    style={styles.avatar}
-                                    source={{ uri: userProfile?.data?.image }}
-                                />
-                                <TouchableOpacity style={styles.editBadge} onPress={() => navigate('editProfile')}>
-                                    <Icon icon={edit} width={14} height={14} tintColor="#fff" />
-                                </TouchableOpacity>
+                        start={{x: 0, y: 0}}
+                        end={{x: 1, y: 1}}
+                        style={styles.profileCardGradient}>
+                        <View style={styles.iosFixed}>
+                            <View style={styles.profileMain}>
+                                <View style={styles.imageContainer}>
+                                    <Image
+                                        style={styles.avatar}
+                                        source={{uri: userProfile?.data?.image}}
+                                    />
+                                    <TouchableOpacity
+                                        style={styles.editBadge}
+                                        onPress={() => navigate('editProfile')}>
+                                        <Icon icon={edit} width={14} height={14} tintColor="#fff" />
+                                    </TouchableOpacity>
+                                </View>
+                                <View style={styles.infoContent}>
+                                    <Typography style={[styles.userName, {color: textMainColor}]}>
+                                        {userProfile?.data?.firstname} {userProfile?.data?.lastname}
+                                    </Typography>
+                                    <Typography style={[styles.userPhone, {color: textSubColor}]}>
+                                        {userProfile?.data?.phone}
+                                    </Typography>
+                                    {memberGroup && (
+                                        <View
+                                            style={[
+                                                styles.groupBadge,
+                                                {
+                                                    backgroundColor: hasGradient
+                                                        ? 'rgba(255, 255, 255, 0.2)'
+                                                        : memberGroup.bg_color,
+                                                },
+                                            ]}>
+                                            <Typography
+                                                style={[styles.groupText, {color: textMainColor}]}>
+                                                {memberGroup.label}
+                                            </Typography>
+                                        </View>
+                                    )}
+                                </View>
                             </View>
-                            <View style={styles.infoContent}>
-                                <Typography style={[styles.userName, { color: textMainColor }]}>
-                                    {userProfile?.data?.firstname} {userProfile?.data?.lastname}
+                            {/* Loyalty Progress */}
+                            <View
+                                style={[
+                                    styles.loyaltyContainer,
+                                    // eslint-disable-next-line react-native/no-inline-styles
+                                    {
+                                        borderTopColor: hasGradient
+                                            ? 'rgba(255, 255, 255, 0.1)'
+                                            : '#F0F0F0',
+                                    },
+                                ]}>
+                                <View style={styles.loyaltyHeader}>
+                                    <Typography
+                                        style={[styles.loyaltyTitle, {color: textMainColor}]}
+                                        numberOfLines={1}>
+                                        PS Loyalty Rewards
+                                    </Typography>
+                                    <Typography
+                                        style={[
+                                            styles.pointsText,
+                                            {color: hasGradient ? '#FFFFFF' : '#D50000'},
+                                        ]}
+                                        numberOfLines={1}>
+                                        {loyaltyPoints} PTS
+                                    </Typography>
+                                </View>
+                                <View
+                                    style={[styles.progressBarBg, {backgroundColor: progressBg}]}>
+                                    <View
+                                        style={[
+                                            styles.progressBarFill,
+                                            {
+                                                width: `${progress}%`,
+                                                backgroundColor: progressFill,
+                                            },
+                                        ]}
+                                    />
+                                </View>
+                                <Typography
+                                    style={[styles.loyaltyFooter, {color: footerColor}]}>
+                                    Spend up to {currencyType}
+                                    {nextTierPointsFormatted} and upgrade to {nextMemberGroup}
                                 </Typography>
-                                <Typography style={[styles.userPhone, { color: textSubColor }]}>{userProfile?.data?.phone}</Typography>
-                                {memberGroup && (
-                                    <View style={[styles.groupBadge, { backgroundColor: hasGradient ? 'rgba(255, 255, 255, 0.2)' : memberGroup.bg_color }]}>
-                                        <Typography style={[styles.groupText, { color: textMainColor }]}>
-                                            {memberGroup.label}
-                                        </Typography>
-                                    </View>
-                                )}
                             </View>
-                        </View>
-
-                        {/* Loyalty Progress */}
-                        <View style={[styles.loyaltyContainer, { borderTopColor: hasGradient ? 'rgba(255, 255, 255, 0.1)' : '#F0F0F0' }]}>
-                            <View style={styles.loyaltyHeader}>
-                                <Typography style={[styles.loyaltyTitle, { color: textMainColor }]}>PS Loyalty Rewards</Typography>
-                                <Typography style={[styles.pointsText, { color: hasGradient ? '#FFFFFF' : '#D50000' }]}>{loyaltyPoints} PTS</Typography>
-                            </View>
-                            <View style={[styles.progressBarBg, { backgroundColor: progressBg }]}>
-                                <View style={[styles.progressBarFill, { width: `${progress}%`, backgroundColor: progressFill }]} />
-                            </View>
-                            <Typography style={[styles.loyaltyFooter, { color: footerColor }]}>
-                                Spend up to {currencyType}{nextTierPointsFormatted} and upgrade to {nextMemberGroup}
-                            </Typography>
                         </View>
                     </LinearGradient>
                 </Animated.View>
 
                 {/* ── Quick Actions ─────────────────────────────────────── */}
-                <Animated.View entering={FadeInDown.delay(80).duration(500)}>
+                <Animated.View
+                    entering={FadeInDown.delay(80).duration(500)}
+                    style={styles.quickScrollWrapper}>
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={styles.quickScrollContent}
-                        style={styles.quickScroll}
-                    >
+                        style={styles.quickScroll}>
                         <QuickAction
                             icon={order}
                             label="Orders"
@@ -511,9 +626,13 @@ function MyAccount() {
 
                 {/* ── Referral Banner ───────────────────────────────────── */}
                 {!Environment?.isSalesRepresentativeEnvironment() && (
-                    <View style={styles.referralWrapper}>
-                        <ReferralBannerCard onViewDetails={() => navigate('referAndEarn')} />
-                    </View>
+                    <Animated.View
+                        entering={FadeInDown.delay(120).duration(500)}
+                        style={styles.referralWrapper}>
+                        <ReferralBannerCard
+                            onViewDetails={() => navigate('referAndEarn')}
+                        />
+                    </Animated.View>
                 )}
 
                 {/* ── Settings Menu ─────────────────────────────────────── */}
@@ -527,7 +646,9 @@ function MyAccount() {
 
                     {getAccountMenu('accountSettings').length > 0 && (
                         <>
-                            <Typography style={styles.sectionTitle}>Account Settings</Typography>
+                            <Typography style={styles.sectionTitle}>
+                                Account Settings
+                            </Typography>
                             <Section title="" elements={getAccountMenu('accountSettings')} />
                         </>
                     )}
@@ -539,11 +660,22 @@ function MyAccount() {
                         </>
                     )}
 
-                    <Typography style={styles.sectionTitle}>Security & Support</Typography>
-                    <Section title="" elements={[...getAccountMenu('applicationSettings'), ...getAccountMenu('support')]} />
+                    <Typography style={styles.sectionTitle}>
+                        Security & Support
+                    </Typography>
+                    <Section
+                        title=""
+                        elements={[
+                            ...getAccountMenu('applicationSettings'),
+                            ...getAccountMenu('support'),
+                        ]}
+                    />
                 </View>
 
-                <StoreDialog visible={showContactUs} onClose={() => openContactUsModal(false)} />
+                <StoreDialog
+                    visible={showContactUs}
+                    onClose={() => openContactUsModal(false)}
+                />
             </ScrollView>
         </WrapperNoScroll>
     );

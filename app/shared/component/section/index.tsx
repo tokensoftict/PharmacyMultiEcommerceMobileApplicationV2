@@ -36,9 +36,9 @@ const Section: FC<SectionProps> = ({ title, elements }) => {
           key={index}
           style={styles.rowContainer}
           onPress={element?.onPress}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: normalize(8) }}>
             {element.leftIcon}
-            <Typography style={styles.name}>{element.name}</Typography>
+            <Typography style={styles.name} numberOfLines={1}>{element.name}</Typography>
           </View>
           {element.rightElement ? (
             element.rightElement

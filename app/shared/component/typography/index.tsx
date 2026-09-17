@@ -13,6 +13,8 @@ interface TypographyProps {
   id?: string | undefined;
   lineBreakMode?: 'head' | 'middle' | 'tail' | 'clip' | undefined;
   numberOfLines?: number | undefined;
+  adjustsFontSizeToFit?: boolean | undefined;
+  minimumFontScale?: number | undefined;
   /** This function is called on press.
    * Text intrinsically supports press handling with a default highlight state
    * (which can be disabled with suppressHighlighting). **/
@@ -31,12 +33,21 @@ export default function Typography({
   children,
   style,
   numberOfLines,
+  adjustsFontSizeToFit,
+  minimumFontScale,
   onPress,
 }: TypographyProps) {
   const {isDarkMode} = useDarkMode()
   const styles = _styles(isDarkMode)
   return (
-      <Text onPress={onPress} ellipsizeMode='tail' numberOfLines={numberOfLines}  style={[styles.text, style]}>
+      <Text
+        onPress={onPress}
+        ellipsizeMode='tail'
+        numberOfLines={numberOfLines}
+        adjustsFontSizeToFit={adjustsFontSizeToFit}
+        minimumFontScale={minimumFontScale}
+        style={[styles.text, style]}
+      >
         {children}
       </Text>
   );

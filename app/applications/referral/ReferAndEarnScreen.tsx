@@ -7,6 +7,8 @@ import {
   Clipboard,
   Alert,
   ActivityIndicator,
+  Dimensions,
+  Platform,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
@@ -23,6 +25,8 @@ import { normalize, wp } from '@/shared/helpers';
 import { arrowBack, share_product, walletFilled, sale, qrcode, homeLike } from '@/assets/icons';
 import ReferralApiService from '@/service/referral/ReferralApiService';
 import Environment from '@/shared/utils/Environment';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface ReferralStats {
   referral_code: string;
@@ -82,7 +86,7 @@ export default function ReferAndEarnScreen() {
 
   // Show stats for the current store type
   const activeStats = isRetail ? stats?.supermarket : stats?.wholesales;
-  const storeLabel   = isRetail ? 'Retail' : 'Wholesale';
+  const storeLabel = isRetail ? 'Retail' : 'Wholesale';
 
   return (
     <WrapperNoScroll transparent edges={[]}>
@@ -97,16 +101,7 @@ export default function ReferAndEarnScreen() {
         <View style={[styles.blob, { top: -wp(20), right: -wp(15) }]} />
         <View style={[styles.blob, { bottom: wp(10), left: -wp(20), opacity: 0.15 }]} />
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={[
-            styles.scroll,
-            {
-              paddingTop: Math.max(insets.top + theme.spacing.md, theme.spacing.xl),
-              paddingBottom: Math.max(insets.bottom + theme.spacing.lg, theme.spacing.xl),
-            },
-          ]}
-        >
+        <ScrollView style={{ flex: 1, width: '100%' }} showsVerticalScrollIndicator={false} contentContainerStyle={[ styles.scroll, { paddingTop: Math.max(insets.top + theme.spacing.md, theme.spacing.xl),  paddingBottom: Math.max(insets.bottom + theme.spacing.lg, theme.spacing.xl),},]}>
           {/* Header */}
           <Animated.View entering={FadeInUp.duration(600)} style={styles.header}>
             <TouchableOpacity
@@ -121,31 +116,35 @@ export default function ReferAndEarnScreen() {
 
           {/* Hero banner */}
           <Animated.View entering={FadeInDown.delay(100).duration(700)} style={styles.heroBanner}>
+
             <LinearGradient
               colors={[palette.main.p500, palette.main.p500 + 'CC']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.heroGradient}
             >
-              <View style={styles.heroIconRow}>
-                <View style={styles.heroIconWrap}>
-                  <Icon icon={homeLike} customStyles={{ width: 32, height: 32, tintColor: '#fff' }} />
+              <View style={styles.heroGradientIosFixed}>
+                <View style={styles.heroIconRow}>
+                  <View style={styles.heroIconWrap}>
+                    {/* homeLike is a coloured PNG — no tintColor or it goes white */}
+                    <Icon icon={homeLike} customStyles={{ width: 32, height: 32 }} />
+                  </View>
+                  <View style={[styles.heroIconWrap, { backgroundColor: 'rgba(255,255,255,0.15)', marginHorizontal: 10 }]}>
+                    <Icon icon={arrowBack} customStyles={{ width: 20, height: 20, tintColor: '#fff', transform: [{ rotate: '180deg' }] }} />
+                  </View>
+                  <View style={styles.heroIconWrap}>
+                    <Icon icon={walletFilled} customStyles={{ width: 32, height: 32, tintColor: '#fff' }} />
+                  </View>
                 </View>
-                <View style={[styles.heroIconWrap, { backgroundColor: 'rgba(255,255,255,0.15)', marginHorizontal: 10 }]}>
-                  <Icon icon={arrowBack} customStyles={{ width: 20, height: 20, tintColor: '#fff', transform: [{ rotate: '180deg' }] }} />
-                </View>
-                <View style={styles.heroIconWrap}>
-                  <Icon icon={walletFilled} customStyles={{ width: 32, height: 32, tintColor: '#fff' }} />
-                </View>
+                <Typography style={styles.heroTitle}>
+                  Invite friends. Earn {storeLabel} Rewards.
+                </Typography>
+                <Typography style={styles.heroSub}>
+                  {isRetail
+                      ? 'Share your unique referral code and earn loyalty points when your friend verifies their phone number after signing up.'
+                      : 'Share your referral link with a pharmacy or business. You earn Wholesale loyalty points once their store account is approved by our team.'}
+                </Typography>
               </View>
-              <Typography style={styles.heroTitle}>
-                Invite friends. Earn {storeLabel} Rewards.
-              </Typography>
-              <Typography style={styles.heroSub}>
-                {isRetail
-                  ? 'Share your unique referral code and earn loyalty points when your friend verifies their phone number after signing up.'
-                  : 'Share your referral link with a pharmacy or business. You earn Wholesale loyalty points once their store account is approved by our team.'}
-              </Typography>
             </LinearGradient>
           </Animated.View>
 
@@ -169,13 +168,13 @@ export default function ReferAndEarnScreen() {
 
                 <View style={styles.btnRow}>
                   <TouchableOpacity
-                    style={[styles.actionBtn, copyFlash && styles.actionBtnFlash]}
+                    style={[styles.actionBtn, copyFlash && styles.actionBtnFlash, { marginRight: theme.spacing.sm }]}
                     onPress={handleCopyCode}
                     activeOpacity={0.8}
                   >
                     <Icon icon={qrcode} customStyles={{ width: 18, height: 18, tintColor: copyFlash ? '#fff' : palette.main.p500 }} />
                     <Typography style={[styles.actionBtnText, copyFlash && { color: '#fff' }]}>
-                      {copyFlash ? 'Copied!' : 'Copy Code'}
+                      {copyFlash ? '✓ Copied!' : 'Copy Code'}
                     </Typography>
                   </TouchableOpacity>
 
@@ -198,25 +197,31 @@ export default function ReferAndEarnScreen() {
           <Animated.View entering={FadeInDown.delay(300).duration(700)}>
             <Typography style={styles.sectionTitle}>YOUR {storeLabel.toUpperCase()} STATS</Typography>
             <View style={styles.statsRow}>
-              <StatCard
-                icon={homeLike}
-                label="Successful"
-                value={String(activeStats?.successful_referrals ?? 0)}
-                color="#22C55E"
-              />
-              <StatCard
-                icon={sale}
-                label="Pending"
-                value={String(activeStats?.pending_referrals ?? 0)}
-                color="#F59E0B"
-              />
-              <StatCard
-                icon={walletFilled}
-                label="Bonus Earned"
-                value={String(activeStats?.bonus_earned?.toFixed(0) ?? 0)}
-                unit="pts"
-                color={palette.main.p500}
-              />
+              <View style={[styles.statCardWrap, { marginRight: theme.spacing.sm }]}>
+                <StatCard
+                  icon={homeLike}
+                  label="Successful"
+                  value={String(activeStats?.successful_referrals ?? 0)}
+                  color="#22C55E"
+                />
+              </View>
+              <View style={[styles.statCardWrap, { marginRight: theme.spacing.sm }]}>
+                <StatCard
+                  icon={sale}
+                  label="Pending"
+                  value={String(activeStats?.pending_referrals ?? 0)}
+                  color="#F59E0B"
+                />
+              </View>
+              <View style={styles.statCardWrap}>
+                <StatCard
+                  icon={walletFilled}
+                  label="Bonus Earned"
+                  value={String(activeStats?.bonus_earned?.toFixed(0) ?? 0)}
+                  unit="pts"
+                  color={palette.main.p500}
+                />
+              </View>
             </View>
           </Animated.View>
 
@@ -295,13 +300,14 @@ const styles = StyleSheet.create({
     opacity: 0.08,
   },
   scroll: {
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: Platform.OS === 'ios' ? theme.spacing.md : theme.spacing.lg,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: theme.spacing.xl,
+    width: '100%',
   },
   backBtn: {
     width: 40,
@@ -318,13 +324,21 @@ const styles = StyleSheet.create({
   },
   // ── Hero banner ──────────────────────────────────────────────────────────
   heroBanner: {
+    width: '100%',
     borderRadius: theme.borderRadius.xl,
     overflow: 'hidden',
     marginBottom: theme.spacing.lg,
   },
   heroGradient: {
-    padding: theme.spacing.lg,
+    width: '100%',
+    padding: Platform.OS === 'ios' ? undefined : theme.spacing.lg,
   },
+
+  heroGradientIosFixed : {
+    width: '100%',
+    padding: Platform.OS === 'ios' ? theme.spacing.lg : undefined,
+  },
+
   heroIconRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -343,11 +357,13 @@ const styles = StyleSheet.create({
     fontFamily: FONT.EXTRA_BOLD,
     color: '#FFFFFF',
     marginBottom: theme.spacing.sm,
+    width: '100%',
   },
   heroSub: {
     fontSize: theme.typography.sm,
     color: 'rgba(255,255,255,0.85)',
     lineHeight: 20,
+    width: '100%',
   },
   // ── Code card ────────────────────────────────────────────────────────────
   codeCard: {
@@ -390,7 +406,7 @@ const styles = StyleSheet.create({
   },
   btnRow: {
     flexDirection: 'row',
-    gap: theme.spacing.sm,
+    // Use marginRight on first child (applied inline) instead of gap for iOS 14 compat
   },
   actionBtn: {
     flex: 1,
@@ -426,8 +442,11 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
-    gap: theme.spacing.sm,
     marginBottom: theme.spacing.lg,
+    // gap not used — iOS 14 compat; use marginRight on StatCard instead
+  },
+  statCardWrap: {
+    flex: 1,
   },
   statCard: {
     flex: 1,

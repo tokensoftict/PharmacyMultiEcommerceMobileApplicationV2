@@ -17,5 +17,6 @@ export const styles = StyleSheet.create({
   name: {
     fontSize: normalize(13),
     marginLeft: normalize(10),
+    flex: 1,
   },
 });
