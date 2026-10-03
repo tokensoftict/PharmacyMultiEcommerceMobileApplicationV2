@@ -1,12 +1,12 @@
 import WholesalesHomePage from "@/applications/wholesales/home/wholesalesHome";
+import WholesaleProvisionsScreen from "@/applications/wholesales/provisions/WholesaleProvisionsScreen";
 import {
     home as HomeIcon,
     myAccount,
-    listCart, qrcode, brand,
+    listCart, brand, shoppingBag,
 } from '@/assets/icons';
 import Cart from "@/shared/page/cart";
 import MyAccount from "@/shared/page/myaccount";
-import QrcodeScreen from "@/shared/page/qrcode";
 import Brands from "@/shared/page/brands";
 import Login from "@/applications/auth/login";
 import Environment from "@/shared/utils/Environment.tsx";
@@ -53,10 +53,11 @@ export default [
 
     {
         id: '4',
-        displayName: 'QR Code',
-        name: 'qrcode',
-        icon: qrcode,
-        component: withAuth(QrcodeScreen),
+        displayName: 'Provisions',
+        name: 'provisions',
+        icon: shoppingBag,
+        component: WholesaleProvisionsScreen,
+        isPromo: true,
     },
     {
         id: '5',

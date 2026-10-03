@@ -13,6 +13,7 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:share.generaldrugcentre.com</string>
+		<string>applinks:referral.generaldrugcentre.com</string>
 	</array>
 </dict>
 </plist>

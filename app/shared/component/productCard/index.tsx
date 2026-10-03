@@ -120,7 +120,7 @@ const ProductCard = ({ product, style }: ProductCardProps) => {
                     {(product?.carton !== undefined && product.carton > 1 && !Environment.isSuperMarketEnvironment()) && (
                         <View style={[styles.badge, styles.quantityBadge, { backgroundColor: '#334155' }]}>
                             <Typography style={styles.badgeText}>
-                                {product.carton} / Carton
+                                {product.carton} in Carton
                             </Typography>
                         </View>
                     )}

@@ -16,8 +16,8 @@ import Typography from '@/shared/component/typography';
 import { logo } from '@/assets/images';
 import ErrorText from '@/shared/component/ErrorText';
 import SignUpService from '@/service/auth/SignUpService.tsx';
-import { CommonActions, useNavigation } from '@react-navigation/native';
-import { NavigationProps } from '@/shared/routes/stack';
+import { CommonActions, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NavigationProps, RootStackParamList } from '@/shared/routes/stack';
 import WrapperNoScroll from '@/shared/component/wrapperNoScroll';
 import AuthSessionService from '@/service/auth/AuthSessionService.tsx';
 import Toasts from '@/shared/utils/Toast.tsx';
@@ -44,6 +44,7 @@ import ReferralStorage from '@/service/referral/ReferralStorage';
 export default function CreateAccount() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProps>();
+  const route = useRoute<RouteProp<RootStackParamList, 'createAccount'>>();
   const tablet = isTablet();
 
   const [isPasswordShown, setIsPasswordShown] = useState(true);
@@ -62,17 +63,31 @@ export default function CreateAccount() {
   const [phoneNumberError, setPhoneNumberError] = useState('');
   const [messageError, setMessageError] = useState('');
 
-  // Referral code loaded from ReferralStorage (set by DetourService on link resolution)
-  const [pendingReferralCode, setPendingReferralCode] = useState<string | null>(null);
+  // Referral code — can come from: deep link route param, ReferralStorage, or manual input
+  const [referralCode, setReferralCode] = useState('');
+  // Track whether the code was auto-filled from a deep link/storage (locked = non-editable)
+  const [referralCodeLocked, setReferralCodeLocked] = useState(false);
 
   const signUpService = new SignUpService();
 
-  // Read any pending referral code when the screen mounts
+  // Merge referral code sources: route param takes priority, then storage, then manual input
   useEffect(() => {
-    ReferralStorage.get().then(code => {
-      if (code) setPendingReferralCode(code);
+    // 1. Route param from deep link (highest priority)
+    const routeCode = route.params?.referralCode;
+    if (routeCode) {
+      setReferralCode(routeCode.toUpperCase().trim());
+      setReferralCodeLocked(true);
+      return;
+    }
+
+    // 2. ReferralStorage (set by DetourService on deferred link resolution)
+    ReferralStorage.get().then(storedCode => {
+      if (storedCode) {
+        setReferralCode(storedCode);
+        setReferralCodeLocked(true);
+      }
     });
-  }, []);
+  }, [route.params?.referralCode]);
 
   function goBackToSignIn() {
     if (navigation.canGoBack()) {
@@ -98,7 +113,7 @@ export default function CreateAccount() {
       setLastNameError('');
 
       signUpService
-        .signUp(firstname, lastname, email, password, phoneNumber, pendingReferralCode ?? undefined)
+        .signUp(firstname, lastname, email, password, phoneNumber, referralCode.trim() || undefined)
         .then(
           function (response: any) {
             setIsLoading(false);
@@ -202,8 +217,8 @@ export default function CreateAccount() {
             <Typography style={styles.subText}>Fill in your information to join us</Typography>
           </Animated.View>
 
-          {/* ---- Referral banner (shown when user arrives via referral link) ---- */}
-          {pendingReferralCode && (
+          {/* ---- Referral banner (shown when code is auto-filled from deep link) ---- */}
+          {referralCodeLocked && referralCode !== '' && (
             <Animated.View entering={FadeInDown.delay(150).duration(600)} style={styles.referralBanner}>
               <LinearGradient
                 colors={['#0F172A', '#1E293B']}
@@ -217,7 +232,7 @@ export default function CreateAccount() {
                   </View>
                   <View style={styles.referralBannerTextWrap}>
                     <Typography style={styles.referralBannerTitle}>You've been referred! 🎉</Typography>
-                    <Typography style={styles.referralBannerCode}>{pendingReferralCode}</Typography>
+                    <Typography style={styles.referralBannerCode}>{referralCode}</Typography>
                   </View>
                 </View>
               </LinearGradient>
@@ -261,6 +276,34 @@ export default function CreateAccount() {
                   placeholder="••••••••"
                 />
                 {passwordError !== '' && <ErrorText>{passwordError}</ErrorText>}
+              </View>
+
+              {/* ---- Referral Code Input ---- */}
+              <View style={styles.inputGroup}>
+                <Input
+                  leftIcon={<Icon icon={share_product} />}
+                  label="Referral Code (Optional)"
+                  value={referralCode}
+                  onChangeText={(text: string) => {
+                    if (!referralCodeLocked) {
+                      setReferralCode(text.toUpperCase());
+                    }
+                  }}
+                  placeholder="e.g. GDCTNJ3IXR"
+                  editable={!referralCodeLocked}
+                />
+                {referralCodeLocked && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setReferralCodeLocked(false);
+                      setReferralCode('');
+                      ReferralStorage.clear();
+                    }}
+                    style={styles.clearReferralBtn}
+                  >
+                    <Typography style={styles.clearReferralText}>Change code</Typography>
+                  </TouchableOpacity>
+                )}
               </View>
 
               {messageError !== '' && (
@@ -426,6 +469,17 @@ const styles = StyleSheet.create({
   },
   signInText: {
     fontSize: theme.typography.md,
+    fontFamily: FONT.BOLD,
+    color: palette.main.p500,
+  },
+
+  // ── Referral Code Input helpers ───────────────────────────────────────────
+  clearReferralBtn: {
+    marginTop: theme.spacing.xs,
+    alignSelf: 'flex-end',
+  },
+  clearReferralText: {
+    fontSize: theme.typography.xs,
     fontFamily: FONT.BOLD,
     color: palette.main.p500,
   },

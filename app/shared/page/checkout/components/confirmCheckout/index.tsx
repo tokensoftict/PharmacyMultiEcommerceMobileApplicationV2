@@ -498,7 +498,7 @@ export default function ConfirmCheckout({ onValidate }: { onValidate: (validateF
                                 </TouchableOpacity>
                             </View>
                             {errorCouponValue !== "" && (
-                                <ErrorText style={{ marginTop: normalize(12) }}>{errorCouponValue}</ErrorText>
+                                <ErrorText numberOfLines={4} style={{ marginTop: normalize(12) }}>{errorCouponValue}</ErrorText>
                             )}
                         </View>
                     )}

@@ -417,7 +417,7 @@ export default function DetailProduct() {
                             </View>
                             {(productInformation?.data.carton !== undefined && productInformation.data.carton > 1 && !Environment.isSuperMarketEnvironment()) && (
                                 <View style={[styles.badge, styles.quantityBadge, { backgroundColor: '#334155' }]}>
-                                    <Typography style={[styles.quantityText, { color: '#FFF' }]}>{productInformation.data.carton} / Carton</Typography>
+                                    <Typography style={[styles.quantityText, { color: '#FFF' }]}>{productInformation.data.carton} in Carton</Typography>
                                 </View>
                             )}
                             {

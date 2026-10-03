@@ -58,7 +58,6 @@ export default function HomeHeader({
     const styles = _styles(isDarkMode);
     const navigation = useNavigation<NavigationProps>();
     const isFocused = useIsFocused();
-    const addToCartProduct = useSelector((state: any) => state.systemReducer.product);
     const [menuVisible, setMenuVisible] = useState(false);
 
     React.useLayoutEffect(() => {
@@ -208,13 +207,6 @@ export default function HomeHeader({
                     </View>
                 </View>
             )}
-
-            <AddToCartDialog
-                product={addToCartProduct}
-                onClose={() => {
-                    store.dispatch(action.setProductDialogData(undefined));
-                }}
-            />
 
             {loading ? (
                 <HomeSkeleton />

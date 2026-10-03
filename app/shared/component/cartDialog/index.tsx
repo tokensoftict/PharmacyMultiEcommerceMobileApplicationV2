@@ -8,11 +8,13 @@ import {
     KeyboardAvoidingView,
     Platform,
     Animated,
+    Easing,
     StyleSheet,
     Dimensions,
     Pressable,
     Keyboard,
-    ScrollView
+    ScrollView,
+    TextInput
 } from 'react-native';
 import { currencyType } from "@/shared/constants/global";
 import { design, labels, palette, semantic } from "@/shared/constants/colors";
@@ -23,11 +25,13 @@ import { Data } from "@/service/product/show/interface/ProductInformationInterfa
 import { store } from "@/redux/store/store";
 import * as action from "@/redux/actions";
 import Typography from "@/shared/component/typography";
-import Counter from "@/shared/component/counter";
+
 import { useNavigation } from "@react-navigation/native";
 import { NavigationProps } from "@/shared/routes/stack";
 import Environment from "@/shared/utils/Environment";
-import { close as iconClose, shoppingBag, white_shopping_cart } from "@/assets/icons";
+import { close as iconClose, shoppingBag, white_shopping_cart, share_product } from "@/assets/icons";
+import { shareProduct } from "@/shared/utils/ProductShareHelper";
+import ProductService from "@/service/product/show/ProductService";
 import Icon from "@/shared/component/icon";
 import { FONT } from '@/shared/constants/fonts';
 import useDarkMode from "@/shared/hooks/useDarkMode";
@@ -45,10 +49,12 @@ interface ProductList {
 const ProductDialog = ({ visible, product, onClose }: ProductList) => {
     const { isDarkMode } = useDarkMode();
     const insets = useSafeAreaInsets();
-    const [buyNowQuantity, setBuyNowQuantity] = useState(1);
+    const [qtyText, setQtyText] = useState('1');
+    const qty = parseInt(qtyText, 10) || 0;
     const [buyNowLoading, setBuyNowLoading] = useState(false);
+    const [sharing, setSharing] = useState(false);
     const [addToCartLoading, setAddToCartLoading] = useState(false);
-    const [addToCartQuantity, setAddToCartQuantity] = useState(1);
+
     const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
     const navigation = useNavigation<NavigationProps>();
     const cartService = new CartService();
@@ -56,37 +62,57 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
     const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
 
+    // `rendered` keeps the Modal mounted while the exit animation plays.
+    const [rendered, setRendered] = useState(false);
+
+    // 1) Mount the modal (and reset form state) when asked to show.
     useEffect(() => {
         if (visible) {
             setSelectedOptions([]);
+            setQtyText('1');
+            setRendered(true);
+        }
+    }, [visible]);
+
+    // 2) Animate only AFTER the modal is mounted so the first frame is never dropped.
+    useEffect(() => {
+        if (!rendered) return;
+        if (visible) {
+            slideAnim.setValue(SCREEN_HEIGHT);
+            fadeAnim.setValue(0);
             Animated.parallel([
                 Animated.timing(fadeAnim, {
                     toValue: 1,
-                    duration: 150,
+                    duration: 220,
+                    easing: Easing.out(Easing.quad),
                     useNativeDriver: true,
                 }),
-                Animated.spring(slideAnim, {
+                Animated.timing(slideAnim, {
                     toValue: 0,
-                    friction: 6,
-                    tension: 100,
+                    duration: 320,
+                    easing: Easing.out(Easing.cubic),
                     useNativeDriver: true,
-                })
+                }),
             ]).start();
         } else {
             Animated.parallel([
                 Animated.timing(fadeAnim, {
                     toValue: 0,
-                    duration: 250,
+                    duration: 220,
+                    easing: Easing.in(Easing.quad),
                     useNativeDriver: true,
                 }),
                 Animated.timing(slideAnim, {
                     toValue: SCREEN_HEIGHT,
-                    duration: 250,
+                    duration: 240,
+                    easing: Easing.in(Easing.cubic),
                     useNativeDriver: true,
-                })
-            ]).start();
+                }),
+            ]).start(({ finished }) => {
+                if (finished) setRendered(false);
+            });
         }
-    }, [visible]);
+    }, [rendered, visible]);
 
     const handleClose = useCallback(() => {
         Keyboard.dismiss();
@@ -100,7 +126,7 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
 
     const handleBuyNow = (acceptDependent: boolean = false) => {
         setBuyNowLoading(true);
-        cartService.add(product?.id, buyNowQuantity, acceptDependent, selectedOptions).then((response) => {
+        cartService.add(product?.id, qty, acceptDependent, selectedOptions).then((response) => {
             setBuyNowLoading(false);
             if (response.data.status === true) {
                 handleClose();
@@ -110,11 +136,12 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
     };
 
     const buyNow = () => {
+        if (qty < 1) { Toasts("Please enter a quantity"); return; }
         if (!validateOptions()) return;
         const maxVal = parseInt(product?.max?.toString() || "0", 10);
         const qtyVal = parseInt(product?.quantity?.toString() || "0", 10);
         const available = maxVal > 0 ? Math.min(maxVal, qtyVal) : qtyVal;
-        if (available >= buyNowQuantity) {
+        if (available >= qty) {
             handleBuyNow(true);
         } else {
             Toasts("Insufficient quantity. Available: " + available);
@@ -124,7 +151,7 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
     const handleAddToCart = (acceptDependent: boolean = false) => {
         if (!validateOptions()) return;
         setAddToCartLoading(true);
-        cartService.add(product?.id, addToCartQuantity, acceptDependent, selectedOptions).then((response) => {
+        cartService.add(product?.id, qty, acceptDependent, selectedOptions).then((response) => {
             if (response.data.status === true) {
                 Toasts('Item added to cart!');
                 store.dispatch(action.notifyCartUpdated());
@@ -135,11 +162,12 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
     };
 
     const addToCart = () => {
+        if (qty < 1) { Toasts("Please enter a quantity"); return; }
         if (!validateOptions()) return;
         const maxVal = parseInt(product?.max?.toString() || "0", 10);
         const qtyVal = parseInt(product?.quantity?.toString() || "0", 10);
         const available = maxVal > 0 ? Math.min(maxVal, qtyVal) : qtyVal;
-        if (available >= addToCartQuantity) {
+        if (available >= qty) {
             handleAddToCart(true);
         } else {
             Toasts("Insufficient quantity. Available: " + available);
@@ -174,16 +202,61 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
         });
     };
 
-    if (!visible) return null;
+    const handleShare = async () => {
+        if (!product || sharing) return;
+        const department = Environment.isWholeSalesEnvironment() ? 'wholesales' : 'retail';
+        let seo: string | undefined = (product as any)?.seo;
+        try {
+            setSharing(true);
+            // List items don't carry the SEO share link, so fetch it once when missing.
+            if (!seo && product.id !== undefined) {
+                const res = await new ProductService().getProduct(product.id as number, department as any);
+                seo = res?.data?.data?.seo;
+            }
+        } catch (e) {
+            // fall through to id-based link
+        } finally {
+            setSharing(false);
+        }
+        shareProduct({
+            name: String(product.name ?? ''),
+            seo,
+            slug: String(product.id ?? ''),
+            department,
+            price: (product.special || product.price) as any,
+        });
+    };
+
+    if (!rendered) return null;
 
     // Cart Dialog styling updates: 
     // We wrap container in a safe area inset spacer at the top (topContainerOffset) to prevent overlapping statusbar when fully scrolled/stretched.
     const topContainerOffset = Math.max(insets.top, theme.spacing.lg);
 
+    const maxVal = parseInt(product?.max?.toString() || "0", 10);
+    const stockVal = parseInt(product?.quantity?.toString() || "0", 10);
+    const availableQty = maxVal > 0 ? Math.min(maxVal, stockVal) : stockVal;
+    const unitPrice = parseFloat(String(product?.special || product?.price || '0').replace(/[^0-9.]/g, '')) || 0;
+    const quickPicks = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50];
+    const clampQty = (n: number) => {
+        const lower = Math.max(1, n);
+        return availableQty > 0 ? Math.min(availableQty, lower) : lower;
+    };
+    const setQty = (n: number) => setQtyText(String(clampQty(n)));
+    const onTypeQty = (t: string) => {
+        const digits = t.replace(/\D/g, '').replace(/^0+/, '');
+        if (!digits) return setQtyText('');
+        setQtyText(String(availableQty > 0 ? Math.min(availableQty, parseInt(digits, 10)) : parseInt(digits, 10)));
+    };
+    const stockPct = availableQty > 0 ? Math.min(1, availableQty / 5000) : 0;
+    const lowStock = availableQty < 60;
+    const stockColor = lowStock ? '#F59E0B' : '#16A34A';
+    const showCarton = product?.carton !== undefined && product.carton > 1 && !Environment.isSuperMarketEnvironment();
+
     return (
         <Modal
             transparent
-            visible={visible}
+            visible={rendered}
             onRequestClose={handleClose}
         >
             <View style={styles.overlay}>
@@ -213,19 +286,41 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
                         </TouchableOpacity>
 
                         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-                            <View style={[styles.imageWrapper, { backgroundColor: isDarkMode ? semantic.fill.f02 : '#F8FAFC' }]}>
-                                <Image source={{ uri: product?.image }} style={styles.productImage} />
+                            <View style={{ flexDirection: 'row', alignItems: 'stretch', marginBottom: theme.spacing.md }}>
+                            <View style={[styles.imageWrapper, { width: 136, height: undefined, minHeight: 160, marginBottom: 0, backgroundColor: isDarkMode ? semantic.fill.f02 : '#FFF1F0' }]}>
+                                <View style={styles.imageBlob} />
+                                <Image source={{ uri: product?.image }} style={[styles.productImage, { width: '85%', height: 130 }]} />
+                                <TouchableOpacity
+                                    onPress={handleShare}
+                                    disabled={sharing}
+                                    activeOpacity={0.8}
+                                    accessibilityLabel="Share Product"
+                                    accessibilityRole="button"
+                                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                    style={styles.shareBtn}
+                                >
+                                    {sharing ? (
+                                        <ActivityIndicator size="small" color={semantic.alert.danger.d500} />
+                                    ) : (
+                                        <Icon icon={share_product} tintColor={semantic.alert.danger.d500} customStyles={{ tintColor: semantic.alert.danger.d500, width: 16, height: 16 }} />
+                                    )}
+                                </TouchableOpacity>
+                                {product?.expiry_date && (
+                                    <View style={[styles.expiryPill, { left: 6, bottom: 6 }]}>
+                                        <Typography style={styles.expiryPillText}>⏳ Exp. {product.expiry_date}</Typography>
+                                    </View>
+                                )}
                             </View>
 
-                            <View style={styles.mainInfo}>
-                                <Typography style={[styles.productName, { color: isDarkMode ? '#FFF' : '#1A1D1E' }]}>
+                            <View style={{ flex: 1, marginLeft: theme.spacing.md, justifyContent: 'center', paddingRight: theme.spacing.lg }}>
+                                <Typography numberOfLines={3} style={[styles.productName, { fontSize: theme.typography.md, color: isDarkMode ? '#FFF' : '#1A1D1E' }]}>
                                     {product?.name}
                                 </Typography>
 
                                 <View style={styles.priceRow}>
                                     {product?.special ? (
                                         <>
-                                            <Typography style={styles.totalPrice}>
+                                            <Typography style={[styles.totalPrice, { fontSize: theme.typography.lg }]}>
                                                 {currencyType} {product.special}
                                             </Typography>
                                             <Typography style={styles.oldPrice}>
@@ -233,33 +328,34 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
                                             </Typography>
                                         </>
                                     ) : (
-                                        <Typography style={styles.totalPrice}>
+                                        <Typography style={[styles.totalPrice, { fontSize: theme.typography.lg }]}>
                                             {currencyType} {product?.price}
                                         </Typography>
                                     )}
                                 </View>
 
-                                <View style={styles.tagContainer}>
-                                    <View style={[styles.tag, { backgroundColor: isDarkMode ? semantic.fill.f02 : '#F0F9FF' }]}>
-                                        <Typography style={[styles.tagText, { color: isDarkMode ? '#60A5FA' : '#0284C7' }]}>
-                                            {product?.quantity} In Stock
-                                        </Typography>
+                                {showCarton && (
+                                    <View style={styles.cartonChip}>
+                                        <View style={styles.cartonNumWrap}>
+                                            <Typography style={styles.cartonNum}>{product?.carton}</Typography>
+                                        </View>
+                                        <View style={[styles.cartonLabelWrap, { backgroundColor: isDarkMode ? semantic.fill.f02 : '#FFF7ED' }]}>
+                                            <Typography style={[styles.cartonLabel, { color: isDarkMode ? '#FFF' : '#C2410C' }]}>📦 IN CARTON</Typography>
+                                        </View>
                                     </View>
-                                    {product?.carton !== undefined && product.carton > 1 && !Environment.isSuperMarketEnvironment() && (
-                                        <View style={[styles.tag, { backgroundColor: '#334155' }]}>
-                                            <Typography style={[styles.tagText, { color: '#FFF' }]}>
-                                                {product.carton} / Carton
-                                            </Typography>
-                                        </View>
-                                    )}
-                                    {product?.expiry_date && (
-                                        <View style={[styles.tag, { backgroundColor: isDarkMode ? semantic.fill.f02 : '#F8FAFC' }]}>
-                                            <Typography style={[styles.tagText, { color: isDarkMode ? '#94A3B8' : '#475569' }]}>
-                                                Exp: {product.expiry_date}
-                                            </Typography>
-                                        </View>
-                                    )}
+                                )}
+                                <View style={styles.stockWrap}>
+                                    <View style={[styles.stockTrack, { backgroundColor: isDarkMode ? semantic.fill.f02 : '#E2E8F0' }]}>
+                                        <View style={[styles.stockFill, { width: `${Math.round(stockPct * 100)}%`, backgroundColor: stockColor }]} />
+                                    </View>
+                                    <Typography style={[styles.stockText, { color: stockColor }]}>
+                                        {lowStock ? `Only ${product?.quantity} left` : `${product?.quantity} In Stock`}
+                                    </Typography>
                                 </View>
+                            </View>
+                            </View>
+
+                            <View style={styles.mainInfo}>
                                 {product?.dependent_products && product.dependent_products.length > 0 && (
                                     <View style={styles.bundleInfo}>
                                         <Typography style={styles.bundleTitle}>🎁 Bundle Offer</Typography>
@@ -320,45 +416,108 @@ const ProductDialog = ({ visible, product, onClose }: ProductList) => {
                                 )}
                             </View>
 
-                            <View style={[styles.quantityCard, { backgroundColor: isDarkMode ? semantic.fill.f02 : '#F8FAFC', borderColor: isDarkMode ? semantic.fill.f04 : '#E2E8F0' }]}>
-                                <Typography style={[styles.quantityTitle, { color: isDarkMode ? '#FFF' : '#1A1D1E' }]}>Select Quantity</Typography>
-                                <Counter onChange={(qty) => {
-                                    setBuyNowQuantity(qty);
-                                    setAddToCartQuantity(qty);
-                                }} />
+                            <View style={styles.qtyRow}>
+                                <Typography style={[styles.quantityTitle, { color: isDarkMode ? '#FFF' : '#1A1D1E' }]}>Quantity</Typography>
+                                <View style={[styles.stepper, { backgroundColor: isDarkMode ? semantic.fill.f02 : '#F1F5F9' }]}>
+                                    <TouchableOpacity
+                                        style={[styles.stepBtn, { backgroundColor: isDarkMode ? semantic.fill.f04 : '#FFF' }, qty <= 1 && { opacity: 0.35 }]}
+                                        onPress={() => setQty(qty - 1)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <Typography style={[styles.stepBtnText, { color: isDarkMode ? '#FFF' : '#0F172A' }]}>−</Typography>
+                                    </TouchableOpacity>
+                                    <TextInput
+                                        style={[styles.stepInput, { color: isDarkMode ? '#FFF' : '#0F172A' }]}
+                                        value={qtyText}
+                                        onChangeText={onTypeQty}
+                                        onBlur={() => !qtyText && setQtyText('1')}
+                                        keyboardType="number-pad"
+                                        maxLength={6}
+                                        selectTextOnFocus
+                                        placeholder="0"
+                                        placeholderTextColor="#94A3B8"
+                                    />
+                                    <TouchableOpacity
+                                        style={[styles.stepBtn, styles.stepBtnPlus, availableQty > 0 && qty >= availableQty && { opacity: 0.35 }]}
+                                        onPress={() => setQty(qty + 1)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <Typography style={[styles.stepBtnText, { color: '#FFF' }]}>+</Typography>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
 
-                            <View style={styles.actions}>
-                                <TouchableOpacity
-                                    disabled={buyNowLoading}
-                                    style={[styles.btnOutline, { borderColor: semantic.alert.danger.d500 }]}
-                                    onPress={buyNow}
-                                >
-                                    {buyNowLoading ? (
-                                        <ActivityIndicator color={semantic.alert.danger.d500} />
-                                    ) : (
-                                        <>
-                                            <Icon icon={shoppingBag} customStyles={{ tintColor: semantic.alert.danger.d500, width: theme.spacing.md, height: theme.spacing.md }} />
-                                            <Typography style={styles.btnOutlineText}>Buy Now</Typography>
-                                        </>
-                                    )}
-                                </TouchableOpacity>
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                style={styles.quickScroll}
+                                contentContainerStyle={styles.quickRow}
+                            >
+                                {quickPicks.map((n) => {
+                                    const disabled = availableQty > 0 && n > availableQty;
+                                    return (
+                                        <TouchableOpacity
+                                            key={n}
+                                            disabled={disabled}
+                                            style={[
+                                                styles.quickChip,
+                                                { borderColor: isDarkMode ? semantic.fill.f04 : '#E2E8F0' },
+                                                qty === n && styles.quickChipActive,
+                                                disabled && { opacity: 0.35 },
+                                            ]}
+                                            onPress={() => setQty(n)}
+                                            activeOpacity={0.8}
+                                        >
+                                            <Typography style={[styles.quickChipText, { color: qty === n ? '#FFF' : (isDarkMode ? '#FFF' : '#334155') }]}>{n}</Typography>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </ScrollView>
 
-                                <TouchableOpacity
-                                    disabled={addToCartLoading}
-                                    style={styles.btnPrimary}
-                                    onPress={addToCart}
-                                >
-                                    {addToCartLoading ? (
-                                        <ActivityIndicator color="#FFF" />
-                                    ) : (
-                                        <>
-                                            <Icon icon={white_shopping_cart} customStyles={{ tintColor: '#FFF', width: theme.spacing.md, height: theme.spacing.md }} />
-                                            <Typography style={styles.btnPrimaryText}>Add to Cart</Typography>
-                                        </>
-                                    )}
-                                </TouchableOpacity>
+                            <View style={[styles.summary, { backgroundColor: isDarkMode ? semantic.fill.f02 : '#F8FAFC', borderColor: isDarkMode ? semantic.fill.f04 : '#CBD5E1' }]}>
+                                <View style={styles.summaryRow}>
+                                    <Typography style={styles.summaryLabel}>Unit price</Typography>
+                                    <Typography style={[styles.summaryVal, { color: isDarkMode ? '#FFF' : '#0F172A' }]}>{currencyType} {product?.special || product?.price}</Typography>
+                                </View>
+                                <View style={styles.summaryRow}>
+                                    <Typography style={styles.summaryLabel}>Subtotal</Typography>
+                                    <Typography style={[styles.summaryTotal, { color: isDarkMode ? '#FFF' : '#0F172A' }]}>
+                                        {currencyType} {(unitPrice * qty).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </Typography>
+                                </View>
                             </View>
+
+                            <TouchableOpacity
+                                disabled={addToCartLoading || qty < 1}
+                                activeOpacity={0.85}
+                                style={[
+                                    styles.btnPrimary,
+                                    {
+                                        width: '100%',
+                                        flex: 0,
+                                        borderRadius: 16,
+                                        paddingVertical: 15,
+                                        shadowColor: '#D50000',
+                                        shadowOffset: { width: 0, height: 6 },
+                                        shadowOpacity: 0.35,
+                                        shadowRadius: 10,
+                                        elevation: 6,
+                                    },
+                                    qty < 1 && { opacity: 0.5 },
+                                ]}
+                                onPress={addToCart}
+                            >
+                                {addToCartLoading ? (
+                                    <ActivityIndicator color="#FFF" />
+                                ) : (
+                                    <>
+                                        <Icon icon={white_shopping_cart} customStyles={{ tintColor: '#FFF', width: theme.spacing.md, height: theme.spacing.md }} />
+                                        <Typography style={[styles.btnPrimaryText, { fontFamily: FONT.EXTRA_BOLD }]}>
+                                            Add to Cart · {currencyType} {(unitPrice * qty).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </Typography>
+                                    </>
+                                )}
+                            </TouchableOpacity>
                         </ScrollView>
                     </Animated.View>
                 </KeyboardAvoidingView>
@@ -408,13 +567,184 @@ const styles = StyleSheet.create({
     },
     imageWrapper: {
         width: '100%',
-        height: 180,
-        backgroundColor: '#F8FAFC',
-        borderRadius: theme.borderRadius.md,
+        height: 190,
+        backgroundColor: '#FFF1F0',
+        borderRadius: theme.borderRadius.lg,
         marginBottom: theme.spacing.md,
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
+    },
+    shareBtn: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        width: 34,
+        height: 34,
+        borderRadius: 17,
+        backgroundColor: 'rgba(255,255,255,0.92)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    imageBlob: {
+        position: 'absolute',
+        width: 220,
+        height: 220,
+        borderRadius: 110,
+        backgroundColor: 'rgba(255,255,255,0.6)',
+        bottom: -80,
+        right: -50,
+    },
+    expiryPill: {
+        position: 'absolute',
+        bottom: 10,
+        left: 10,
+        backgroundColor: 'rgba(15,23,42,0.8)',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    expiryPillText: {
+        color: '#FDE68A',
+        fontSize: 11,
+        fontFamily: FONT.BOLD,
+    },
+    cartonChip: {
+        flexDirection: 'row',
+        alignItems: 'stretch',
+        alignSelf: 'flex-start',
+        borderRadius: 10,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderStyle: 'dashed',
+        borderColor: '#CBD5E1',
+        marginBottom: theme.spacing.sm,
+    },
+    cartonNumWrap: {
+        backgroundColor: '#0F172A',
+        paddingHorizontal: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    cartonNum: {
+        color: '#FDE68A',
+        fontSize: 14,
+        fontFamily: FONT.EXTRA_BOLD,
+    },
+    cartonLabelWrap: {
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        justifyContent: 'center',
+    },
+    cartonLabel: {
+        fontSize: 11,
+        fontFamily: FONT.BOLD,
+        letterSpacing: 0.6,
+    },
+    stockWrap: {
+        marginTop: 2,
+    },
+    stockTrack: {
+        height: 5,
+        borderRadius: 3,
+        overflow: 'hidden',
+    },
+    stockFill: {
+        height: '100%',
+        borderRadius: 3,
+    },
+    stockText: {
+        marginTop: 4,
+        fontSize: 12,
+        fontFamily: FONT.BOLD,
+    },
+    qtyRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: theme.spacing.sm,
+    },
+    stepper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 16,
+        padding: 4,
+    },
+    stepBtn: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    stepBtnPlus: {
+        backgroundColor: '#D50000',
+    },
+    stepBtnText: {
+        fontSize: 20,
+        fontFamily: FONT.BOLD,
+    },
+    stepInput: {
+        minWidth: 110,
+        height: 40,
+        textAlign: 'center',
+        fontSize: 18,
+        fontFamily: FONT.EXTRA_BOLD,
+        padding: 0,
+    },
+    quickScroll: {
+        marginHorizontal: -theme.spacing.lg,
+        marginTop: theme.spacing.md,
+    },
+    quickRow: {
+        paddingHorizontal: theme.spacing.lg,
+        gap: 8,
+    },
+    quickChip: {
+        paddingHorizontal: 14,
+        paddingVertical: 7,
+        borderRadius: 20,
+        borderWidth: 1,
+    },
+    quickChipActive: {
+        backgroundColor: '#0F172A',
+        borderColor: '#0F172A',
+    },
+    quickChipText: {
+        fontSize: 12,
+        fontFamily: FONT.BOLD,
+    },
+    summary: {
+        marginTop: theme.spacing.md,
+        marginBottom: theme.spacing.md,
+        padding: theme.spacing.md,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderStyle: 'dashed',
+    },
+    summaryRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 3,
+    },
+    summaryLabel: {
+        fontSize: 12,
+        fontFamily: FONT.MEDIUM,
+        color: '#64748B',
+    },
+    summaryVal: {
+        fontSize: theme.typography.body,
+        fontFamily: FONT.BOLD,
+    },
+    summaryTotal: {
+        fontSize: theme.typography.lg,
+        fontFamily: FONT.EXTRA_BOLD,
     },
     productImage: {
         width: '80%',

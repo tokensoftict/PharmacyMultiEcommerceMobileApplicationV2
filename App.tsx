@@ -15,6 +15,7 @@ import RNBootSplash from "react-native-bootsplash";
 import { InternetProvider } from "@/shared/helpers/InternetContext";
 import { GlobalProvider } from "@/shared/helpers/GlobalContext";
 import FloatingCartBar from "@/shared/component/floatingCartBar";
+import CartDialogHost from "@/shared/component/cartDialogHost";
 import { PopupProvider } from "@/popup/PopupProvider";
 import { CampaignProvider } from "@/campaign/CampaignProvider";
 import { AppUpdateProvider } from "@/shared/component/appUpdateDialog/AppUpdateProvider";
@@ -88,6 +89,7 @@ function App(): React.JSX.Element {
                                                     ))}
                                                 </Stack.Navigator>
                                                 <FloatingCartBar />
+                                                <CartDialogHost />
                                             </AppUpdateProvider>
                                         </CampaignProvider>
                                     </PopupProvider>

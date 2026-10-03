@@ -11,12 +11,8 @@ import OverlayLoader from '@/shared/component/overlayLoader';
 import { StatusBarStyle } from 'react-native/Libraries/Components/StatusBar/StatusBar';
 import useDarkMode from '@/shared/hooks/useDarkMode';
 import { design, semantic } from '@/shared/constants/colors';
-import AddToCartDialog from '@/shared/component/addToCartDialog';
-import useEffectOnce from '@/shared/hooks/useEffectOnce.tsx';
-import { store } from '@/redux/store/store.tsx';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Environment from '@/shared/utils/Environment.tsx';
-import * as action from '@/redux/actions';
 import { theme } from '@/shared/theme';
 
 interface WrapperProps {
@@ -40,19 +36,6 @@ export default function Wrapper({
 }: WrapperProps) {
   const { isDarkMode } = useDarkMode();
   const insets = useSafeAreaInsets();
-  const [addToCartProduct, setAddToCartProduct] = useState<any>(undefined);
-
-  useEffectOnce(() => {
-    const unsubscribe = store.subscribe(() => {
-      const selectedProduct = store.getState().systemReducer.product;
-      setAddToCartProduct(selectedProduct);
-    });
-    return unsubscribe;
-  }, []);
-
-  const handleClose = () => {
-    store.dispatch(action.setProductDialogData(undefined));
-  };
 
   /**
    * Bottom spacer: uses the safe area bottom inset so content is never
@@ -105,7 +88,6 @@ export default function Wrapper({
             width: '100%',
           }}
         >
-          <AddToCartDialog product={addToCartProduct} onClose={handleClose} />
           <OverlayLoader loading={loading} title="" height={overlayLoaderHeight} />
           <ScrollView
             refreshControl={

@@ -48,13 +48,14 @@ import Search from "@/shared/page/search";
 import FoodDeliveryHomeScreen from "@/applications/food_delivery/FoodDeliveryHomeScreen";
 import ScanShopScreen from "@/applications/scanShop/ScanShopScreen";
 import ReferAndEarnScreen from "@/applications/referral/ReferAndEarnScreen";
+import WholesaleProvisionsScreen from "@/applications/wholesales/provisions/WholesaleProvisionsScreen";
 
 export type RootStackParamList = {
     wholesales: undefined,
     supermarket: undefined,
     sales_representative: undefined,
     login: undefined,
-    createAccount: undefined,
+    createAccount: { referralCode?: string } | undefined,
     enterOTP: undefined,
     validateAuthCode: undefined,
     enterEmailOTP: undefined,
@@ -110,6 +111,7 @@ export type RootStackParamList = {
     food_delivery: undefined,
     scanShop: undefined,
     referAndEarn: undefined,
+    wholesaleProvisions: undefined,
 }
 
 export type RouteItem = {
@@ -365,6 +367,11 @@ const RoutesStack: RouteItem[] = [
     {
         path: 'referAndEarn',
         component: ReferAndEarnScreen,
+        private: true
+    },
+    {
+        path: 'wholesaleProvisions',
+        component: WholesaleProvisionsScreen,
         private: true
     },
 ];

@@ -1,5 +1,7 @@
 import { Dimensions, PixelRatio, Platform, Linking } from 'react-native';
 import ReferralStorage from './ReferralStorage';
+import * as NavigationService from '@/shared/utils/NavigationService';
+import Environment from '@/shared/utils/Environment';
 
 /**
  * DetourService — Deferred & Direct Referral Deep Linking
@@ -9,11 +11,13 @@ import ReferralStorage from './ReferralStorage';
  *
  * REFERRAL LINK FLOW
  * ──────────────────
- * 1. Referrer shares:   http://referral.generaldrugcentre.com/ref/{code}
+ * 1. Referrer shares:   https://referral.generaldrugcentre.com/ref/{code}
  *    └─ Server redirects to: https://psgdc.godetour.link/PrdRthERNv/ref/{code}
  * 2. Direct link (App installed) → Opened via Linking universal/app link.
+ *    React Navigation linking config maps /ref/:code → createAccount screen.
  * 3. Deferred link (App freshly installed) → Detour matching API resolves the link.
  * 4. Extracted referral code is saved to ReferralStorage for registration.
+ * 5. Live link (App already running) → Listener stores code & navigates to signup.
  */
 
 const DETOUR_APP_ID = '5d4bb267-2391-425b-84fc-74f743098589';
@@ -33,7 +37,11 @@ function extractReferralCode(url: string): string | null {
 
 function isReferralUrl(url: string): boolean {
   if (!url) return false;
-  return url.includes(DETOUR_LINK_PREFIX) || url.includes('/ref/');
+  return (
+    url.includes(DETOUR_LINK_PREFIX) ||
+    url.includes('referral.generaldrugcentre.com') ||
+    url.includes('/ref/')
+  );
 }
 
 /**
@@ -84,6 +92,22 @@ async function fetchDeferredLink(): Promise<string | null> {
   return null;
 }
 
+/**
+ * Store the referral code and navigate to the createAccount screen
+ * (only if the user is NOT already logged in).
+ */
+async function handleReferralCode(code: string, source: string): Promise<void> {
+  await ReferralStorage.set(code);
+  console.log(`[DetourService] ${source} referral code stored: ${code}`);
+
+  // Only redirect to signup if the user is not logged in
+  if (!Environment.isLogin()) {
+    NavigationService.navigate('createAccount', { referralCode: code });
+  } else {
+    console.log('[DetourService] User is already logged in — skipping signup redirect');
+  }
+}
+
 const DetourService = {
   /**
    * Initialise referral link detection.
@@ -100,8 +124,7 @@ const DetourService = {
       if (directUrl && isReferralUrl(directUrl)) {
         const code = extractReferralCode(directUrl);
         if (code) {
-          await ReferralStorage.set(code);
-          console.log('[DetourService] Direct referral code stored:', code);
+          await handleReferralCode(code, 'Direct');
           return;
         }
       }
@@ -111,8 +134,7 @@ const DetourService = {
       if (deferredLink && isReferralUrl(deferredLink)) {
         const code = extractReferralCode(deferredLink);
         if (code) {
-          await ReferralStorage.set(code);
-          console.log('[DetourService] Deferred referral code stored:', code);
+          await handleReferralCode(code, 'Deferred');
         }
       }
 
@@ -121,8 +143,7 @@ const DetourService = {
         if (url && isReferralUrl(url)) {
           const code = extractReferralCode(url);
           if (code) {
-            await ReferralStorage.set(code);
-            console.log('[DetourService] Live referral code stored:', code);
+            await handleReferralCode(code, 'Live');
           }
         }
       });
@@ -133,4 +154,3 @@ const DetourService = {
 };
 
 export default DetourService;
-

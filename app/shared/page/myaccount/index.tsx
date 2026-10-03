@@ -18,6 +18,7 @@ import {
     walletFilled,
     contact_support,
     share_product,
+    shoppingBag,
 } from '@/assets/icons';
 import {
     CommonActions,

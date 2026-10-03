@@ -73,14 +73,6 @@ export default function CollapsableHeader({
         extrapolate: 'clamp'
     });
 
-    const [addToCartProduct, setAddToCartProduct] = useState();
-
-    useEffectOnce(() => {
-        store.subscribe(() => {
-            const selectedProduct = store.getState().systemReducer.product;
-            setAddToCartProduct(selectedProduct);
-        });
-    }, []);
 
     const renderComponent = ({ item, index }: { item: any; index: number }) => {
         const key = `${item.type}-${index}`;
@@ -140,7 +132,6 @@ export default function CollapsableHeader({
                 </View>
             </Animated.View>
 
-            <AddToCartDialog product={addToCartProduct} />
             <OverlayLoader loading={loading} title="" height={overlayLoaderHeight} />
 
             {/* Collapsable Header */}

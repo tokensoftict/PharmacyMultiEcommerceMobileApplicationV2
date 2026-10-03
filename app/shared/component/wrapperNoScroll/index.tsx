@@ -3,10 +3,6 @@ import { KeyboardAvoidingView, Platform, StatusBar, View } from 'react-native';
 import OverlayLoader from '@/shared/component/overlayLoader';
 import { StatusBarStyle } from 'react-native/Libraries/Components/StatusBar/StatusBar';
 import { design, semantic } from '@/shared/constants/colors';
-import useEffectOnce from '@/shared/hooks/useEffectOnce.tsx';
-import { store } from '@/redux/store/store.tsx';
-import AddToCartDialog from '@/shared/component/addToCartDialog';
-import * as action from '@/redux/actions';
 // NOTE: We use SafeAreaView here but NOT SafeAreaProvider.
 // The SafeAreaProvider is already at the App root (App.tsx).
 // Nesting providers is redundant and was causing context duplication.
@@ -39,19 +35,6 @@ export default function WrapperNoScroll({
 }: WrapperProps) {
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
-  const [addToCartProduct, setAddToCartProduct] = useState<any>(undefined);
-
-  useEffectOnce(() => {
-    const unsubscribe = store.subscribe(() => {
-      const selectedProduct = store.getState().systemReducer.product;
-      setAddToCartProduct(selectedProduct);
-    });
-    return unsubscribe;
-  }, []);
-
-  const handleClose = () => {
-    store.dispatch(action.setProductDialogData(undefined));
-  };
 
   const statusBgColor = transparent
     ? 'transparent'
@@ -89,7 +72,6 @@ export default function WrapperNoScroll({
           backgroundColor: contentBgColor,
         }}
       >
-        <AddToCartDialog product={addToCartProduct} onClose={handleClose} />
         <OverlayLoader loading={loading} title="" height={overlayLoaderHeight} />
 
         <KeyboardAvoidingView
