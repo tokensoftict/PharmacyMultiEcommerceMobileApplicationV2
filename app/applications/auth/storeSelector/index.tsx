@@ -25,11 +25,13 @@ import { FONT } from "@/shared/constants/fonts.ts";
 import CampaignEventBus from "@/campaign/CampaignEventBus";
 import { CommonActions } from "@react-navigation/native";
 import WrapperNoScroll from "@/shared/component/wrapperNoScroll";
+import { SeasonalLogo } from "@/seasonal";
 
 const appImages: Record<string, any> = {
     "wholesales": require("@/assets/images/wholesales.jpg"),
     "supermarket": require("@/assets/images/supermarket.jpg"),
     "sales representative": require("@/assets/images/sales_rep.jpg"),
+    "provisions": require("@/assets/images/provisions.jpg"),
 };
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
@@ -72,7 +74,7 @@ const StoreListItem = ({ store, index, onPress }: { store: any, index: number, o
                 </View>
                 <View style={styles.itemContent}>
                     <Typography style={[styles.storeName, isDarkMode && { color: '#FFF' }]}>
-                        {store.name === "supermarket" ? "Supermarket & Pharmacy" : (store.name === "wholesales" ? "Wholesales & Bulk-sales" : "Sales Representative")}
+                        {store.name === "provisions" ? "Wholesale Provisions Store" : store.name === "supermarket" ? "Supermarket & Pharmacy" : (store.name === "wholesales" ? "Wholesales & Bulk-sales" : "Sales Representative")}
                     </Typography>
                     <Typography numberOfLines={1} style={styles.storeDesc}>
                         {store.description}
@@ -132,17 +134,65 @@ const StoreSelectionScreen = ({ navigation }: any) => {
         }
     }, []);
 
-    const userApps = profileData?.apps?.map((app: any) => ({
-        id: app.name,
-        name: app.name,
-        image: app.name,
-        description: app.description,
-        status: app.info.status,
-        last_seen: app.last_seen,
-        unregistered: app.unregistered,
-    })) || [];
+    const wholesalesApp = profileData?.apps?.find((a: any) => String(a.name || '').toLowerCase() === 'wholesales');
+    const customerTypeName = String(
+        wholesalesApp?.customer_type_name ||
+        wholesalesApp?.info?.customer_type?.name ||
+        wholesalesApp?.info?.customer_type_name ||
+        ''
+    ).toLowerCase().trim();
+
+    const hasApprovedWholesales =
+        !!wholesalesApp &&
+        !wholesalesApp.unregistered &&
+        !!wholesalesApp.info?.status;
+
+    const isProvisionCustomer =
+        hasApprovedWholesales &&
+        (customerTypeName === 'provision store' || customerTypeName.includes('provision'));
+
+    // If customer type is 'Provision Store', hide the general wholesales store
+    const userApps = (profileData?.apps || [])
+        .filter((app: any) => {
+            if (isProvisionCustomer && String(app.name || '').toLowerCase() === 'wholesales') {
+                return false;
+            }
+            return true;
+        })
+        .map((app: any) => ({
+            id: app.name,
+            name: app.name,
+            image: app.name,
+            description: app.description,
+            status: app.info.status,
+            last_seen: app.last_seen,
+            unregistered: app.unregistered,
+        }));
+
+    // All approved wholesales accounts see Wholesale Provisions (even if customer type is not Provision Store).
+    // Guests also see the Wholesale Provisions card (and are directed to login when clicked).
+    if (!Environment.isLogin() || hasApprovedWholesales) {
+        userApps.push({
+            id: 'provisions',
+            name: 'provisions',
+            image: 'provisions',
+            description: 'Stock up on food, beverages & essentials at carton wholesale prices',
+            status: true,
+            unregistered: false,
+        });
+    }
 
     function selectStore(store: string, status: boolean, unregistered: boolean) {
+        if (store === "provisions") {
+            if (!Environment.isLogin()) {
+                navigation.navigate("login");
+            } else {
+                new AuthSessionService().setEnvironment("wholesaleProvisions");
+                CampaignEventBus.emit('APP_OPEN');
+                navigation.replace("wholesaleProvisions");
+            }
+            return;
+        }
         new AuthSessionService().setEnvironment(store);
         const targetStore = store === "sales representative" ? 'sales_representative' : store;
 
@@ -196,11 +246,13 @@ const StoreSelectionScreen = ({ navigation }: any) => {
                                 entering={FadeInDown.duration(600)}
                                 style={styles.logoWrapper}
                             >
-                                <Image
-                                    source={require("@/assets/images/logo.png")}
-                                    style={styles.logo}
-                                    resizeMode="contain"
-                                />
+                                <SeasonalLogo logoSize={60} style={{ width: '100%', height: '100%' }}>
+                                    <Image
+                                        source={require("@/assets/images/logo.png")}
+                                        style={styles.logo}
+                                        resizeMode="contain"
+                                    />
+                                </SeasonalLogo>
                             </Animated.View>
 
                             <Animated.View

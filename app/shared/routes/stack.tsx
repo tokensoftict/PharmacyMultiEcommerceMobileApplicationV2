@@ -48,7 +48,7 @@ import Search from "@/shared/page/search";
 import FoodDeliveryHomeScreen from "@/applications/food_delivery/FoodDeliveryHomeScreen";
 import ScanShopScreen from "@/applications/scanShop/ScanShopScreen";
 import ReferAndEarnScreen from "@/applications/referral/ReferAndEarnScreen";
-import WholesaleProvisionsScreen from "@/applications/wholesales/provisions/WholesaleProvisionsScreen";
+import WholesaleProvisionsNavigation from "@/applications/wholesales/provisions/WholesaleProvisionsNavigation";
 
 export type RootStackParamList = {
     wholesales: undefined,
@@ -106,7 +106,7 @@ export type RootStackParamList = {
     brandList: undefined,
     introSlider: undefined,
     qrcode: undefined,
-    search: undefined,
+    search: { headerBackgroundColor?: string; headerColor?: string; storeType?: string } | undefined,
     loginWithOutPassword: undefined,
     food_delivery: undefined,
     scanShop: undefined,
@@ -371,8 +371,8 @@ const RoutesStack: RouteItem[] = [
     },
     {
         path: 'wholesaleProvisions',
-        component: WholesaleProvisionsScreen,
-        private: true
+        component: WholesaleProvisionsNavigation,
+        private: false,
     },
 ];
 

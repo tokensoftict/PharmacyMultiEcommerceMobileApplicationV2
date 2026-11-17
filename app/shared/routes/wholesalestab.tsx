@@ -1,33 +1,33 @@
 import WholesalesHomePage from "@/applications/wholesales/home/wholesalesHome";
-import WholesaleProvisionsScreen from "@/applications/wholesales/provisions/WholesaleProvisionsScreen";
 import {
     home as HomeIcon,
     myAccount,
-    listCart, brand, shoppingBag,
+    listCart,
+    qrcode,
+    brand,
 } from '@/assets/icons';
 import Cart from "@/shared/page/cart";
 import MyAccount from "@/shared/page/myaccount";
+import QrcodeScreen from "@/shared/page/qrcode";
 import Brands from "@/shared/page/brands";
 import Login from "@/applications/auth/login";
 import Environment from "@/shared/utils/Environment.tsx";
-import {useNavigation} from "@react-navigation/native";
-
+import { useNavigation } from "@react-navigation/native";
 
 // @ts-ignore
-const RequireLogin = ({ children, fallback }) => {
-    const isLoggedIn = Environment.isLogin(); // You can replace this with a useAuth hook if needed
+const RequireLogin = ({ children, fallback }: any) => {
+    const isLoggedIn = Environment.isLogin();
     return isLoggedIn ? children : fallback;
 };
 
 // @ts-ignore
-const withAuth = (Component : any) => () => (
+const withAuth = (Component: any) => () => (
     <RequireLogin fallback={<Login navigation={useNavigation()} />}>
         <Component />
     </RequireLogin>
 );
 
-
-export default [
+export const wholesalesTabs = [
     {
         id: '1',
         displayName: 'Home',
@@ -42,7 +42,6 @@ export default [
         icon: brand,
         component: Brands,
     },
-
     {
         id: '3',
         displayName: 'My Cart',
@@ -50,14 +49,12 @@ export default [
         icon: listCart,
         component: withAuth(Cart),
     },
-
     {
         id: '4',
-        displayName: 'Provisions',
-        name: 'provisions',
-        icon: shoppingBag,
-        component: WholesaleProvisionsScreen,
-        isPromo: true,
+        displayName: 'QR Code',
+        name: 'qrcode',
+        icon: qrcode,
+        component: withAuth(QrcodeScreen),
     },
     {
         id: '5',
@@ -67,3 +64,6 @@ export default [
         component: withAuth(MyAccount),
     },
 ];
+
+export const getWholesalesTabs = () => wholesalesTabs;
+export default wholesalesTabs;

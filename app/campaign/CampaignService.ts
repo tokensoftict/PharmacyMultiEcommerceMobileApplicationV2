@@ -23,12 +23,15 @@ export class CampaignService {
       return [];
     }
 
+    // Map wholesaleProvisions → wholesales for backend API
+    const backendStoreType = storeType === 'wholesaleProvisions' ? 'wholesales' : storeType;
+
     try {
       const environmentRequest = new EnvironmentRequest().getRequest();
 
       const queryParams = new URLSearchParams({
         trigger,
-        store_type: storeType,
+        store_type: backendStoreType,
         cart_total: String(extraContext.cart_total ?? 0),
         cart_item_count: String(extraContext.cart_item_count ?? 0),
       }).toString();

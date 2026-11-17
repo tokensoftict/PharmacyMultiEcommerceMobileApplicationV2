@@ -25,6 +25,9 @@ interface InputProps {
   focusable?: boolean | undefined;
   onSubmitEditing?: any;
   style?: any;
+  containerStyle?: any;
+  borderColor?: string;
+  focusBorderColor?: string;
 }
 
 export default function Input({
@@ -44,16 +47,19 @@ export default function Input({
   autoFocus,
   onSubmitEditing,
   focusable,
-  style
+  style,
+  containerStyle,
+  borderColor,
+  focusBorderColor,
 }: InputProps) {
   const [isFocus, setFocus] = useState(false);
   const {isDarkMode} = useDarkMode()
   // @ts-ignore
-  const styles = _styles(isFocus, isDarkMode, multiline);
+  const styles = _styles(isFocus, isDarkMode, multiline, borderColor, focusBorderColor);
   return (
     <View style={[{width : '100%'}, style]}>
       {label && <Typography style={styles.label}>{label}</Typography>}
-      <View style={styles.container}>
+      <View style={[styles.container, containerStyle]}>
         {leftIcon && leftIcon}
         <TextInput
           ref={inputRef}

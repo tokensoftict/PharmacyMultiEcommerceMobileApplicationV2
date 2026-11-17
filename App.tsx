@@ -19,6 +19,7 @@ import CartDialogHost from "@/shared/component/cartDialogHost";
 import { PopupProvider } from "@/popup/PopupProvider";
 import { CampaignProvider } from "@/campaign/CampaignProvider";
 import { AppUpdateProvider } from "@/shared/component/appUpdateDialog/AppUpdateProvider";
+import { SeasonalThemeProvider, SeasonalEffects } from "@/seasonal";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import linking from "@/shared/routes/linking";
 import DetourService from "@/service/referral/DetourService";
@@ -76,20 +77,23 @@ function App(): React.JSX.Element {
                                     <PopupProvider>
                                         <CampaignProvider>
                                             <AppUpdateProvider>
-                                                <Stack.Navigator
-                                                    // @ts-ignore
-                                                    initialRouteName={page}
-                                                    screenOptions={{ headerShown: false }}>
-                                                    {RoutesStack.map(route => (
-                                                        <Stack.Screen
-                                                            key={route.path}
-                                                            name={route.path}
-                                                            component={route.component}
-                                                        />
-                                                    ))}
-                                                </Stack.Navigator>
-                                                <FloatingCartBar />
-                                                <CartDialogHost />
+                                                <SeasonalThemeProvider>
+                                                    <Stack.Navigator
+                                                        // @ts-ignore
+                                                        initialRouteName={page}
+                                                        screenOptions={{ headerShown: false }}>
+                                                        {RoutesStack.map(route => (
+                                                            <Stack.Screen
+                                                                key={route.path}
+                                                                name={route.path}
+                                                                component={route.component}
+                                                            />
+                                                        ))}
+                                                    </Stack.Navigator>
+                                                    <FloatingCartBar />
+                                                    <CartDialogHost />
+                                                    <SeasonalEffects />
+                                                </SeasonalThemeProvider>
                                             </AppUpdateProvider>
                                         </CampaignProvider>
                                     </PopupProvider>

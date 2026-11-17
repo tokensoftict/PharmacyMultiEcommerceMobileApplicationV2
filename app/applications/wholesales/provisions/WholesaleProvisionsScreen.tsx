@@ -22,7 +22,7 @@ import { StatusBar } from 'react-native';
 import Typography from '@/shared/component/typography';
 import SectionHeader from '@/shared/component/sectionHeader';
 import Icon from '@/shared/component/icon';
-import { search, dots, arrowBack, add, icon_wishlist, icon_wishlist_filled } from '@/assets/icons';
+import { search, dots, arrowBack, add, icon_wishlist, icon_wishlist_filled, homeNotification, switch_icon, qrcode } from '@/assets/icons';
 import { palette, semantic } from '@/shared/constants/colors';
 import { theme } from '@/shared/theme';
 import { FONT } from '@/shared/constants/fonts';
@@ -43,20 +43,18 @@ import * as action from '@/redux/actions';
 import Skeleton from '@/shared/component/skeleton';
 import ButtonSheet from '@/shared/component/buttonSheet';
 import CartItemHorizontalList from '@/shared/component/cartItemHorizontalList';
+import { SeasonalLogo, SeasonalHeaderAccents, SeasonalHomeSections } from '@/seasonal';
 import UpdateCartDialog from '@/shared/component/updateCartDialog';
 import { CartInterface } from '@/service/cart/interface/CartInterface';
-import CustomerTypeModal from '@/shared/component/customerTypeModal';
 import AuthSessionService from '@/service/auth/AuthSessionService';
 
 const LOGO = require('@/assets/images/logo.png');
 
 // ─── API → UI mapping ───────────────────────────────────────────────────────
-const CATEGORY_EMOJIS = ['🥤', '🍪', '🍿', '🍜', '🥣', '🍳', '🧹', '🧴'];
 
 const mapCategory = (c: any, i: number) => ({
   id: String(c.id),
   name: c.name,
-  emoji: CATEGORY_EMOJIS[i % CATEGORY_EMOJIS.length],
   isFeatured: i < 2,
 });
 
@@ -188,9 +186,6 @@ function CategoryCard({ item, onPress }: { item: ReturnType<typeof mapCategory>;
             <Typography style={_styles(isDarkMode).catTagText}>TOP</Typography>
           </View>
         )}
-        <View style={_styles(isDarkMode).catImageWrapper}>
-          <Typography style={{ fontSize: normalize(28) }}>{item.emoji}</Typography>
-        </View>
         <Typography numberOfLines={1} style={_styles(isDarkMode).catText}>
           {item.name.toUpperCase()}
         </Typography>
@@ -225,6 +220,7 @@ function AddToCartSheet({
   onClose: () => void;
   onConfirm: (qty: number) => void;
 }) {
+  const insets = useSafeAreaInsets();
   const styles = _styles(isDarkMode);
   const [text, setText] = useState('1');
   const [adding, setAdding] = useState(false);
@@ -293,7 +289,14 @@ function AddToCartSheet({
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <Pressable style={styles.sheetBackdrop} onPress={onClose} />
-        <View style={styles.sheet}>
+        <View
+          style={[
+            styles.sheet,
+            {
+              paddingBottom: Math.max(insets.bottom, normalize(12)) + normalize(20),
+            },
+          ]}
+        >
           <View style={styles.sheetHandle} />
 
           {/* Product summary */}
@@ -529,6 +532,273 @@ function FancyCard({ item, isDarkMode, grid }: { item: any; isDarkMode: boolean;
   );
 }
 
+// ─── Flash Deal Countdown Timer ──────────────────────────────────────────────
+function useCountdown(hoursFromNow = 23) {
+  const endRef = useRef(Date.now() + hoursFromNow * 3600 * 1000);
+  const [remaining, setRemaining] = useState(endRef.current - Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const diff = Math.max(0, endRef.current - Date.now());
+      setRemaining(diff);
+      if (diff <= 0) clearInterval(id);
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const hrs = String(Math.floor(remaining / 3600000)).padStart(2, '0');
+  const mins = String(Math.floor((remaining % 3600000) / 60000)).padStart(2, '0');
+  const secs = String(Math.floor((remaining % 60000) / 1000)).padStart(2, '0');
+  return { hrs, mins, secs };
+}
+
+function FlashDealsSection({ listData, isDarkMode, label }: { listData: any[]; isDarkMode: boolean; label?: string }) {
+  const { hrs, mins, secs } = useCountdown();
+  const timerDigit = (val: string, lbl: string) => (
+    <View style={{ alignItems: 'center', marginHorizontal: normalize(3) }}>
+      <View style={{
+        backgroundColor: isDarkMode ? '#DC2626' : '#1E1B2E',
+        borderRadius: normalize(6), paddingHorizontal: normalize(7),
+        paddingVertical: normalize(4), minWidth: normalize(28), alignItems: 'center',
+      }}>
+        <Typography style={{ color: '#FFF', fontSize: normalize(13), fontFamily: FONT.EXTRA_BOLD }}>
+          {val}
+        </Typography>
+      </View>
+      <Typography style={{ color: isDarkMode ? '#94A3B8' : '#64748B', fontSize: normalize(8), fontFamily: FONT.MEDIUM, marginTop: normalize(2) }}>
+        {lbl}
+      </Typography>
+    </View>
+  );
+
+  return (
+    <View style={{
+      marginTop: normalize(14),
+      marginHorizontal: normalize(8),
+      backgroundColor: isDarkMode ? '#1A1025' : '#FFF5F5',
+      borderRadius: normalize(18),
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: isDarkMode ? '#3B2D5E' : '#FECDD3',
+    }}>
+      {/* Flash header */}
+      <View style={{
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        paddingHorizontal: normalize(14), paddingVertical: normalize(12),
+        backgroundColor: isDarkMode ? '#2D1F42' : '#FFF1F2',
+        borderBottomWidth: 1,
+        borderBottomColor: isDarkMode ? '#3B2D5E' : '#FECDD3',
+      }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Typography style={{ fontSize: normalize(18), marginRight: normalize(6) }}>⚡</Typography>
+          <View>
+            <Typography style={{
+              fontSize: normalize(14), fontFamily: FONT.EXTRA_BOLD,
+              color: isDarkMode ? '#FFF' : '#DC2626', textTransform: 'uppercase',
+            }}>
+              {label || 'Flash Deals'}
+            </Typography>
+            <Typography style={{
+              fontSize: normalize(10), fontFamily: FONT.MEDIUM,
+              color: isDarkMode ? '#94A3B8' : '#64748B', marginTop: normalize(1),
+            }}>
+              Ends in
+            </Typography>
+          </View>
+        </View>
+
+        {/* Countdown */}
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+          {timerDigit(hrs, 'HRS')}
+          <Typography style={{ color: isDarkMode ? '#DC2626' : '#1E1B2E', fontSize: normalize(14), fontFamily: FONT.EXTRA_BOLD, marginTop: normalize(3) }}>:</Typography>
+          {timerDigit(mins, 'MIN')}
+          <Typography style={{ color: isDarkMode ? '#DC2626' : '#1E1B2E', fontSize: normalize(14), fontFamily: FONT.EXTRA_BOLD, marginTop: normalize(3) }}>:</Typography>
+          {timerDigit(secs, 'SEC')}
+        </View>
+      </View>
+
+      {/* Cards list */}
+      <FlatList
+        horizontal
+        data={listData}
+        keyExtractor={(p) => String(p.id)}
+        renderItem={({ item: product }) => (
+          <FlashDealCard item={product} isDarkMode={isDarkMode} />
+        )}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: normalize(6), paddingVertical: normalize(10) }}
+      />
+    </View>
+  );
+}
+
+function FlashDealCard({ item, isDarkMode }: { item: any; isDarkMode: boolean }) {
+  const navigation = useNavigation<NavigationProps>();
+  const info = getStockInfo(item);
+  const cart = useContext(CartCtx);
+  const inCart = cart.qty[item.id] || 0;
+  const isOutOfStock = info.qty <= 0;
+  const scale = useRef(new Animated.Value(1)).current;
+  const discountPct = item.savings ? parseInt(String(item.savings).replace(/\D/g, ''), 10) || 0 : 0;
+  const soldPct = Math.min(100, Math.round(info.stockPct * 100));
+
+  return (
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <TouchableOpacity
+        activeOpacity={0.95}
+        onPressIn={() => Animated.spring(scale, { toValue: 0.96, useNativeDriver: true }).start()}
+        onPressOut={() => Animated.spring(scale, { toValue: 1, friction: 4, useNativeDriver: true }).start()}
+        onPress={() => navigation.navigate('detailProduct', { productId: item.id })}
+        style={{
+          width: normalize(152),
+          backgroundColor: isDarkMode ? '#1E1B2E' : '#FFFFFF',
+          borderRadius: normalize(16),
+          margin: normalize(5),
+          overflow: 'hidden',
+          borderWidth: 1,
+          borderColor: isDarkMode ? '#3B2D5E' : '#FEE2E2',
+          shadowColor: '#D50000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.12,
+          shadowRadius: 12,
+          elevation: 5,
+        }}
+      >
+        {/* Image area */}
+        <View style={{
+          height: normalize(120),
+          backgroundColor: isDarkMode ? '#2D2344' : '#FFF5F5',
+          justifyContent: 'center',
+          alignItems: 'center',
+          overflow: 'hidden',
+        }}>
+          {item.image ? (
+            <Image source={{ uri: item.image }} style={{ width: '72%', height: '72%' }} resizeMode="contain" />
+          ) : (
+            <Typography style={{ fontSize: normalize(42) }}>{info.emoji}</Typography>
+          )}
+
+          {isOutOfStock && (
+            <View style={{
+              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: isDarkMode ? 'rgba(15,23,42,0.65)' : 'rgba(255,255,255,0.65)',
+              justifyContent: 'center', alignItems: 'center', zIndex: 10,
+            }}>
+              <View style={{
+                backgroundColor: '#DC2626', paddingHorizontal: normalize(8),
+                paddingVertical: normalize(4), borderRadius: normalize(6),
+              }}>
+                <Typography style={{ color: '#FFF', fontSize: normalize(9), fontFamily: FONT.BOLD }}>
+                  SOLD OUT
+                </Typography>
+              </View>
+            </View>
+          )}
+
+          {/* Discount badge */}
+          {discountPct > 0 && (
+            <View style={{
+              position: 'absolute', top: normalize(8), left: normalize(8),
+              backgroundColor: '#DC2626', borderRadius: normalize(20),
+              paddingHorizontal: normalize(8), paddingVertical: normalize(4),
+              flexDirection: 'row', alignItems: 'center',
+            }}>
+              <Typography style={{ color: '#FFF', fontSize: normalize(10), fontFamily: FONT.EXTRA_BOLD }}>
+                -{discountPct}%
+              </Typography>
+            </View>
+          )}
+
+          <WishlistButton product={item} styles={_styles(isDarkMode)} />
+        </View>
+
+        {/* Body */}
+        <View style={{ padding: normalize(10), flex: 1, justifyContent: 'space-between' }}>
+          <Typography numberOfLines={2} style={{
+            fontFamily: FONT.SEMI_BOLD, fontSize: normalize(12),
+            color: isDarkMode ? '#F1F5F9' : '#0F172A',
+            height: normalize(12) * 2.7,
+          }}>
+            {item.name}
+          </Typography>
+
+          {/* Price row */}
+          <View style={{ flexDirection: 'row', alignItems: 'baseline', marginTop: normalize(4), flexWrap: 'wrap' }}>
+            <Typography style={{
+              fontSize: normalize(15), fontFamily: FONT.EXTRA_BOLD,
+              color: '#DC2626',
+            }}>
+              {item.price}
+            </Typography>
+            {item.oldPrice && (
+              <Typography style={{
+                fontSize: normalize(10), color: '#94A3B8',
+                textDecorationLine: 'line-through', marginLeft: normalize(5),
+                fontFamily: FONT.MEDIUM,
+              }}>
+                {item.oldPrice}
+              </Typography>
+            )}
+          </View>
+
+          {/* Stock progress bar */}
+          <View style={{ marginTop: normalize(8) }}>
+            <View style={{
+              height: normalize(6), borderRadius: normalize(3),
+              backgroundColor: isDarkMode ? '#3B2D5E' : '#FEE2E2',
+              overflow: 'hidden',
+            }}>
+              <View style={{
+                height: '100%', borderRadius: normalize(3),
+                backgroundColor: isOutOfStock ? '#94A3B8' : (soldPct < 30 ? '#EF4444' : '#F97316'),
+                width: `${isOutOfStock ? 100 : Math.max(5, soldPct)}%`,
+              }} />
+            </View>
+            <Typography style={{
+              fontSize: normalize(9), fontFamily: FONT.BOLD,
+              color: isDarkMode ? '#94A3B8' : '#64748B',
+              marginTop: normalize(3),
+            }}>
+              {isOutOfStock ? 'Sold out' : `${info.qty} left`}
+            </Typography>
+          </View>
+
+          {/* Add button */}
+          <TouchableOpacity
+            style={{
+              marginTop: normalize(8),
+              backgroundColor: isOutOfStock ? '#E2E8F0' : '#DC2626',
+              borderRadius: normalize(10),
+              paddingVertical: normalize(7),
+              alignItems: 'center', justifyContent: 'center',
+              flexDirection: 'row',
+            }}
+            activeOpacity={isOutOfStock ? 1 : 0.8}
+            disabled={isOutOfStock}
+            onPress={() => !isOutOfStock && cart.open(item)}
+          >
+            {inCart > 0 ? (
+              <Typography style={{ color: '#FFF', fontSize: normalize(11), fontFamily: FONT.BOLD }}>
+                {inCart} in Cart
+              </Typography>
+            ) : (
+              <>
+                <Icon width={14} height={14} tintColor={isOutOfStock ? '#94A3B8' : '#FFF'} icon={add} />
+                <Typography style={{
+                  color: isOutOfStock ? '#94A3B8' : '#FFF',
+                  fontSize: normalize(11), fontFamily: FONT.BOLD, marginLeft: normalize(4),
+                }}>
+                  Add
+                </Typography>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
 function ProvisionCard({ item, isDarkMode }: { item: any; isDarkMode: boolean }) {
   return <FancyCard item={item} isDarkMode={isDarkMode} />;
 }
@@ -648,6 +918,7 @@ export default function WholesaleProvisionsScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProps>();
   const isFocused = useIsFocused();
+  const [menuVisible, setMenuVisible] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -667,31 +938,12 @@ export default function WholesaleProvisionsScreen() {
   const [isCartLoading, setIsCartLoading] = useState(false);
   const [openUpdateCartModal, setOpenUpdateCartModal] = useState(false);
   const [cartItemSelected, setCartItemSelected] = useState<any>();
-  const [showCustomerTypeModal, setShowCustomerTypeModal] = useState(false);
-  const customerTypeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (Environment.isLogin()) {
-      const session = new AuthSessionService().getAuthSession();
-      const apps = session?.data?.apps || [];
-      const wholesalesApp = apps.find((a: any) => String(a.name || '').toLowerCase() === 'wholesales');
-      const customerTypeId = wholesalesApp?.info?.customer_type_id;
-
-      if (customerTypeId === null || customerTypeId === undefined) {
-        // Random delay between 3 seconds and 10 seconds
-        const randomDelayMs = Math.floor(Math.random() * (10 - 3 + 1) + 3) * 1000;
-        customerTypeTimerRef.current = setTimeout(() => {
-          setShowCustomerTypeModal(true);
-        }, randomDelayMs);
-      }
-    }
-
-    return () => {
-      if (customerTypeTimerRef.current) clearTimeout(customerTypeTimerRef.current);
-    };
+    // CustomerTypeModal is now handled by WholesaleProvisionsNavigation
   }, []);
 
-  const CATEGORIES = [{ id: 'all', name: 'All', emoji: '🛒' }, ...shopCategories];
+  const CATEGORIES = [{ id: 'all', name: 'All' }, ...shopCategories];
   const [cartQty, setCartQty] = useState<Record<string, number>>({});
   const [sheetItem, setSheetItem] = useState<any | null>(null);
   const itemsById = useRef<Record<string, any>>({}).current;
@@ -750,7 +1002,11 @@ export default function WholesaleProvisionsScreen() {
     store.dispatch(action.notifyCartUpdated());
   }, [loadCartItems]);
   const goBack = useCallback(() => {
-    if (navigation.canGoBack()) navigation.goBack();
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('storeSelector');
+    }
   }, [navigation]);
 
   const applyAll = (res: any, append: boolean) => {
@@ -827,11 +1083,16 @@ export default function WholesaleProvisionsScreen() {
     switch (item.component) {
       case 'hero':
         return (
-          <View style={[styles.heroBanner, { paddingTop: insets.top + normalize(72) }]}>
+          <View style={styles.heroBanner}>
             <View style={styles.heroContent}>
-              <Typography style={styles.heroTitle}>Wholesale Provisions</Typography>
+              <View style={styles.heroBadgeRow}>
+                <View style={styles.heroBadge}>
+                  <Typography style={styles.heroBadgeText}>CARTON BULK RATES 🔥</Typography>
+                </View>
+              </View>
+              <Typography style={styles.heroTitle}>Wholesale Provisions 🛍️</Typography>
               <Typography style={styles.heroSubtitle}>
-                Stock up on everyday essentials at great wholesale prices.
+                Stock up on food, beverages & essentials at carton wholesale prices.
               </Typography>
             </View>
           </View>
@@ -855,7 +1116,6 @@ export default function WholesaleProvisionsScreen() {
                 onPress={() => openCategoryProducts(cat)}
                 activeOpacity={0.7}
               >
-                <Typography style={styles.categoryEmoji}>{cat.emoji}</Typography>
                 <Typography
                   style={[
                     styles.categoryChipText,
@@ -892,26 +1152,12 @@ export default function WholesaleProvisionsScreen() {
       case 'FlashDeals':
       case 'deals': {
         const listData = (item.data || deals).map((p: any) => p.unitPrice !== undefined ? p : mapProduct(p));
-        return (
-          <View style={{ marginTop: normalize(10) }}>
-            <SectionHeader title={item.label || "Wholesale Deals"} showSeeAll={false} />
-            <FlatList
-              horizontal
-              data={listData}
-              keyExtractor={(p) => String(p.id)}
-              renderItem={({ item: product }) => (
-                <ProvisionCard item={product} isDarkMode={isDarkMode} />
-              )}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: normalize(8) }}
-            />
-          </View>
-        );
+        return <FlashDealsSection listData={listData} isDarkMode={isDarkMode} label={item.label} />;
       }
 
       case 'CategoryGrid':
       case 'shopByCategory': {
-        const catData = (item.data || shopCategories).map((c: any, i: number) => c.emoji ? c : mapCategory(c, i));
+        const catData = (item.data || shopCategories).map((c: any, i: number) => c.id ? c : mapCategory(c, i));
         return (
           <View style={{ marginTop: normalize(10) }}>
             <SectionHeader title={item.label || "Shop by Category"} showSeeAll={false} />
@@ -959,35 +1205,95 @@ export default function WholesaleProvisionsScreen() {
 
   return (
     <CartCtx.Provider value={{ qty: cartQty, open: openSheet }}>
-      <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+      <SafeAreaView style={styles.container}>
         {isFocused && (
           <StatusBar
             backgroundColor="transparent"
-            barStyle="light-content"
+            barStyle={isDarkMode ? "light-content" : "dark-content"}
             translucent
           />
         )}
 
-        {/* ── Sticky Header ──────────────────────────────────────── */}
-        <View style={[styles.stickyHeader, { paddingTop: insets.top + normalize(6) }]}>
-          <TouchableOpacity onPress={goBack} style={styles.heroBack} activeOpacity={0.7}>
-            <Icon icon={arrowBack} height={theme.spacing.lg} tintColor="#FFFFFF" />
-          </TouchableOpacity>
-          {/* {<TouchableOpacity
-            onPress={goToCart}
-            style={styles.heroCartBtn}
-            activeOpacity={0.7}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Icon icon={white_shopping_cart} width={20} height={20} tintColor="#FFFFFF" />
-            {cartCount > 0 && (
-              <View style={styles.heroCartBadge}>
-                <Typography style={styles.heroCartBadgeText}>
-                  {cartCount > 99 ? '99+' : cartCount}
-                </Typography>
+        {/* ── Standard Store Header with Unique Provisions Design ── */}
+        <View style={styles.topContainer}>
+          <View style={styles.actionBar}>
+            <View style={styles.logoSection}>
+              <SeasonalLogo logoSize={theme.spacing.xxl}>
+                <Image source={LOGO} style={styles.logo} resizeMode="contain" />
+              </SeasonalLogo>
+              <View>
+                <Typography style={styles.appName}>PS GDC</Typography>
+                <View style={styles.storeNameTag}>
+                  <Typography numberOfLines={1} ellipsizeMode="tail" style={styles.storeNameText}>
+                    WHOLESALE PROVISIONS 🛍️
+                  </Typography>
+                </View>
               </View>
-            )}
-          </TouchableOpacity>} */}
+            </View>
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={styles.iconBtn}
+                onPress={() => navigation.navigate('search', {
+                  headerBackgroundColor: isDarkMode ? '#0F172A' : '#F8FAFC',
+                  storeType: 'WHOLESALES',
+                })}
+              >
+                <Icon icon={search} height={theme.spacing.lg} tintColor={isDarkMode ? '#FFF' : '#1A1D1E'} />
+              </TouchableOpacity>
+              <View style={{ position: 'relative' }}>
+                <TouchableOpacity
+                  style={styles.iconBtn}
+                  onPress={() => setMenuVisible(!menuVisible)}
+                >
+                  <Icon icon={dots} height={theme.spacing.lg} tintColor={isDarkMode ? '#FFF' : '#1A1D1E'} />
+                </TouchableOpacity>
+
+                {menuVisible && (
+                  <View style={[styles.menuDropdown, isDarkMode && styles.menuDropdownDark]}>
+                    <TouchableOpacity
+                      style={styles.menuItem}
+                      onPress={() => {
+                        setMenuVisible(false);
+                        const auth = store.getState().systemReducer.auth;
+                        if (auth && auth.loginStatus) {
+                          navigation.navigate('scanShop');
+                        } else {
+                          Toasts('You must be logged in to use Scan & Shop');
+                          navigation.navigate('login');
+                        }
+                      }}
+                    >
+                      <Icon icon={qrcode} height={theme.spacing.md} tintColor="#D32F2F" />
+                      <Typography style={styles.menuText}>Scan & Shop</Typography>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.menuItem}
+                      onPress={() => {
+                        setMenuVisible(false);
+                        navigation.navigate('notifications');
+                      }}
+                    >
+                      <Icon icon={homeNotification} height={theme.spacing.md} tintColor={isDarkMode ? '#FFF' : '#1A1D1E'} />
+                      <Typography style={styles.menuText}>Notifications</Typography>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.menuItem}
+                      onPress={() => {
+                        setMenuVisible(false);
+                        new AuthSessionService().removeImpersonateCustomerData();
+                        new AuthSessionService().setEnvironment("");
+                        navigation.navigate('storeSelector');
+                      }}
+                    >
+                      <Icon icon={switch_icon} height={theme.spacing.md} tintColor={isDarkMode ? '#FFF' : '#1A1D1E'} />
+                      <Typography style={styles.menuText}>Switch Store</Typography>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            </View>
+          </View>
+          <SeasonalHeaderAccents />
         </View>
 
         {/* ── Content ────────────────────────────────────────────── */}
@@ -995,6 +1301,7 @@ export default function WholesaleProvisionsScreen() {
           data={sections}
           keyExtractor={(item) => item.id}
           renderItem={renderSection}
+          ListHeaderComponent={<SeasonalHomeSections />}
           onEndReached={loadMore}
           onEndReachedThreshold={0.4}
           refreshControl={
@@ -1058,12 +1365,6 @@ export default function WholesaleProvisionsScreen() {
           product={cartItemSelected}
           visible={openUpdateCartModal}
           onClose={(status: boolean) => setOpenUpdateCartModal(status)}
-        />
-
-        <CustomerTypeModal
-          visible={showCustomerTypeModal}
-          dismissable={false}
-          onSuccess={() => setShowCustomerTypeModal(false)}
         />
       </SafeAreaView>
     </CartCtx.Provider>
@@ -1135,18 +1436,20 @@ const _styles = (isDarkMode: boolean) =>
     },
     storeNameTag: {
       backgroundColor: isDarkMode
-        ? 'rgba(211, 47, 47, 0.2)'
-        : 'rgba(211, 47, 47, 0.08)',
-      paddingHorizontal: theme.spacing.xs,
-      paddingVertical: 2,
+        ? 'rgba(225, 29, 72, 0.22)'
+        : 'rgba(225, 29, 72, 0.08)',
+      paddingHorizontal: theme.spacing.xs + 2,
+      paddingVertical: 2.5,
       borderRadius: theme.borderRadius.xs,
       marginTop: theme.spacing.xs / 2,
       alignSelf: 'flex-start',
+      borderWidth: 1,
+      borderColor: isDarkMode ? 'rgba(225, 29, 72, 0.35)' : 'rgba(225, 29, 72, 0.2)',
     },
     storeNameText: {
       fontSize: theme.typography.xs,
-      fontFamily: FONT.BOLD,
-      color: semantic.alert.danger.d500,
+      fontFamily: FONT.EXTRA_BOLD,
+      color: '#E11D48',
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
@@ -1163,30 +1466,63 @@ const _styles = (isDarkMode: boolean) =>
       alignItems: 'center',
       marginLeft: theme.spacing.xs,
     },
+    menuDropdown: {
+      position: 'absolute',
+      top: theme.MIN_TOUCH_TARGET + theme.spacing.xs,
+      right: 0,
+      backgroundColor: '#FFFFFF',
+      borderRadius: theme.borderRadius.sm,
+      padding: theme.spacing.xs,
+      width: 160,
+      zIndex: theme.zIndex.modal,
+      ...theme.shadows.md,
+      borderWidth: 1,
+      borderColor: '#E2E8F0',
+    },
+    menuDropdownDark: {
+      backgroundColor: semantic.fill.f02,
+      borderColor: semantic.fill.f04,
+    },
+    menuItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.sm,
+      gap: theme.spacing.xs,
+    },
+    menuText: {
+      fontSize: theme.typography.sm,
+      fontFamily: FONT.MEDIUM,
+      color: '#1A1D1E',
+    },
     scrollContent: {
       paddingBottom: theme.spacing.xxl * 2,
     },
 
     // ── Hero Banner ───────────────────────────────────────────────────────
-        stickyHeader: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 100,
-      backgroundColor: '#0F172A',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: normalize(16),
-      paddingBottom: normalize(10),
-      borderBottomWidth: 1,
-      borderBottomColor: 'rgba(255,255,255,0.06)',
-    },
     heroBanner: {
       paddingHorizontal: normalize(16),
-      paddingBottom: theme.spacing.lg,
-      backgroundColor: '#0F172A',
+      paddingTop: normalize(14),
+      paddingBottom: normalize(16),
+      backgroundColor: isDarkMode ? '#1E293B' : '#FFF5F5',
+      borderBottomWidth: 1,
+      borderBottomColor: isDarkMode ? '#334155' : '#FEE2E2',
+    },
+    heroBadgeRow: {
+      flexDirection: 'row',
+      marginBottom: normalize(4),
+    },
+    heroBadge: {
+      backgroundColor: '#E11D48',
+      paddingHorizontal: normalize(8),
+      paddingVertical: normalize(2.5),
+      borderRadius: normalize(8),
+    },
+    heroBadgeText: {
+      color: '#FFFFFF',
+      fontSize: normalize(9.5),
+      fontFamily: FONT.EXTRA_BOLD,
+      letterSpacing: 0.5,
     },
         heroTopRow: {
       flexDirection: 'row',
@@ -1227,20 +1563,27 @@ const _styles = (isDarkMode: boolean) =>
       alignItems: 'flex-start',
       marginBottom: theme.spacing.xs,
     },
+    heroSearchBtn: {
+      width: theme.MIN_TOUCH_TARGET,
+      height: theme.MIN_TOUCH_TARGET,
+      justifyContent: 'center',
+      alignItems: 'flex-end',
+      marginBottom: theme.spacing.xs,
+    },
     heroContent: {
       flex: 1,
     },
     heroTitle: {
-      fontSize: theme.typography.xxl,
+      fontSize: normalize(18),
       fontFamily: FONT.EXTRA_BOLD,
-      color: '#FFFFFF',
-      marginBottom: theme.spacing.xs,
+      color: isDarkMode ? '#F8FAFC' : '#0F172A',
+      marginBottom: theme.spacing.xs / 2,
     },
     heroSubtitle: {
-      fontSize: theme.typography.sm,
+      fontSize: normalize(12),
       fontFamily: FONT.NORMAL,
-      color: 'rgba(255,255,255,0.6)',
-      lineHeight: 18,
+      color: isDarkMode ? '#94A3B8' : '#64748B',
+      lineHeight: normalize(16),
     },
 
     // ── Category Selector ─────────────────────────────────────────────────

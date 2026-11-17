@@ -58,12 +58,15 @@ export default class SearchProductService {
                 return await this.apiSearch(query, page, limit, storeType);
             }
 
-            const filter = Environment.isWholeSalesEnvironment()
-                ? ['is_wholesales = true', 'admin_status = true', 'wholesales_status = true']
+            const isWholesale = Environment.isWholeSalesEnvironment();
+            const filter = isWholesale
+                ? (storeType === 'SUPERMARKET'
+                    ? ['admin_status = true', 'wholesales_status = true']
+                    : ['is_wholesales = true', 'admin_status = true', 'wholesales_status = true'])
                 : ['admin_status = true', 'retail_status = true'];
 
             if (storeType) {
-                filter.push(`store_type = ${storeType}`);
+                filter.push(`store_type = "${storeType}"`);
             }
 
             const sort = Environment.isWholeSalesEnvironment()

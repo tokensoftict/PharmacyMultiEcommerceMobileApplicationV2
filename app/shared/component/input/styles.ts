@@ -17,7 +17,13 @@ import { theme } from '../../theme';
  *   - Font sizes from theme.typography scale
  *   - Touch target respects MIN_TOUCH_TARGET (44dp)
  */
-export const _styles = (isFocus: boolean, isDarkMode: boolean, multiline: boolean) =>
+export const _styles = (
+  isFocus: boolean,
+  isDarkMode: boolean,
+  multiline: boolean,
+  borderColorProp?: string,
+  focusBorderColorProp?: string
+) =>
   StyleSheet.create({
     container: {
       flexDirection: 'row',
@@ -31,10 +37,8 @@ export const _styles = (isFocus: boolean, isDarkMode: boolean, multiline: boolea
       // Focus ring
       borderWidth: 1.5,
       borderColor: isFocus
-        ? '#D32F2F'
-        : isDarkMode
-          ? 'rgba(255,255,255,0.08)'
-          : 'transparent',
+        ? (focusBorderColorProp || '#D32F2F')
+        : (borderColorProp || (isDarkMode ? 'rgba(255,255,255,0.08)' : 'transparent')),
       // Ensure minimum touch target height for single-line inputs
       minHeight: multiline ? theme.MIN_TOUCH_TARGET * 2.5 : theme.MIN_TOUCH_TARGET,
     },

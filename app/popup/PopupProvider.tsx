@@ -74,8 +74,10 @@ export const PopupProvider = ({ children }: { children: React.ReactNode }) => {
     const fetchPopups = async () => {
         const res = await popUpService.getPopups();
         if (res.data.status === true) {
+            const currentEnv = Environment.getEnvironment();
+            const backendEnv = currentEnv === 'wholesaleProvisions' ? 'wholesales' : currentEnv;
             // @ts-ignore
-            const data = res.data.data.filter((item) => item.application === Environment.getEnvironment())
+            const data = res.data.data.filter((item) => item.application === backendEnv)
             setAllPopups(data);
             return data; // return fetched popups
         } else {

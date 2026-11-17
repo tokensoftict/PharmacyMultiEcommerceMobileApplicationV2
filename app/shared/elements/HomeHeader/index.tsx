@@ -32,6 +32,7 @@ import FlashDeals from "@/shared/elements/FlashDeals";
 import ImageSlider from "@/shared/elements/ImageSlider";
 import PromoCarousel from "@/shared/elements/PromoCarousel";
 import HomeSkeleton from './HomeSkeleton';
+import { SeasonalLogo, SeasonalHeaderAccents, SeasonalHomeSections } from '@/seasonal';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { qrcode } from '@/assets/icons';
 import Toasts from '@/shared/utils/Toast';
@@ -137,7 +138,9 @@ export default function HomeHeader({
                 <View style={styles.topContainer}>
                     <View style={styles.actionBar}>
                         <View style={styles.logoSection}>
-                            <Image source={LOGO} style={styles.logo} resizeMode="contain" />
+                            <SeasonalLogo logoSize={theme.spacing.xxl}>
+                                <Image source={LOGO} style={styles.logo} resizeMode="contain" />
+                            </SeasonalLogo>
                             <View>
                                 <Typography style={styles.appName}>PS GDC</Typography>
                                 <View style={styles.storeNameTag}>
@@ -205,6 +208,7 @@ export default function HomeHeader({
                             </View>
                         </View>
                     </View>
+                    <SeasonalHeaderAccents />
                 </View>
             )}
 
@@ -215,6 +219,7 @@ export default function HomeHeader({
                     data={data}
                     keyExtractor={(item, index) => `${item.component}-${item.promotionId ?? item.id ?? index}`}
                     renderItem={renderComponent}
+                    ListHeaderComponent={<SeasonalHomeSections />}
                     refreshControl={
                         <RefreshControl refreshing={loading ?? false} onRefresh={onRefresh} tintColor="#D32F2F" />
                     }

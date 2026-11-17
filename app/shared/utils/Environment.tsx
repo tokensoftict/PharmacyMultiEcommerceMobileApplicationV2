@@ -1,7 +1,8 @@
 import AuthSessionService from "@/service/auth/AuthSessionService.tsx";
 
 function isWholeSalesEnvironment(): boolean {
-    return new AuthSessionService().getEnvironment() === "wholesales";
+    const env = new AuthSessionService().getEnvironment();
+    return env === "wholesales" || env === "wholesaleProvisions";
 }
 
 function isSuperMarketEnvironment(): boolean {

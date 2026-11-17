@@ -12,7 +12,9 @@ export default class ProductListService {
         this.authSessionService = new AuthSessionService();
     }
 
-    getProduct(endpoint : string, page : number){
-        return this.request.get(endpoint+"?page="+page);
+    getProduct(endpoint : string, page : number, search : string = "", sort : string = ""){
+        const searchQuery = search.trim() ? "&search=" + encodeURIComponent(search.trim()) : "";
+        const sortQuery = sort ? "&sort=" + encodeURIComponent(sort) : "";
+        return this.request.get(endpoint+"?page="+page+searchQuery+sortQuery);
     }
 }

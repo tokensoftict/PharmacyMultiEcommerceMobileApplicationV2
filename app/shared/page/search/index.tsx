@@ -8,18 +8,19 @@ import {
     Image,
     Platform,
     Keyboard,
-    ScrollView
+    ScrollView,
+    StatusBar
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@/shared/component/icon";
 import { arrowBack, search, history, close } from "@/assets/icons";
 import Input from "@/shared/component/input";
 import { normalize, storage } from "@/shared/helpers";
-import { palette } from "@/shared/constants/colors.ts";
+import { palette, design } from "@/shared/constants/colors.ts";
 import { activeOpacity, currencyType } from "@/shared/constants/global.ts";
 import { FONT } from "@/shared/constants/fonts.ts";
 import SearchProductService from "@/service/product/SearchProductService.tsx";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { NavigationProps } from "@/shared/routes/stack.tsx";
 import Typography from "@/shared/component/typography";
 import Environment from "@/shared/utils/Environment.tsx";
@@ -35,11 +36,20 @@ interface SearchDialogProps {
     onClose?: () => void;
     onItemSelected?: (item: any) => void;
     storeType?: string | null;
+    headerBackgroundColor?: string;
+    headerColor?: string;
 }
 
 const RECENT_SEARCHES_KEY = 'recent_searches_ps_gdc';
 
-export default function Search({ visible = true, onClose, onItemSelected, storeType = null }: SearchDialogProps) {
+export default function Search({ visible = true, onClose, onItemSelected, storeType = null, headerBackgroundColor, headerColor }: SearchDialogProps) {
+    const route = useRoute<any>();
+    const resolvedHeaderBg = headerBackgroundColor
+        || headerColor
+        || route?.params?.headerBackgroundColor
+        || route?.params?.headerColor
+        || design.text1.background;
+    const resolvedStoreType = storeType ?? route?.params?.storeType ?? null;
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<any[]>([]);
     const [submittedResults, setSubmittedResults] = useState<any[]>([]);
@@ -125,7 +135,7 @@ export default function Search({ visible = true, onClose, onItemSelected, storeT
         else setFooterLoading(true);
 
         try {
-            const data = await meilisearch.query("Peace", page, 20, storeType);
+            const data = await meilisearch.query("Peace", page, 20, resolvedStoreType);
 
             // Frontend sorting as a reliable secondary layer
             const env = Environment.isWholeSalesEnvironment() ? "wholesales" : "retail";
@@ -146,7 +156,7 @@ export default function Search({ visible = true, onClose, onItemSelected, storeT
             setLoading(false);
             setFooterLoading(false);
         }
-    }, [popularProductLastPage, storeType]);
+    }, [popularProductLastPage, resolvedStoreType]);
 
     const handleSearch = useCallback(async (searchQuery: string, page: number = 1) => {
         if (!searchQuery || searchQuery.length < 3) {
@@ -163,7 +173,7 @@ export default function Search({ visible = true, onClose, onItemSelected, storeT
         }
 
         try {
-            const data = await meilisearch.query(searchQuery, page, 20, storeType);
+            const data = await meilisearch.query(searchQuery, page, 20, resolvedStoreType);
             
             // Frontend sorting as a reliable secondary layer
             const env = Environment.isWholeSalesEnvironment() ? "wholesales" : "retail";
@@ -183,7 +193,7 @@ export default function Search({ visible = true, onClose, onItemSelected, storeT
         } finally {
             setIsSearching(false);
         }
-    }, [searchResultLastPage, storeType]);
+    }, [searchResultLastPage, resolvedStoreType]);
 
     const debouncedSearch = useCallback(_.debounce((val: string) => handleSearch(val, 1), 300), [handleSearch]);
 
@@ -204,7 +214,7 @@ export default function Search({ visible = true, onClose, onItemSelected, storeT
         }
 
         try {
-            const data = await meilisearch.query(submitQuery, page, 20, storeType);
+            const data = await meilisearch.query(submitQuery, page, 20, resolvedStoreType);
             
             // Frontend sorting as a reliable secondary layer
             const env = Environment.isWholeSalesEnvironment() ? "wholesales" : "retail";
@@ -225,7 +235,7 @@ export default function Search({ visible = true, onClose, onItemSelected, storeT
             setLoading(false);
             setFooterLoading(false);
         }
-    }, [querySubmitLastPage, recentSearches, storeType]);
+    }, [querySubmitLastPage, recentSearches, resolvedStoreType]);
 
     const navigateTo = (productId: string) => {
         // @ts-ignore
@@ -279,12 +289,15 @@ export default function Search({ visible = true, onClose, onItemSelected, storeT
 
     return (
         <View style={styles.container}>
+            <StatusBar backgroundColor={resolvedHeaderBg} barStyle="light-content" />
             <Animated.View style={[
                 styles.header,
                 {
                     paddingTop: insets.top ? (insets.top + normalize(5)) : normalize(12),
                     opacity: fadeAnim,
-                    transform: [{ translateY: translateYAnim }]
+                    transform: [{ translateY: translateYAnim }],
+                    backgroundColor: resolvedHeaderBg,
+                    borderBottomColor: resolvedHeaderBg,
                 }
             ]}>
                 <View style={styles.searchBarWrapper}>
@@ -301,6 +314,9 @@ export default function Search({ visible = true, onClose, onItemSelected, storeT
                         }}
                         onSubmitEditing={() => handleQuerySubmit(query, 1)}
                         placeholder={'Search products...'}
+                        focusBorderColor={resolvedHeaderBg}
+                        borderColor={resolvedHeaderBg}
+                        containerStyle={{ borderColor: resolvedHeaderBg }}
                     />
                 </View>
             </Animated.View>
